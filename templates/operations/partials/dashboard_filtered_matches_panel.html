@@ -1,0 +1,176 @@
+<div
+    id="filtered-matches-panel"
+    class="card panel dashboard-section"
+>
+    <div class="dashboard-filter-panel-head">
+        <div>
+            <h2 class="panel-title">Filtered Matches</h2>
+            {% if selected_view != 'all' %}
+                <p class="help-text">Showing {{ selected_view|title }} matches</p>
+            {% else %}
+                <p class="help-text">Use filters to narrow the table below</p>
+            {% endif %}
+        </div>
+
+        <div class="dashboard-filterbar dashboard-filterbar-inline">
+            <a
+                href="?view=all"
+                class="filter-chip {% if selected_view == 'all' %}is-active{% endif %}"
+                hx-get="{% url 'operations:dashboard' %}?view=all"
+                hx-target="#filtered-matches-panel"
+                hx-swap="outerHTML"
+                hx-push-url="true"
+            >
+                All
+            </a>
+
+            <a
+                href="?view=live"
+                class="filter-chip {% if selected_view == 'live' %}is-active{% endif %}"
+                hx-get="{% url 'operations:dashboard' %}?view=live"
+                hx-target="#filtered-matches-panel"
+                hx-swap="outerHTML"
+                hx-push-url="true"
+            >
+                Live
+            </a>
+
+            <a
+                href="?view=ready"
+                class="filter-chip {% if selected_view == 'ready' %}is-active{% endif %}"
+                hx-get="{% url 'operations:dashboard' %}?view=ready"
+                hx-target="#filtered-matches-panel"
+                hx-swap="outerHTML"
+                hx-push-url="true"
+            >
+                Ready
+            </a>
+
+            <a
+                href="?view=alerts"
+                class="filter-chip {% if selected_view == 'alerts' %}is-active{% endif %}"
+                hx-get="{% url 'operations:dashboard' %}?view=alerts"
+                hx-target="#filtered-matches-panel"
+                hx-swap="outerHTML"
+                hx-push-url="true"
+            >
+                Alerts
+            </a>
+
+            <a
+                href="?view=reports"
+                class="filter-chip {% if selected_view == 'reports' %}is-active{% endif %}"
+                hx-get="{% url 'operations:dashboard' %}?view=reports"
+                hx-target="#filtered-matches-panel"
+                hx-swap="outerHTML"
+                hx-push-url="true"
+            >
+                Reports
+            </a>
+
+            <a
+                href="?view=upcoming"
+                class="filter-chip {% if selected_view == 'upcoming' %}is-active{% endif %}"
+                hx-get="{% url 'operations:dashboard' %}?view=upcoming"
+                hx-target="#filtered-matches-panel"
+                hx-swap="outerHTML"
+                hx-push-url="true"
+            >
+                Upcoming
+            </a>
+
+            <a
+                href="?view=past"
+                class="filter-chip {% if selected_view == 'past' %}is-active{% endif %}"
+                hx-get="{% url 'operations:dashboard' %}?view=past"
+                hx-target="#filtered-matches-panel"
+                hx-swap="outerHTML"
+                hx-push-url="true"
+            >
+                Past
+            </a>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Match</th>
+                    <th>Date</th>
+                    <th>Timing</th>
+                    <th>Readiness</th>
+                    <th>Pre-match</th>
+                    <th>Post-match</th>
+                    <th>Delayed</th>
+                    <th>CMS Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for card in featured_matches %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'operations:match-detail' card.match.pk %}">
+                                {{ card.match.title_en }}
+                            </a>
+                        </td>
+
+                        <td>{{ card.match.event_date }} {{ card.match.match_start_time }}</td>
+
+                        <td>
+                            {% if card.is_live_now %}
+                                <span class="mini-badge mini-badge-live">
+                                    <span class="live-dot"></span>LIVE
+                                </span>
+                                {% if card.published_is_live %}
+                                    <div class="help-text">Published on CMS</div>
+                                {% elif card.auto_live_by_ops %}
+                                    <div class="help-text">Auto live in 20-day window</div>
+                                {% endif %}
+                            {% elif card.days_to_match == 0 %}
+                                Today
+                            {% elif card.days_to_match is not None %}
+                                {{ card.days_to_match }} day{{ card.days_to_match|pluralize }} left
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if card.ready_for_ticket_sale and not card.is_past %}
+                                <span class="mini-badge mini-badge-success">Ready for Sale</span>
+                            {% elif card.needs_reports %}
+                                <span class="mini-badge mini-badge-danger">Reports Pending</span>
+                            {% else %}
+                                <span class="mini-badge mini-badge-{{ card.alert_level|default:'neutral' }}">
+                                    {{ card.alert_text }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>{{ card.non_post_match_done }} / {{ card.non_post_match_total }}</td>
+                        <td>{{ card.post_match_done }} / {{ card.post_match_total }}</td>
+
+                        <td>
+                            {% if card.delayed_items %}
+                                <span class="mini-badge mini-badge-danger">{{ card.delayed_items }}</span>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span class="badge badge-{{ card.match.cms_status|slugify }}">
+                                {{ card.match.get_cms_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8">No matches found for this filter.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,174 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Webook Match Tracker{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=3">
+
+    <meta name="htmx-config" content='{"includeIndicatorStyles": true}'>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+
+    <style>
+        .page-toast-wrap {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: grid;
+            gap: 10px;
+            width: min(360px, calc(100vw - 32px));
+        }
+
+        .page-toast {
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid #d1d5db;
+            background: #ffffff;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .page-toast-success {
+            border-color: #86efac;
+            background: #f0fdf4;
+            color: #166534;
+        }
+
+        .page-toast-error {
+            border-color: #fecaca;
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .page-toast-info {
+            border-color: #bfdbfe;
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        .inline-indicator {
+            display: none;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2563eb;
+        }
+
+        .htmx-request .inline-indicator,
+        .htmx-request.inline-indicator {
+            display: inline-block;
+        }
+
+        .topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-inline-start: auto;
+        }
+
+        .user-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .logout-form {
+            margin: 0;
+        }
+
+        .logout-btn,
+        .login-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #111827;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover,
+        .login-link:hover {
+            background: #f9fafb;
+        }
+
+        @media (max-width: 900px) {
+            .topbar-inner {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .nav-links {
+                width: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .topbar-user {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <div class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="{% url 'operations:dashboard' %}">Webook Match Tracker</a>
+
+            <div class="nav-links">
+                <a href="{% url 'operations:dashboard' %}">Dashboard</a>
+                <a href="{% url 'operations:match-list' %}">Matches</a>
+                <a href="{% url 'operations:missing-requirements-report' %}">Missing Items</a>
+                <a href="/admin/" target="_blank" rel="noopener noreferrer">Admin</a>
+            </div>
+
+            <div class="topbar-user">
+                {% if request.user.is_authenticated %}
+                    <span class="user-chip">
+                        {{ request.user.username }}
+                    </span>
+
+                    <form method="post" action="{% url 'logout' %}" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-btn">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="login-link">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="page-toast-wrap">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="page-toast page-toast-{{ message.tags|default:'info' }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

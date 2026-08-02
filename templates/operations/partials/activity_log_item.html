@@ -1,0 +1,28 @@
+<!-- File: templates/operations/partials/activity_log_item.html -->
+<!-- Path: config/templates/operations/partials/activity_log_item.html -->
+<div class="card" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:12px; background:#fff;">
+    <div style="display:flex; justify-content:space-between; gap:12px; align-items:start;">
+        <div>
+            <div style="font-weight:700;">{{ log.description }}</div>
+            <div class="help-text">
+                {% if log.user %}{{ log.user }}{% else %}System{% endif %} · {{ log.get_action_display }}
+            </div>
+        </div>
+        <div class="help-text" style="white-space:nowrap;">
+            {{ log.created_at|date:"Y-m-d H:i" }}
+        </div>
+    </div>
+</div>
+{% comment %} <div class="card" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:12px;">
+    <div style="display:flex; justify-content:space-between; gap:12px; align-items:start;">
+        <div>
+            <div style="font-weight:700;">{{ log.description }}</div>
+            <div class="help-text">
+                {% if log.user %}{{ log.user }}{% else %}System{% endif %} · {{ log.get_action_display }}
+            </div>
+        </div>
+        <div class="help-text" style="white-space:nowrap;">
+            {{ log.created_at|date:"Y-m-d H:i" }}
+        </div>
+    </div>
+</div> {% endcomment %}

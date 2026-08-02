@@ -1,0 +1,71 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h1>Operations Dashboard</h1>
+
+<div style="display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:16px;margin:20px 0;">
+    <div style="padding:16px;border:1px solid #ddd;border-radius:8px;">
+        <strong>Total Matches</strong>
+        <div style="font-size:28px;margin-top:8px;">{{ stats.total_matches }}</div>
+    </div>
+    <div style="padding:16px;border:1px solid #ddd;border-radius:8px;">
+        <strong>Draft</strong>
+        <div style="font-size:28px;margin-top:8px;">{{ stats.draft_matches }}</div>
+    </div>
+    <div style="padding:16px;border:1px solid #ddd;border-radius:8px;">
+        <strong>In Progress</strong>
+        <div style="font-size:28px;margin-top:8px;">{{ stats.in_progress_matches }}</div>
+    </div>
+    <div style="padding:16px;border:1px solid #ddd;border-radius:8px;">
+        <strong>Ready for CMS</strong>
+        <div style="font-size:28px;margin-top:8px;">{{ stats.ready_for_cms_matches }}</div>
+    </div>
+    <div style="padding:16px;border:1px solid #ddd;border-radius:8px;">
+        <strong>Sent to CMS</strong>
+        <div style="font-size:28px;margin-top:8px;">{{ stats.sent_to_cms_matches }}</div>
+    </div>
+    <div style="padding:16px;border:1px solid #ddd;border-radius:8px;">
+        <strong>Published</strong>
+        <div style="font-size:28px;margin-top:8px;">{{ stats.published_matches }}</div>
+    </div>
+    <div style="padding:16px;border:1px solid #ddd;border-radius:8px;">
+        <strong>Delayed Matches</strong>
+        <div style="font-size:28px;margin-top:8px;">{{ stats.delayed_matches }}</div>
+    </div>
+</div>
+
+<h2>Upcoming Matches</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Match</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Done</th>
+            <th>Delayed</th>
+            <th>Venue</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for match in upcoming_matches %}
+        <tr>
+            <td>
+                <a href="/admin/matches/match/{{ match.id }}/change/">
+                    {{ match.title_en }}
+                </a>
+            </td>
+            <td>{{ match.event_date }} {{ match.match_start_time }}</td>
+            <td>{{ match.cms_status }}</td>
+            <td>{{ match.done_items }} / {{ match.total_items }}</td>
+            <td>{{ match.delayed_items }}</td>
+            <td>{{ match.venue }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No matches found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

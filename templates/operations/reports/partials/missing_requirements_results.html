@@ -1,0 +1,191 @@
+<div id="missing-requirements-results">
+    <div class="card dashboard-filterbar">
+        <a
+            href="{% url 'operations:missing-requirements-report' %}?filter=all"
+            class="filter-chip {% if selected_filter == 'all' %}is-active{% endif %}"
+            hx-get="{% url 'operations:missing-requirements-report' %}?filter=all"
+            hx-target="#missing-requirements-results"
+            hx-swap="outerHTML"
+            hx-push-url="true"
+        >
+            All ({{ filter_counts.all }})
+        </a>
+
+        <a
+            href="{% url 'operations:missing-requirements-report' %}?filter=upcoming"
+            class="filter-chip {% if selected_filter == 'upcoming' %}is-active{% endif %}"
+            hx-get="{% url 'operations:missing-requirements-report' %}?filter=upcoming"
+            hx-target="#missing-requirements-results"
+            hx-swap="outerHTML"
+            hx-push-url="true"
+        >
+            Upcoming ({{ filter_counts.upcoming }})
+        </a>
+
+        <a
+            href="{% url 'operations:missing-requirements-report' %}?filter=delayed"
+            class="filter-chip {% if selected_filter == 'delayed' %}is-active{% endif %}"
+            hx-get="{% url 'operations:missing-requirements-report' %}?filter=delayed"
+            hx-target="#missing-requirements-results"
+            hx-swap="outerHTML"
+            hx-push-url="true"
+        >
+            Delayed ({{ filter_counts.delayed }})
+        </a>
+
+        <a
+            href="{% url 'operations:missing-requirements-report' %}?filter=has_notes"
+            class="filter-chip {% if selected_filter == 'has_notes' %}is-active{% endif %}"
+            hx-get="{% url 'operations:missing-requirements-report' %}?filter=has_notes"
+            hx-target="#missing-requirements-results"
+            hx-swap="outerHTML"
+            hx-push-url="true"
+        >
+            Has Notes ({{ filter_counts.has_notes }})
+        </a>
+    </div>
+
+    <div class="card panel dashboard-section">
+        <div class="dashboard-section-head">
+            <div>
+                <h2 class="panel-title">Matches Needing Action</h2>
+                <p class="help-text">
+                    {{ page_obj.paginator.count }} matches · page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </p>
+            </div>
+        </div>
+
+        <div class="dashboard-list">
+            {% for row in report_rows %}
+                <div class="card report-match-card">
+                    <div class="match-row-top">
+                        <div>
+                            <h3 class="match-row-title">
+                                <a href="{% url 'operations:match-detail' row.match.pk %}">
+                                    {{ row.match.title_en }}
+                                </a>
+                            </h3>
+                            <div class="match-meta">
+                                {{ row.match.event_date }} {{ row.match.match_start_time }}
+                                {% if row.match.venue %} · {{ row.match.venue }}{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mini-badges">
+                            <span class="mini-badge mini-badge-warning">
+                                {{ row.pending_count }} pending
+                            </span>
+                            {% if row.has_delayed %}
+                                <span class="mini-badge mini-badge-danger">Delayed</span>
+                            {% endif %}
+                            {% if row.has_notes %}
+                                <span class="mini-badge mini-badge-info">Notes</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Item</th>
+                                    <th>Status</th>
+                                    <th>Note</th>
+                                    <th>Delay Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in row.pending_items %}
+                                    <tr>
+                                        <td>{{ item.template_item.category.name }}</td>
+                                        <td>{{ item.template_item.title }}</td>
+                                        <td>
+                                            <span class="badge badge-{{ item.status|slugify }}">
+                                                {{ item.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if item.note %}
+                                                {{ item.note }}
+                                            {% else %}
+                                                <span class="help-text">—</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if item.delay_reason %}
+                                                {{ item.delay_reason }}
+                                            {% else %}
+                                                <span class="help-text">—</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="card panel">
+                    <p class="help-text">No pending operational items found for this filter.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if page_obj.has_other_pages %}
+            <div class="pagination-wrap">
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a
+                            class="pagination-link"
+                            href="?filter={{ selected_filter }}&page=1"
+                            hx-get="{% url 'operations:missing-requirements-report' %}?filter={{ selected_filter }}&page=1"
+                            hx-target="#missing-requirements-results"
+                            hx-swap="outerHTML"
+                            hx-push-url="true"
+                        >
+                            First
+                        </a>
+                        <a
+                            class="pagination-link"
+                            href="?filter={{ selected_filter }}&page={{ page_obj.previous_page_number }}"
+                            hx-get="{% url 'operations:missing-requirements-report' %}?filter={{ selected_filter }}&page={{ page_obj.previous_page_number }}"
+                            hx-target="#missing-requirements-results"
+                            hx-swap="outerHTML"
+                            hx-push-url="true"
+                        >
+                            Previous
+                        </a>
+                    {% endif %}
+
+                    <span class="pagination-current">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a
+                            class="pagination-link"
+                            href="?filter={{ selected_filter }}&page={{ page_obj.next_page_number }}"
+                            hx-get="{% url 'operations:missing-requirements-report' %}?filter={{ selected_filter }}&page={{ page_obj.next_page_number }}"
+                            hx-target="#missing-requirements-results"
+                            hx-swap="outerHTML"
+                            hx-push-url="true"
+                        >
+                            Next
+                        </a>
+                        <a
+                            class="pagination-link"
+                            href="?filter={{ selected_filter }}&page={{ page_obj.paginator.num_pages }}"
+                            hx-get="{% url 'operations:missing-requirements-report' %}?filter={{ selected_filter }}&page={{ page_obj.paginator.num_pages }}"
+                            hx-target="#missing-requirements-results"
+                            hx-swap="outerHTML"
+                            hx-push-url="true"
+                        >
+                            Last
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>

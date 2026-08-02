@@ -1,0 +1,87 @@
+{% extends "operations/base.html" %}
+
+{% block title %}Matches{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Matches</h1>
+    <p class="page-subtitle">Browse, filter, and open each match checklist.</p>
+</div>
+
+<div class="card panel">
+    <form method="get" class="filters">
+        <div class="field-group">
+            <label>Status</label>
+            <select name="status">
+                <option value="">All</option>
+                {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>Club</label>
+            <select name="club">
+                <option value="">All</option>
+                {% for club in clubs %}
+                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club.name_ar }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <button type="submit">Apply Filters</button>
+        </div>
+    </form>
+</div>
+
+<div class="card panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Match</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Progress</th>
+                    <th>Delayed</th>
+                    <th>Venue</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for match in matches %}
+                <tr>
+                    <td><a href="{% url 'operations:match-detail' match.pk %}">{{ match.title_en }}</a></td>
+                    <td>{{ match.event_date }} {{ match.match_start_time }}</td>
+                    <td>
+                        <span class="badge badge-{{ match.cms_status|slugify }}">
+                            {{ match.get_cms_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <div>{{ match.done_items }} / {{ match.total_items }}</div>
+                        <div class="progress">
+                            <div class="progress-bar" style="width:{% widthratio match.done_items match.total_items 100 %}%"></div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if match.delayed_items %}
+                            <span class="badge badge-delayed">{{ match.delayed_items }}</span>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td>{{ match.venue }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">No matches found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

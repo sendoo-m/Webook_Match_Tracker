@@ -1,0 +1,29 @@
+<!-- File: templates/operations/partials/activity_log_timeline.html -->
+<!-- Path: config/templates/operations/partials/activity_log_timeline.html -->
+<div id="activity-log-timeline" class="card panel" hx-swap-oob="true">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px;">
+        <h2 class="panel-title" style="margin:0;">Activity Log</h2>
+        <span class="help-text">Latest updates</span>
+    </div>
+
+    <div id="activity-log-list" style="display:grid; gap:12px; margin-bottom:16px;">
+        {% for log in activity_logs %}
+            {% include "operations/partials/activity_log_item.html" with log=log %}
+        {% empty %}
+            <p class="help-text">No activity yet.</p>
+        {% endfor %}
+    </div>
+
+    <div id="activity-log-more">
+        {% if has_more_logs %}
+            <button
+                class="btn"
+                hx-get="{% url 'operations:match-activity-log' match.pk %}?page={{ next_logs_page|default:2 }}"
+                hx-target="#activity-log-more"
+                hx-swap="outerHTML"
+            >
+                Load more
+            </button>
+        {% endif %}
+    </div>
+</div>
