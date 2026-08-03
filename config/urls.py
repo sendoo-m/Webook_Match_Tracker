@@ -20,6 +20,8 @@ from django.contrib import admin
 from django.urls import include, path
 from django.shortcuts import redirect
 from django.contrib.auth import views as auth_views
+from operations.views.auth_views import HtmxLoginView  # <- new import
+
 
 
 urlpatterns = [
@@ -33,10 +35,17 @@ urlpatterns = [
     ),
     name="login",
 ),
+    path(
+        "login/",
+        HtmxLoginView.as_view(),  # <- was auth_views.LoginView.as_view(...)
+        name="login",
+    ),
     path("logout/", auth_views.LogoutView.as_view(next_page="login"), name="logout"),
 
     path("operations/", include("operations.urls")),
+    path("control-panel/", include("control_panel.urls")),
     # path("", include("matches.urls")),
 
     path("", lambda request: redirect("operations:dashboard")),
 ]
+

@@ -1,0 +1,56 @@
+{% extends "operations/base.html" %}
+
+{% block title %}Outstanding · {{ match.title_en }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">{{ match.title_en }}</h1>
+            <p class="page-subtitle">{{ outstanding_count }} outstanding item{{ outstanding_count|pluralize }}</p>
+        </div>
+
+        <div class="filter-bar">
+            <a class="btn btn-secondary" href="{% url 'operations:match-detail' match.pk %}">Full Checklist</a>
+            <a class="btn btn-secondary" href="{% url 'operations:match-live' match.pk %}">Live View</a>
+        </div>
+    </div>
+</div>
+
+{% if delayed_items_list %}
+    <div class="card panel">
+        <div class="dashboard-section-head">
+            <h2 class="panel-title">Delayed</h2>
+            <span class="mini-badge mini-badge-danger">{{ delayed_items_list|length }}</span>
+        </div>
+
+        <div class="sidebar-list">
+            {% for item in delayed_items_list %}
+                <div class="sidebar-item sidebar-item--danger">
+                    <div class="sidebar-item-title">{{ item.template_item.title }}</div>
+                    <div class="help-text">
+                        {{ item.template_item.category.name }}
+                        {% if item.delay_reason %} · {{ item.delay_reason }}{% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+<div id="checklist-groups">
+    {% for category, items in grouped_checklist.items %}
+        <div class="checklist-group">
+            <h2>{{ category.name }}</h2>
+
+            {% for item in items %}
+                {% include "operations/partials/checklist_item_card.html" with item=item selected_filter="open" %}
+            {% endfor %}
+        </div>
+    {% empty %}
+        <div class="card panel">
+            <div class="empty-state">Nothing outstanding — all caught up.</div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

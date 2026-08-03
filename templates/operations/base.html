@@ -4,141 +4,122 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
     <title>{% block title %}Webook Match Tracker{% endblock %}</title>
 
-    <link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=3">
+    <link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+    <link rel="stylesheet" href="{% static 'design_tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=6">
 
     <meta name="htmx-config" content='{"includeIndicatorStyles": true}'>
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
-    <style>
-        .page-toast-wrap {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: grid;
-            gap: 10px;
-            width: min(360px, calc(100vw - 32px));
-        }
+    {% url 'operations:dashboard' as dashboard_url %}
+    {% url 'operations:match-list' as match_list_url %}
+    {% url 'operations:missing-requirements-report' as missing_url %}
+    {% url 'operations:workload-report' as workload_url %}
+    {% url 'control_panel:home' as control_panel_url %}
 
-        .page-toast {
-            padding: 12px 14px;
-            border-radius: 12px;
-            border: 1px solid #d1d5db;
-            background: #ffffff;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-            font-size: 14px;
-            line-height: 1.5;
-        }
+    <div class="app-shell">
+        {% if request.user.is_authenticated %}
+            <aside class="sidebar">
+                <a class="sidebar-logo" href="{{ dashboard_url }}">
+                    <img src="{% static 'images/webook-logo.svg' %}" alt="Webook" class="sidebar-logo-img">
+                    <span class="sidebar-logo-text">Match Tracker</span>
+                </a>
 
-        .page-toast-success {
-            border-color: #86efac;
-            background: #f0fdf4;
-            color: #166534;
-        }
+                <nav class="sidebar-nav">
+                    <a href="{{ dashboard_url }}" class="sidebar-link{% if request.path == dashboard_url %} is-active{% endif %}">
+                        <i class="ti ti-layout-dashboard"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="{{ match_list_url }}" class="sidebar-link{% if request.path == match_list_url %} is-active{% endif %}">
+                        <i class="ti ti-calendar-event"></i>
+                        <span>Matches</span>
+                    </a>
+                    <a href="{{ missing_url }}" class="sidebar-link{% if request.path == missing_url %} is-active{% endif %}">
+                        <i class="ti ti-alert-triangle"></i>
+                        <span>Missing items</span>
+                    </a>
+                    {% if can_view_control_panel %}
+                        <a href="{{ workload_url }}" class="sidebar-link{% if request.path == workload_url %} is-active{% endif %}">
+                            <i class="ti ti-chart-bar"></i>
+                            <span>Workload</span>
+                        </a>
+                        <a href="{{ control_panel_url }}" class="sidebar-link{% if request.path == control_panel_url %} is-active{% endif %}">
+                            <i class="ti ti-settings"></i>
+                            <span>Control panel</span>
+                        </a>
+                    {% endif %}
+                    <a href="/admin/" target="_blank" rel="noopener noreferrer" class="sidebar-link">
+                        <i class="ti ti-external-link"></i>
+                        <span>Admin</span>
+                    </a>
+                </nav>
 
-        .page-toast-error {
-            border-color: #fecaca;
-            background: #fef2f2;
-            color: #991b1b;
-        }
+                <div class="sidebar-footer">
+                    <span class="user-chip">{{ request.user.username }}</span>
+                    <form method="post" action="{% url 'logout' %}" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-btn btn-block">Logout</button>
+                    </form>
+                </div>
+            </aside>
+        {% endif %}
 
-        .page-toast-info {
-            border-color: #bfdbfe;
-            background: #eff6ff;
-            color: #1d4ed8;
-        }
+        <div class="app-main">
+            <div id="toast-container" class="page-toast-wrap">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="page-toast page-toast-{{ message.tags|default:'info' }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
 
-        .inline-indicator {
-            display: none;
-            font-size: 13px;
-            font-weight: 600;
-            color: #2563eb;
-        }
+            <div class="container">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
 
-        .htmx-request .inline-indicator,
-        .htmx-request.inline-indicator {
-            display: inline-block;
-        }
+</body>
+</html>
 
-        .topbar-user {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-inline-start: auto;
-        }
+{% comment %} {% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Webook Match Tracker{% endblock %}</title>
 
-        .user-chip {
-            display: inline-flex;
-            align-items: center;
-            padding: 8px 12px;
-            border-radius: 999px;
-            background: #eff6ff;
-            color: #1d4ed8;
-            font-size: 13px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
+    <link rel="stylesheet" href="{% static 'design_tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=4">
 
-        .logout-form {
-            margin: 0;
-        }
-
-        .logout-btn,
-        .login-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 40px;
-            padding: 10px 14px;
-            border: 1px solid #d1d5db;
-            border-radius: 10px;
-            background: #ffffff;
-            color: #111827;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .logout-btn:hover,
-        .login-link:hover {
-            background: #f9fafb;
-        }
-
-        @media (max-width: 900px) {
-            .topbar-inner {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 12px;
-            }
-
-            .nav-links {
-                width: 100%;
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-
-            .topbar-user {
-                width: 100%;
-                justify-content: space-between;
-            }
-        }
-    </style>
+    <meta name="htmx-config" content='{"includeIndicatorStyles": true}'>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     <div class="topbar">
         <div class="topbar-inner">
             <a class="brand" href="{% url 'operations:dashboard' %}">Webook Match Tracker</a>
 
-            <div class="nav-links">
-                <a href="{% url 'operations:dashboard' %}">Dashboard</a>
-                <a href="{% url 'operations:match-list' %}">Matches</a>
-                <a href="{% url 'operations:missing-requirements-report' %}">Missing Items</a>
-                <a href="/admin/" target="_blank" rel="noopener noreferrer">Admin</a>
-            </div>
+            {% if request.user.is_authenticated %}
+                <div class="nav-links">
+                    <a href="{% url 'operations:dashboard' %}">Dashboard</a>
+                    <a href="{% url 'operations:match-list' %}">Matches</a>
+                    <a href="{% url 'operations:missing-requirements-report' %}">Missing Items</a>
+                    {% if can_view_control_panel %}
+                        <a href="{% url 'operations:workload-report' %}">Workload</a>
+                        <a href="{% url 'control_panel:home' %}">Control Panel</a>
+                    {% endif %}
+                    <a href="/admin/" target="_blank" rel="noopener noreferrer">Admin</a>
+                </div>
+            {% endif %}
 
             <div class="topbar-user">
                 {% if request.user.is_authenticated %}
@@ -171,4 +152,4 @@
         {% block content %}{% endblock %}
     </div>
 </body>
-</html>
+</html> {% endcomment %}

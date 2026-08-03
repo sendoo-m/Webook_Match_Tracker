@@ -1,38 +1,372 @@
 {% extends "operations/base.html" %}
+{% load static %}
 
 {% block title %}Login{% endblock %}
 
 {% block content %}
 <div class="login-wrap">
     <div class="card login-card">
-        <h1 class="page-title">Login</h1>
-        <p class="help-text">Enter your username and password to access the system.</p>
+        <div class="login-logo-wrap">
+            <img
+                src="{% static 'images/webook-logo.svg' %}"
+                alt="Webook"
+                class="login-logo"
+            >
+        </div>
+
+        <h1 class="page-title">Webook Match Tracker</h1>
+        <p class="page-subtitle" style="margin-bottom:var(--space-8);">Sign in to manage match preparation.</p>
 
         {% if form.errors %}
-            <div class="alert alert-danger">
-                Invalid username or password.
+            <div class="alert-card alert-danger" style="margin-bottom:var(--space-6);">
+                <div class="alert-title">Login failed</div>
+                <p class="help-text" style="margin:0;">Check your username and password and try again.</p>
             </div>
         {% endif %}
 
-        <form method="post">
+        <form method="post" class="form-stack">
             {% csrf_token %}
 
             <div class="form-group">
                 <label for="id_username">Username</label>
-                <input type="text" name="username" id="id_username" class="form-control" required autofocus>
+                <input
+                    type="text"
+                    name="username"
+                    id="id_username"
+                    class="form-control"
+                    autocomplete="username"
+                    required
+                    autofocus
+                >
             </div>
 
             <div class="form-group">
                 <label for="id_password">Password</label>
-                <input type="password" name="password" id="id_password" class="form-control" required>
+                <input
+                    type="password"
+                    name="password"
+                    id="id_password"
+                    class="form-control"
+                    autocomplete="current-password"
+                    required
+                >
             </div>
 
             {% if next %}
                 <input type="hidden" name="next" value="{{ next }}">
             {% endif %}
 
-            <button type="submit" class="btn btn-primary w-100">Login</button>
+            <button type="submit" class="btn btn-block">Login</button>
         </form>
     </div>
 </div>
 {% endblock %}
+
+
+
+
+
+
+{% comment %} {% extends "operations/base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="login-wrap">
+    <div class="card login-card">
+        <h1 class="page-title">Webook Match Tracker</h1>
+        <p class="page-subtitle" style="margin-bottom:var(--space-8);">Sign in to manage match preparation.</p>
+
+        {% if form.errors %}
+            <div class="alert-card alert-danger" style="margin-bottom:var(--space-6);">
+                <div class="alert-title">Login failed</div>
+                <p class="help-text" style="margin:0;">Check your username and password and try again.</p>
+            </div>
+        {% endif %}
+
+        <form method="post" class="form-stack">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="id_username">Username</label>
+                <input
+                    type="text"
+                    name="username"
+                    id="id_username"
+                    class="form-control"
+                    autocomplete="username"
+                    required
+                    autofocus
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="id_password">Password</label>
+                <input
+                    type="password"
+                    name="password"
+                    id="id_password"
+                    class="form-control"
+                    autocomplete="current-password"
+                    required
+                >
+            </div>
+
+            {% if next %}
+                <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+
+            <button type="submit" class="btn btn-block">Login</button>
+        </form>
+    </div>
+</div>
+{% endblock %} {% endcomment %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} {% extends "operations/base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+
+<!-- ==========================================================
+     External dependencies (Bootstrap + HTMX + Cairo font)
+     Best practice: move these into base.html inside an extra_head /
+     extra_js block if your base template has one, so they aren't
+     repeated on every page.
+     ========================================================== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+
+<style>
+  :root{
+    --wb-pitch-dark:   #07231a;   /* dark pitch green - hero background */
+    --wb-pitch-mid:     #0e3b2b;
+    --wb-green:        #00a651;   /* brand / Roshn green */
+    --wb-gold:         #c9a227;   /* cup/trophy accent */
+    --wb-off-white:    #f4f7f5;
+    --wb-line:         rgba(244,247,245,.14);
+  }
+
+  .wb-login-shell{
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    font-family: 'Inter', 'Cairo', sans-serif;
+  }
+  @media (max-width: 900px){
+    .wb-login-shell{ grid-template-columns: 1fr; }
+    .wb-hero{ min-height: 260px; }
+  }
+
+  /* ===== Left side: pitch branding ===== */
+  .wb-hero{
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(0,166,81,.35), transparent 45%),
+      linear-gradient(160deg, var(--wb-pitch-dark), var(--wb-pitch-mid));
+    color: var(--wb-off-white);
+    padding: clamp(2rem, 5vw, 4rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* pitch lines + center circle as a subtle visual signature */
+  .wb-pitch-lines{
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(90deg, var(--wb-line) 0 1px, transparent 1px 90px);
+    opacity: .5;
+    pointer-events: none;
+  }
+  .wb-center-circle{
+    position: absolute;
+    width: 480px; height: 480px;
+    border: 1.5px solid var(--wb-line);
+    border-radius: 50%;
+    top: 55%; left: 15%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  /* floodlight glow - very subtle motion */
+  .wb-floodlight{
+    position: absolute;
+    width: 60vw; height: 60vw;
+    top: -20vw; right: -15vw;
+    background: radial-gradient(circle, rgba(0,166,81,.28), transparent 60%);
+    filter: blur(10px);
+    animation: wbGlow 7s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes wbGlow{
+    0%,100% { opacity: .55; }
+    50%     { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .wb-floodlight{ animation: none; }
+  }
+
+  .wb-brand{ position: relative; z-index: 2; }
+  .wb-brand-mark{
+    display:inline-flex; align-items:center; gap:.6rem;
+    font-family:'Cairo', sans-serif; font-weight:800; font-size:1.35rem;
+    letter-spacing:.02em;
+  }
+  .wb-brand-mark .dot{ width:10px; height:10px; border-radius:50%; background:var(--wb-green); }
+
+  .wb-hero-title{
+    position: relative; z-index: 2;
+    font-family:'Cairo', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    line-height: 1.25;
+    margin-top: 2.5rem;
+    max-width: 22ch;
+  }
+  .wb-hero-sub{
+    position: relative; z-index: 2;
+    color: rgba(244,247,245,.75);
+    max-width: 40ch;
+    margin-top: .75rem;
+  }
+
+  /* competition badges - plain text only, no protected logos */
+  .wb-comps{
+    position: relative; z-index: 2;
+    display: flex; flex-wrap: wrap; gap: .6rem;
+    margin-top: 2rem;
+  }
+  .wb-comp-badge{
+    font-size: .78rem; font-weight: 600;
+    padding: .4rem .8rem;
+    border-radius: 999px;
+    border: 1px solid var(--wb-line);
+    color: var(--wb-off-white);
+    background: rgba(244,247,245,.05);
+    display:inline-flex; align-items:center; gap:.4rem;
+  }
+  .wb-comp-badge i{ color: var(--wb-gold); font-size:.85rem; }
+
+  /* ===== Right side: login card ===== */
+  .wb-form-side{
+    background: var(--wb-off-white);
+    display: flex; align-items: center; justify-content: center;
+    padding: clamp(1.5rem, 4vw, 3rem);
+  }
+  .wb-card{
+    width: 100%;
+    max-width: 400px;
+  }
+  .wb-card h1{
+    font-family:'Cairo', sans-serif;
+    font-weight: 800;
+    font-size: 1.55rem;
+    color: #0e2a1f;
+  }
+  .wb-card p.wb-lead{
+    color:#5a6b62;
+    margin-bottom: 1.75rem;
+    font-size: .95rem;
+  }
+
+  .wb-field label{
+    font-size: .82rem; font-weight: 600;
+    color:#33473c; margin-bottom:.35rem; display:block;
+  }
+  .wb-field .input-group-text{
+    background:#fff; border-right:0; color:#7a897f;
+  }
+  .wb-field .form-control{
+    border-left:0; padding-block:.65rem;
+  }
+  .wb-field .form-control:focus{
+    box-shadow: 0 0 0 .2rem rgba(0,166,81,.18);
+    border-color: var(--wb-green);
+  }
+  .wb-field.focused .input-group-text{ border-color: var(--wb-green); }
+
+  .btn-wb-primary{
+    background: var(--wb-green);
+    border-color: var(--wb-green);
+    font-weight: 700;
+    padding-block: .7rem;
+    letter-spacing: .01em;
+  }
+  .btn-wb-primary:hover, .btn-wb-primary:focus{
+    background: #00934a;
+    border-color: #00934a;
+  }
+  .btn-wb-primary:disabled{ opacity:.7; }
+
+  .wb-alert-danger{
+    border: 1px solid #f1c4c4;
+    background: #fdf1f1;
+    color: #8a2c2c;
+    border-radius: .6rem;
+    padding: .85rem 1rem;
+    font-size: .88rem;
+    margin-bottom: 1.25rem;
+  }
+
+  /* htmx loading indicator */
+  .htmx-indicator{ display:none; }
+  .htmx-request .htmx-indicator{ display:inline-flex; }
+  .htmx-request .btn-label{ opacity: .6; }
+</style>
+
+<div class="wb-login-shell" lang="en" dir="ltr">
+
+  <!-- Visual side: Webook branding + competitions -->
+  <div class="wb-hero">
+    <div class="wb-pitch-lines"></div>
+    <div class="wb-center-circle"></div>
+    <div class="wb-floodlight"></div>
+
+    <div class="wb-brand">
+      <span class="wb-brand-mark"><span class="dot"></span> Webook &middot; Match Tracker</span>
+      <div class="wb-hero-title">Everything ready before kickoff</div>
+      <p class="wb-hero-sub">The operations team's home for match preparation — from scheduling to matchday.</p>
+
+      <div class="wb-comps">
+        <span class="wb-comp-badge"><i class="bi bi-trophy-fill"></i> Roshn Saudi League</span>
+        <span class="wb-comp-badge"><i class="bi bi-trophy-fill"></i> King's Cup</span>
+        <span class="wb-comp-badge"><i class="bi bi-trophy-fill"></i> AFC Asian Championship</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Functional side: login form -->
+  <div class="wb-form-side">
+    {% include "registration/_login_card.html" %}
+  </div>
+</div>
+
+{% endblock %}
+
+ {% endcomment %}

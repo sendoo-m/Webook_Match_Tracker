@@ -4,10 +4,10 @@
     <h2 class="panel-title">Delayed</h2>
 
     {% if delayed_items_list %}
-        <div style="display:grid; gap:10px;">
+        <div class="sidebar-list">
             {% for item in delayed_items_list %}
-                <div style="padding:12px 14px; border:1px solid #fecaca; background:#fef2f2; border-radius:12px;">
-                    <div style="font-weight:700; margin-bottom:4px;">{{ item.template_item.title }}</div>
+                <div class="sidebar-item sidebar-item--danger">
+                    <div class="sidebar-item-title">{{ item.template_item.title }}</div>
                     <div class="help-text">{{ item.template_item.category.name }}</div>
                 </div>
             {% endfor %}
@@ -16,20 +16,3 @@
         <p class="help-text">No delayed items.</p>
     {% endif %}
 </div>
-
-{% comment %} <div id="sidebar-delayed" class="card panel" hx-swap-oob="true">
-    <h2 class="panel-title">Delayed</h2>
-
-    {% if delayed_items_list %}
-        <div style="display:grid; gap:10px;">
-            {% for item in delayed_items_list %}
-                <div style="padding:12px 14px; border:1px solid #fecaca; background:#fef2f2; border-radius:12px;">
-                    <div style="font-weight:700; margin-bottom:4px;">{{ item.template_item.title }}</div>
-                    <div class="help-text">{{ item.template_item.category.name }}</div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p class="help-text">No delayed items.</p>
-    {% endif %}
-</div> {% endcomment %}

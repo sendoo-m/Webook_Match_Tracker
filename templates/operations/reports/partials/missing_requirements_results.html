@@ -1,9 +1,10 @@
 <div id="missing-requirements-results">
     <div class="card dashboard-filterbar">
+        {% with base_qs="&club="|add:selected_club|add:"&competition="|add:selected_competition|add:"&round="|add:selected_round|add:"&user="|add:selected_user %}
         <a
-            href="{% url 'operations:missing-requirements-report' %}?filter=all"
+            href="{% url 'operations:missing-requirements-report' %}?filter=all{{ base_qs }}"
             class="filter-chip {% if selected_filter == 'all' %}is-active{% endif %}"
-            hx-get="{% url 'operations:missing-requirements-report' %}?filter=all"
+            hx-get="{% url 'operations:missing-requirements-report' %}?filter=all{{ base_qs }}"
             hx-target="#missing-requirements-results"
             hx-swap="outerHTML"
             hx-push-url="true"
@@ -12,9 +13,9 @@
         </a>
 
         <a
-            href="{% url 'operations:missing-requirements-report' %}?filter=upcoming"
+            href="{% url 'operations:missing-requirements-report' %}?filter=upcoming{{ base_qs }}"
             class="filter-chip {% if selected_filter == 'upcoming' %}is-active{% endif %}"
-            hx-get="{% url 'operations:missing-requirements-report' %}?filter=upcoming"
+            hx-get="{% url 'operations:missing-requirements-report' %}?filter=upcoming{{ base_qs }}"
             hx-target="#missing-requirements-results"
             hx-swap="outerHTML"
             hx-push-url="true"
@@ -23,9 +24,9 @@
         </a>
 
         <a
-            href="{% url 'operations:missing-requirements-report' %}?filter=delayed"
+            href="{% url 'operations:missing-requirements-report' %}?filter=delayed{{ base_qs }}"
             class="filter-chip {% if selected_filter == 'delayed' %}is-active{% endif %}"
-            hx-get="{% url 'operations:missing-requirements-report' %}?filter=delayed"
+            hx-get="{% url 'operations:missing-requirements-report' %}?filter=delayed{{ base_qs }}"
             hx-target="#missing-requirements-results"
             hx-swap="outerHTML"
             hx-push-url="true"
@@ -34,15 +35,16 @@
         </a>
 
         <a
-            href="{% url 'operations:missing-requirements-report' %}?filter=has_notes"
+            href="{% url 'operations:missing-requirements-report' %}?filter=has_notes{{ base_qs }}"
             class="filter-chip {% if selected_filter == 'has_notes' %}is-active{% endif %}"
-            hx-get="{% url 'operations:missing-requirements-report' %}?filter=has_notes"
+            hx-get="{% url 'operations:missing-requirements-report' %}?filter=has_notes{{ base_qs }}"
             hx-target="#missing-requirements-results"
             hx-swap="outerHTML"
             hx-push-url="true"
         >
             Has Notes ({{ filter_counts.has_notes }})
         </a>
+        {% endwith %}
     </div>
 
     <div class="card panel dashboard-section">
@@ -81,6 +83,9 @@
                             {% if row.has_notes %}
                                 <span class="mini-badge mini-badge-info">Notes</span>
                             {% endif %}
+                            <a class="btn btn-secondary" href="{% url 'operations:match-outstanding' row.match.pk %}">
+                                Outstanding Items
+                            </a>
                         </div>
                     </div>
 
@@ -133,13 +138,14 @@
         </div>
 
         {% if page_obj.has_other_pages %}
+            {% with page_qs="&club="|add:selected_club|add:"&competition="|add:selected_competition|add:"&round="|add:selected_round|add:"&user="|add:selected_user %}
             <div class="pagination-wrap">
                 <div class="pagination">
                     {% if page_obj.has_previous %}
                         <a
                             class="pagination-link"
-                            href="?filter={{ selected_filter }}&page=1"
-                            hx-get="{% url 'operations:missing-requirements-report' %}?filter={{ selected_filter }}&page=1"
+                            href="?filter={{ selected_filter }}{{ page_qs }}&page=1"
+                            hx-get="{% url 'operations:missing-requirements-report' %}?filter={{ selected_filter }}{{ page_qs }}&page=1"
                             hx-target="#missing-requirements-results"
                             hx-swap="outerHTML"
                             hx-push-url="true"
@@ -148,8 +154,8 @@
                         </a>
                         <a
                             class="pagination-link"
-                            href="?filter={{ selected_filter }}&page={{ page_obj.previous_page_number }}"
-                            hx-get="{% url 'operations:missing-requirements-report' %}?filter={{ selected_filter }}&page={{ page_obj.previous_page_number }}"
+                            href="?filter={{ selected_filter }}{{ page_qs }}&page={{ page_obj.previous_page_number }}"
+                            hx-get="{% url 'operations:missing-requirements-report' %}?filter={{ selected_filter }}{{ page_qs }}&page={{ page_obj.previous_page_number }}"
                             hx-target="#missing-requirements-results"
                             hx-swap="outerHTML"
                             hx-push-url="true"
@@ -165,8 +171,8 @@
                     {% if page_obj.has_next %}
                         <a
                             class="pagination-link"
-                            href="?filter={{ selected_filter }}&page={{ page_obj.next_page_number }}"
-                            hx-get="{% url 'operations:missing-requirements-report' %}?filter={{ selected_filter }}&page={{ page_obj.next_page_number }}"
+                            href="?filter={{ selected_filter }}{{ page_qs }}&page={{ page_obj.next_page_number }}"
+                            hx-get="{% url 'operations:missing-requirements-report' %}?filter={{ selected_filter }}{{ page_qs }}&page={{ page_obj.next_page_number }}"
                             hx-target="#missing-requirements-results"
                             hx-swap="outerHTML"
                             hx-push-url="true"
@@ -175,8 +181,8 @@
                         </a>
                         <a
                             class="pagination-link"
-                            href="?filter={{ selected_filter }}&page={{ page_obj.paginator.num_pages }}"
-                            hx-get="{% url 'operations:missing-requirements-report' %}?filter={{ selected_filter }}&page={{ page_obj.paginator.num_pages }}"
+                            href="?filter={{ selected_filter }}{{ page_qs }}&page={{ page_obj.paginator.num_pages }}"
+                            hx-get="{% url 'operations:missing-requirements-report' %}?filter={{ selected_filter }}{{ page_qs }}&page={{ page_obj.paginator.num_pages }}"
                             hx-target="#missing-requirements-results"
                             hx-swap="outerHTML"
                             hx-push-url="true"
@@ -185,6 +191,7 @@
                         </a>
                     {% endif %}
                 </div>
+            {% endwith %}
             </div>
         {% endif %}
     </div>

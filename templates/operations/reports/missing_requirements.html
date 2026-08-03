@@ -8,6 +8,59 @@
     <p class="page-subtitle">{{ report_subtitle }}</p>
 </div>
 
+<div class="card panel">
+    <form method="get" class="filters">
+        <input type="hidden" name="filter" value="{{ selected_filter }}">
+
+        <div class="field-group">
+            <label>Club</label>
+            <select name="club">
+                <option value="">All</option>
+                {% for club in clubs %}
+                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club.name_ar }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>Competition</label>
+            <select name="competition">
+                <option value="">All</option>
+                {% for competition in competitions %}
+                    <option value="{{ competition.id }}" {% if selected_competition == competition.id|stringformat:"s" %}selected{% endif %}>{{ competition.name_ar }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>Round</label>
+            <select name="round">
+                <option value="">All</option>
+                {% for r in rounds %}
+                    <option value="{{ r }}" {% if selected_round == r|stringformat:"s" %}selected{% endif %}>{{ r }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        {% if is_admin %}
+        <div class="field-group">
+            <label>Coordinator</label>
+            <select name="user">
+                <option value="">All</option>
+                {% for u in users %}
+                    <option value="{{ u.id }}" {% if selected_user == u.id|stringformat:"s" %}selected{% endif %}>{{ u.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <button type="submit">Apply Filters</button>
+        </div>
+    </form>
+</div>
+
 <div id="missing-requirements-results">
     {% include "operations/reports/partials/missing_requirements_results.html" %}
 </div>

@@ -1,14 +1,14 @@
 <!-- File: templates/operations/partials/activity_log_page.html -->
 <!-- Path: config/templates/operations/partials/activity_log_page.html -->
 <div id="activity-log-more">
-    <div style="display:grid; gap:12px;">
+    <div class="timeline-list">
         {% for log in activity_logs %}
             {% include "operations/partials/activity_log_item.html" with log=log %}
         {% endfor %}
     </div>
 
     {% if page_obj.has_next %}
-        <div style="margin-top:16px;">
+        <div>
             <button
                 class="btn"
                 hx-get="{% url 'operations:match-activity-log' match.pk %}?page={{ page_obj.next_page_number }}"
@@ -20,21 +20,3 @@
         </div>
     {% endif %}
 </div>
-{% comment %} <div id="activity-log-more">
-    {% for log in activity_logs %}
-        {% include "operations/partials/activity_log_item.html" with log=log %}
-    {% endfor %}
-
-    {% if page_obj.has_next %}
-        <div id="activity-log-more" style="margin-top:16px;">
-            <button
-                class="btn"
-                hx-get="{% url 'operations:match-activity-log' match.pk %}?page={{ page_obj.next_page_number }}"
-                hx-target="#activity-log-more"
-                hx-swap="outerHTML"
-            >
-                Load more
-            </button>
-        </div>
-    {% endif %}
-</div> {% endcomment %}

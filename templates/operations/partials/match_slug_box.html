@@ -1,0 +1,17 @@
+<div class="card meta-box" id="match-slug-box" hx-swap-oob="true">
+    <div class="meta-label">Slug</div>
+    <div class="meta-value" style="display:flex; align-items:center; gap:8px; justify-content:space-between;">
+        <span>{{ match.slug }}</span>
+        {% if can_edit_slug %}
+            <button
+                class="btn btn-secondary"
+                style="padding:4px 8px; font-size:12px;"
+                hx-get="{% url 'operations:match-slug-edit' match.pk %}"
+                hx-target="#match-slug-box"
+                hx-swap="outerHTML"
+            >
+                Edit
+            </button>
+        {% endif %}
+    </div>
+</div>

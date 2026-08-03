@@ -2,44 +2,19 @@
 <!-- Path: config/templates/operations/partials/checklist_item_card.html -->
 <div
     id="checklist-item-{{ item.id }}"
-    class="card panel"
-    {% if item.status == "not_started" %}
-        style="border:1px solid #f59e0b; background:#fffbeb;"
-    {% elif item.status == "in_progress" %}
-        style="border:1px solid #60a5fa; background:#eff6ff;"
-    {% elif item.status == "delayed" %}
-        style="border:1px solid #f87171; background:#fef2f2;"
-    {% elif item.status == "done" %}
-        style="border:1px solid #86efac; background:#f0fdf4; opacity:.82;"
-    {% endif %}
+    class="card checklist-card checklist-card--{{ item.status }}"
 >
-    <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap;">
+    <div class="checklist-card-head">
         <div>
-            <h3 style="margin:0 0 6px; font-size:18px;">{{ item.template_item.title }}</h3>
+            <h3 class="checklist-card-title">{{ item.template_item.title }}</h3>
             {% if item.template_item.description %}
-                <p class="help-text" style="margin:0;">{{ item.template_item.description }}</p>
+                <p class="checklist-card-desc">{{ item.template_item.description }}</p>
             {% endif %}
         </div>
 
-        <div>
-            {% if item.status == "not_started" %}
-                <span style="display:inline-block; padding:6px 10px; border-radius:999px; background:#f59e0b; color:#fff; font-size:12px; font-weight:700;">
-                    Not Started
-                </span>
-            {% elif item.status == "in_progress" %}
-                <span style="display:inline-block; padding:6px 10px; border-radius:999px; background:#2563eb; color:#fff; font-size:12px; font-weight:700;">
-                    In Progress
-                </span>
-            {% elif item.status == "delayed" %}
-                <span style="display:inline-block; padding:6px 10px; border-radius:999px; background:#dc2626; color:#fff; font-size:12px; font-weight:700;">
-                    Delayed
-                </span>
-            {% elif item.status == "done" %}
-                <span style="display:inline-block; padding:6px 10px; border-radius:999px; background:#16a34a; color:#fff; font-size:12px; font-weight:700;">
-                    Done
-                </span>
-            {% endif %}
-        </div>
+        <span class="status-pill status-pill--{{ item.status }}">
+            {{ item.get_status_display }}
+        </span>
     </div>
 
     <form
@@ -48,7 +23,7 @@
         hx-swap="outerHTML"
         hx-disabled-elt="find button, find textarea"
         hx-indicator="#item-loading-{{ item.id }}"
-        style="display:grid; gap:12px;"
+        class="checklist-card-form"
     >
         {% csrf_token %}
         <input type="hidden" name="selected_filter" value="{{ selected_filter|default:'all' }}">
@@ -57,19 +32,12 @@
             Saving...
         </div>
 
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <div class="status-toggle-group">
             <button
                 type="submit"
                 name="status"
                 value="not_started"
-                class="btn"
-                style="
-                    {% if item.status == 'not_started' %}
-                        background:#f59e0b; color:#fff; border:1px solid #f59e0b; font-weight:700;
-                    {% else %}
-                        background:#fff; color:#92400e; border:1px solid #f59e0b;
-                    {% endif %}
-                "
+                class="status-toggle status-toggle-not_started {% if item.status == 'not_started' %}is-active{% endif %}"
             >
                 Reset
             </button>
@@ -78,14 +46,7 @@
                 type="submit"
                 name="status"
                 value="in_progress"
-                class="btn"
-                style="
-                    {% if item.status == 'in_progress' %}
-                        background:#2563eb; color:#fff; border:1px solid #2563eb; font-weight:700;
-                    {% else %}
-                        background:#fff; color:#1d4ed8; border:1px solid #60a5fa;
-                    {% endif %}
-                "
+                class="status-toggle status-toggle-in_progress {% if item.status == 'in_progress' %}is-active{% endif %}"
             >
                 In Progress
             </button>
@@ -94,14 +55,7 @@
                 type="submit"
                 name="status"
                 value="delayed"
-                class="btn"
-                style="
-                    {% if item.status == 'delayed' %}
-                        background:#dc2626; color:#fff; border:1px solid #dc2626; font-weight:700;
-                    {% else %}
-                        background:#fff; color:#991b1b; border:1px solid #fca5a5;
-                    {% endif %}
-                "
+                class="status-toggle status-toggle-delayed {% if item.status == 'delayed' %}is-active{% endif %}"
             >
                 Mark Delayed
             </button>
@@ -110,20 +64,13 @@
                 type="submit"
                 name="status"
                 value="done"
-                class="btn"
-                style="
-                    {% if item.status == 'done' %}
-                        background:#16a34a; color:#fff; border:1px solid #16a34a; font-weight:700;
-                    {% else %}
-                        background:#fff; color:#166534; border:1px solid #86efac;
-                    {% endif %}
-                "
+                class="status-toggle status-toggle-done {% if item.status == 'done' %}is-active{% endif %}"
             >
                 Mark Done
             </button>
         </div>
 
-        <div style="display:grid; gap:8px;">
+        <div class="form-group">
             <label for="note-{{ item.id }}"><strong>Note</strong></label>
             <textarea
                 name="note"
@@ -134,7 +81,7 @@
             >{{ item.note }}</textarea>
         </div>
 
-        <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;">
+        <div class="checklist-card-footer">
             <div class="help-text">
                 {% if item.completed_at %}
                     Completed at: {{ item.completed_at|date:"F j, Y, g:i a" }}
@@ -159,139 +106,3 @@
         </div>
     </form>
 </div>
-
-
-
-{% comment %} <div
-    id="checklist-item-{{ item.id }}"
-    class="card panel"
-    {% if item.status == "not_started" %}
-        style="border:1px solid #f59e0b; background:#fffbeb;"
-    {% elif item.status == "in_progress" %}
-        style="border:1px solid #60a5fa; background:#eff6ff;"
-    {% elif item.status == "delayed" %}
-        style="border:1px solid #f87171; background:#fef2f2;"
-    {% elif item.status == "done" %}
-        style="border:1px solid #86efac; background:#f0fdf4; opacity:.82;"
-    {% endif %}
->
-    <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap;">
-        <div>
-            <h3 style="margin:0 0 6px; font-size:18px;">{{ item.template_item.title }}</h3>
-            {% if item.template_item.description %}
-                <p class="help-text" style="margin:0;">{{ item.template_item.description }}</p>
-            {% endif %}
-        </div>
-
-        <div>
-            {% if item.status == "not_started" %}
-                <span style="display:inline-block; padding:6px 10px; border-radius:999px; background:#f59e0b; color:#fff; font-size:12px; font-weight:700;">
-                    Not Started
-                </span>
-            {% elif item.status == "in_progress" %}
-                <span style="display:inline-block; padding:6px 10px; border-radius:999px; background:#2563eb; color:#fff; font-size:12px; font-weight:700;">
-                    In Progress
-                </span>
-            {% elif item.status == "delayed" %}
-                <span style="display:inline-block; padding:6px 10px; border-radius:999px; background:#dc2626; color:#fff; font-size:12px; font-weight:700;">
-                    Delayed
-                </span>
-            {% elif item.status == "done" %}
-                <span style="display:inline-block; padding:6px 10px; border-radius:999px; background:#16a34a; color:#fff; font-size:12px; font-weight:700;">
-                    Done
-                </span>
-            {% endif %}
-        </div>
-    </div>
-
-    <form
-        hx-post="{% url 'operations:checklist-item-update' item.id %}"
-        hx-target="#checklist-item-{{ item.id }}"
-        hx-swap="outerHTML"
-        style="display:grid; gap:12px;"
-    >
-        {% csrf_token %}
-
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button
-                type="submit"
-                name="status"
-                value="done"
-                class="btn btn-primary"
-            >
-                Mark Done
-            </button>
-
-            <button
-                type="submit"
-                name="status"
-                value="delayed"
-                class="btn"
-                style="background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;"
-            >
-                Mark Delayed
-            </button>
-
-            <button
-                type="submit"
-                name="status"
-                value="not_started"
-                class="btn"
-                style="background:#f3f4f6; color:#111827; border:1px solid #d1d5db;"
-            >
-                Reset
-            </button>
-        </div>
-
-        <div style="display:grid; gap:8px;">
-            <label for="status-{{ item.id }}"><strong>Status</strong></label>
-            <select name="status" id="status-{{ item.id }}" class="form-control">
-                <option value="not_started" {% if item.status == "not_started" %}selected{% endif %}>Not Started</option>
-                <option value="in_progress" {% if item.status == "in_progress" %}selected{% endif %}>In Progress</option>
-                <option value="delayed" {% if item.status == "delayed" %}selected{% endif %}>Delayed</option>
-                <option value="done" {% if item.status == "done" %}selected{% endif %}>Done</option>
-            </select>
-        </div>
-
-        <div style="display:grid; gap:8px;">
-            <label for="note-{{ item.id }}"><strong>Note</strong></label>
-            <textarea
-                name="note"
-                id="note-{{ item.id }}"
-                rows="3"
-                class="form-control"
-                placeholder="Add note..."
-            >{{ item.note }}</textarea>
-        </div>
-
-        <div style="display:grid; gap:8px;">
-            <label for="delay-reason-{{ item.id }}"><strong>Delay reason</strong></label>
-            <textarea
-                name="delay_reason"
-                id="delay-reason-{{ item.id }}"
-                rows="2"
-                class="form-control"
-                placeholder="Why is this delayed?"
-            >{{ item.delay_reason }}</textarea>
-        </div>
-
-        <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;">
-            <div class="help-text">
-                {% if item.completed_at %}
-                    Completed at: {{ item.completed_at|date:"F j, Y, g:i a" }}
-                    {% if item.completed_by %} | Completed by: {{ item.completed_by }}{% endif %}
-                {% elif item.status == "not_started" %}
-                    No action taken yet
-                {% elif item.status == "in_progress" %}
-                    Work has started
-                {% elif item.status == "delayed" %}
-                    Waiting for resolution
-                {% endif %}
-            </div>
-
-            <button type="submit" class="btn btn-primary">
-                Save
-            </button>
-        </div>
-    </form>
-</div>  {% endcomment %}

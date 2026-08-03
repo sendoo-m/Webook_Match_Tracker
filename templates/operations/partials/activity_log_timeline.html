@@ -1,12 +1,12 @@
 <!-- File: templates/operations/partials/activity_log_timeline.html -->
 <!-- Path: config/templates/operations/partials/activity_log_timeline.html -->
 <div id="activity-log-timeline" class="card panel" hx-swap-oob="true">
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px;">
+    <div class="timeline-head">
         <h2 class="panel-title" style="margin:0;">Activity Log</h2>
         <span class="help-text">Latest updates</span>
     </div>
 
-    <div id="activity-log-list" style="display:grid; gap:12px; margin-bottom:16px;">
+    <div id="activity-log-list" class="timeline-list">
         {% for log in activity_logs %}
             {% include "operations/partials/activity_log_item.html" with log=log %}
         {% empty %}

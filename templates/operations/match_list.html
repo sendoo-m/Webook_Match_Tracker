@@ -31,6 +31,16 @@
         </div>
 
         <div class="field-group">
+            <label>Competition</label>
+            <select name="competition">
+                <option value="">All</option>
+                {% for competition in competitions %}
+                    <option value="{{ competition.id }}" {% if selected_competition == competition.id|stringformat:"s" %}selected{% endif %}>{{ competition.name_ar }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
             <label>&nbsp;</label>
             <button type="submit">Apply Filters</button>
         </div>
@@ -43,6 +53,7 @@
             <thead>
                 <tr>
                     <th>Match</th>
+                    <th>Competition</th>
                     <th>Date</th>
                     <th>Status</th>
                     <th>Progress</th>
@@ -54,6 +65,7 @@
                 {% for match in matches %}
                 <tr>
                     <td><a href="{% url 'operations:match-detail' match.pk %}">{{ match.title_en }}</a></td>
+                    <td>{{ match.competition.name_ar }}</td>
                     <td>{{ match.event_date }} {{ match.match_start_time }}</td>
                     <td>
                         <span class="badge badge-{{ match.cms_status|slugify }}">
@@ -77,7 +89,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6">No matches found.</td>
+                    <td colspan="7">No matches found.</td>
                 </tr>
                 {% endfor %}
             </tbody>

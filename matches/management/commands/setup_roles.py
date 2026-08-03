@@ -9,5 +9,5 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         Group.objects.get_or_create(name="Club Manager")
-        Group.objects.get_or_create(name="Operations Director")
-        self.stdout.write(self.style.SUCCESS("Groups created: Club Manager, Operations Director"))
+        Group.objects.get_or_create(name="Operations Manager")
+        self.stdout.write(self.style.SUCCESS("Groups created: Club Manager, Operations Manager"))

@@ -1,18 +1,28 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db.models import Count, Q
+from django.http import HttpResponse
+from django.shortcuts import redirect
 from django.template.response import TemplateResponse
-from django.urls import path
+from django.urls import path, reverse
 
 from checklists.models import MatchChecklistItem, CMSSubmission
-from .models import Club, Venue, Match
+from .import_export import (
+    build_import_template_xlsx,
+    export_matches_csv,
+    export_matches_xlsx,
+    import_matches_file,
+)
+from .models import Club, Venue, Match, Competition
 
 
-# @admin.register(Club)
-# class ClubAdmin(admin.ModelAdmin):
-#     list_display = ("name_ar", "name_en", "short_name", "is_active")
-#     search_fields = ("name_ar", "name_en", "short_name")
-#     list_filter = ("is_active",)
-#     ordering = ("name_ar",)
+@admin.register(Competition)
+class CompetitionAdmin(admin.ModelAdmin):
+    list_display = ("name_ar", "name_en", "sort_order", "is_active")
+    search_fields = ("name_ar", "name_en")
+    list_filter = ("is_active",)
+    ordering = ("sort_order", "name_ar")
+
+
 @admin.register(Club)
 class ClubAdmin(admin.ModelAdmin):
     list_display = ("name_ar", "name_en", "short_name", "owner", "is_active")
@@ -89,6 +99,7 @@ class HasDelayedItemsFilter(admin.SimpleListFilter):
 class MatchAdmin(admin.ModelAdmin):
     list_display = (
         "title_en",
+        "competition",
         "home_club",
         "away_club",
         "event_date",
@@ -115,22 +126,24 @@ class MatchAdmin(admin.ModelAdmin):
     )
     list_filter = (
         "cms_status",
+        "competition",
         "event_date",
         "home_club",
         "away_club",
         "venue",
         HasDelayedItemsFilter,
     )
-    autocomplete_fields = ("home_club", "away_club", "venue", "sent_to_cms_by")
+    autocomplete_fields = ("competition", "home_club", "away_club", "venue", "sent_to_cms_by")
     ordering = ("event_date", "match_start_time", "id")
     inlines = [CMSSubmissionInline, MatchChecklistItemInline]
     change_list_template = "admin/matches/match/change_list.html"
+    actions = ["export_selected_as_csv", "export_selected_as_xlsx"]
 
     def get_queryset(self, request):
         return (
             super()
             .get_queryset(request)
-            .select_related("home_club", "away_club", "venue", "sent_to_cms_by")
+            .select_related("competition", "home_club", "away_club", "venue", "sent_to_cms_by")
         )
 
     def get_urls(self):
@@ -141,8 +154,102 @@ class MatchAdmin(admin.ModelAdmin):
                 self.admin_site.admin_view(self.ops_dashboard_view),
                 name="matches_match_ops_dashboard",
             ),
+            path(
+                "export/",
+                self.admin_site.admin_view(self.export_all_view),
+                name="matches_match_export",
+            ),
+            path(
+                "import/",
+                self.admin_site.admin_view(self.import_view),
+                name="matches_match_import",
+            ),
+            path(
+                "template/",
+                self.admin_site.admin_view(self.template_view),
+                name="matches_match_template",
+            ),
         ]
         return custom_urls + urls
+
+    @admin.action(description="Export selected matches as CSV")
+    def export_selected_as_csv(self, request, queryset):
+        csv_content = export_matches_csv(queryset)
+        response = HttpResponse(csv_content, content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = 'attachment; filename="matches_export.csv"'
+        return response
+
+    @admin.action(description="Export selected matches as Excel (.xlsx)")
+    def export_selected_as_xlsx(self, request, queryset):
+        xlsx_content = export_matches_xlsx(queryset)
+        response = HttpResponse(
+            xlsx_content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = 'attachment; filename="matches_export.xlsx"'
+        return response
+
+    def export_all_view(self, request):
+        queryset = Match.objects.all()
+        competition_id = request.GET.get("competition")
+        if competition_id:
+            queryset = queryset.filter(competition_id=competition_id)
+
+        if request.GET.get("format") == "csv":
+            content = export_matches_csv(queryset)
+            response = HttpResponse(content, content_type="text/csv; charset=utf-8")
+            response["Content-Disposition"] = 'attachment; filename="matches_export.csv"'
+        else:
+            content = export_matches_xlsx(queryset)
+            response = HttpResponse(
+                content,
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+            response["Content-Disposition"] = 'attachment; filename="matches_export.xlsx"'
+        return response
+
+    def template_view(self, request):
+        content = build_import_template_xlsx()
+        response = HttpResponse(
+            content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = 'attachment; filename="matches_import_template.xlsx"'
+        return response
+
+    def import_view(self, request):
+        if request.method != "POST":
+            context = {
+                **self.admin_site.each_context(request),
+                "opts": self.model._meta,
+                "title": "Import matches",
+                "competitions": Competition.objects.filter(is_active=True).order_by("sort_order", "name_ar"),
+            }
+            return TemplateResponse(request, "admin/matches/match/import_confirm.html", context)
+
+        import_file = request.FILES.get("import_file")
+        if not import_file:
+            self.message_user(request, "Please choose a CSV or Excel file.", level=messages.ERROR)
+            return redirect(reverse("admin:matches_match_import"))
+
+        competition_id = request.POST.get("competition") or None
+        result = import_matches_file(import_file, import_file.name, competition_id and int(competition_id))
+        if result.errors:
+            self.message_user(
+                request,
+                f"Import completed with errors. Created: {result.created}, updated: {result.updated}, "
+                f"skipped: {len(result.skipped)}, errors: {len(result.errors)} "
+                f"(first: row {result.errors[0][0]} - {result.errors[0][1]}).",
+                level=messages.WARNING,
+            )
+        else:
+            self.message_user(
+                request,
+                f"Import completed successfully. Created: {result.created}, updated: {result.updated}, "
+                f"skipped: {len(result.skipped)}.",
+                level=messages.SUCCESS,
+            )
+        return redirect(reverse("admin:matches_match_changelist"))
 
     def ops_dashboard_view(self, request):
         matches = Match.objects.all()
@@ -221,195 +328,3 @@ class MatchAdmin(admin.ModelAdmin):
             is_active=True,
         ).count()
         return f"{round((done / total) * 100)}%"
-    
-# from django.contrib import admin
-# from django.db.models import Count, Q
-# from django.template.response import TemplateResponse
-# from django.urls import path
-
-# from checklists.models import MatchChecklistItem, CMSSubmission
-# from .models import Club, Venue, Match
-
-
-# @admin.register(Club)
-# class ClubAdmin(admin.ModelAdmin):
-#     list_display = ("name_ar", "name_en", "is_active", "created_at")
-#     search_fields = ("name_ar", "name_en", "short_name_ar", "short_name_en")
-#     list_filter = ("is_active",)
-#     ordering = ("name_ar",)
-
-
-# @admin.register(Venue)
-# class VenueAdmin(admin.ModelAdmin):
-#     list_display = ("name_ar", "name_en", "city_ar", "is_active", "created_at")
-#     search_fields = ("name_ar", "name_en", "city_ar", "city_en")
-#     list_filter = ("is_active", "city_ar")
-#     ordering = ("name_ar",)
-
-
-# class MatchChecklistItemInline(admin.TabularInline):
-#     model = MatchChecklistItem
-#     extra = 0
-#     autocomplete_fields = ("template_item", "completed_by")
-#     fields = (
-#         "template_item",
-#         "status",
-#         "note",
-#         "delay_reason",
-#         "completed_by",
-#         "completed_at",
-#     )
-#     readonly_fields = ("completed_at",)
-#     show_change_link = True
-
-
-# class CMSSubmissionInline(admin.StackedInline):
-#     model = CMSSubmission
-#     extra = 0
-#     can_delete = False
-#     autocomplete_fields = ("sent_by",)
-#     fields = (
-#         "status",
-#         "sent_at",
-#         "sent_by",
-#         "cms_reference",
-#         "notes",
-#     )
-
-
-# class HasDelayedItemsFilter(admin.SimpleListFilter):
-#     title = "Has delayed items"
-#     parameter_name = "has_delayed_items"
-
-#     def lookups(self, request, model_admin):
-#         return (
-#             ("yes", "Yes"),
-#             ("no", "No"),
-#         )
-
-#     def queryset(self, request, queryset):
-#         if self.value() == "yes":
-#             return queryset.filter(
-#                 checklist_items__status=MatchChecklistItem.Status.DELAYED
-#             ).distinct()
-#         if self.value() == "no":
-#             return queryset.exclude(
-#                 checklist_items__status=MatchChecklistItem.Status.DELAYED
-#             ).distinct()
-#         return queryset
-
-
-# @admin.register(Match)
-# class MatchAdmin(admin.ModelAdmin):
-#     list_display = (
-#         "title_en",
-#         "home_club",
-#         "away_club",
-#         "event_date",
-#         "match_start_time",
-#         "cms_status",
-#         "checklist_total",
-#         "checklist_done",
-#         "checklist_delayed",
-#         "completion_rate",
-#         "created_at",
-#     )
-#     search_fields = (
-#         "title_en",
-#         "title_ar",
-#         "slug",
-#         "home_club__name_ar",
-#         "home_club__name_en",
-#         "away_club__name_ar",
-#         "away_club__name_en",
-#         "venue__name_ar",
-#         "venue__name_en",
-#     )
-#     list_filter = (
-#         "cms_status",
-#         "event_date",
-#         "home_club",
-#         "away_club",
-#         "venue",
-#         HasDelayedItemsFilter,
-#     )
-#     autocomplete_fields = ("home_club", "away_club", "venue")
-#     ordering = ("event_date", "match_start_time", "id")
-#     inlines = [CMSSubmissionInline, MatchChecklistItemInline]
-#     change_list_template = "admin/matches/match/change_list.html"
-
-#     def get_urls(self):
-#         urls = super().get_urls()
-#         custom_urls = [
-#             path(
-#                 "ops-dashboard/",
-#                 self.admin_site.admin_view(self.ops_dashboard_view),
-#                 name="matches_match_ops_dashboard",
-#             ),
-#         ]
-#         return custom_urls + urls
-
-#     def ops_dashboard_view(self, request):
-#         matches = Match.objects.all()
-
-#         stats = {
-#             "total_matches": matches.count(),
-#             "draft_matches": matches.filter(cms_status=Match.Status.DRAFT).count(),
-#             "in_progress_matches": matches.filter(cms_status=Match.Status.IN_PROGRESS).count(),
-#             "ready_for_cms_matches": matches.filter(cms_status=Match.Status.READY_FOR_CMS).count(),
-#             "sent_to_cms_matches": matches.filter(cms_status=Match.Status.SENT_TO_CMS).count(),
-#             "published_matches": matches.filter(cms_status=Match.Status.PUBLISHED).count(),
-#             "delayed_matches": matches.filter(
-#                 checklist_items__status=MatchChecklistItem.Status.DELAYED
-#             ).distinct().count(),
-#         }
-
-#         upcoming_matches = (
-#             Match.objects.select_related("home_club", "away_club", "venue")
-#             .annotate(
-#                 total_items=Count("checklist_items"),
-#                 done_items=Count(
-#                     "checklist_items",
-#                     filter=Q(checklist_items__status=MatchChecklistItem.Status.DONE),
-#                 ),
-#                 delayed_items=Count(
-#                     "checklist_items",
-#                     filter=Q(checklist_items__status=MatchChecklistItem.Status.DELAYED),
-#                 ),
-#             )
-#             .order_by("event_date", "match_start_time")[:10]
-#         )
-
-#         context = {
-#             **self.admin_site.each_context(request),
-#             "title": "Operations Dashboard",
-#             "stats": stats,
-#             "upcoming_matches": upcoming_matches,
-#         }
-#         return TemplateResponse(request, "admin/ops_dashboard.html", context)
-
-#     def checklist_total(self, obj):
-#         return obj.checklist_items.count()
-#     checklist_total.short_description = "Checklist Total"
-
-#     def checklist_done(self, obj):
-#         return obj.checklist_items.filter(
-#             status=MatchChecklistItem.Status.DONE
-#         ).count()
-#     checklist_done.short_description = "Done"
-
-#     def checklist_delayed(self, obj):
-#         return obj.checklist_items.filter(
-#             status=MatchChecklistItem.Status.DELAYED
-#         ).count()
-#     checklist_delayed.short_description = "Delayed"
-
-#     def completion_rate(self, obj):
-#         total = obj.checklist_items.count()
-#         if total == 0:
-#             return "0%"
-#         done = obj.checklist_items.filter(
-#             status=MatchChecklistItem.Status.DONE
-#         ).count()
-#         return f"{round((done / total) * 100)}%"
-#     completion_rate.short_description = "Completion"

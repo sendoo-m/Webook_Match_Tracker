@@ -1,6 +1,4 @@
-from django.db.models import Q
-
-MANAGER_GROUPS = {"Club Manager", "Operations Manager", "Super Admin"}
+MANAGER_GROUPS = {"Operations Manager", "Super Admin"}
 
 
 def get_user_club_ids(user):
@@ -12,6 +10,17 @@ def get_user_club_ids(user):
 
     return list(
         user.owned_clubs.filter(is_active=True).values_list("id", flat=True)
+    )
+
+
+def get_user_competition_ids(user):
+    if not getattr(user, "is_authenticated", False):
+        return []
+
+    from matches.models import UserCompetitionAccess
+
+    return list(
+        UserCompetitionAccess.objects.filter(user=user).values_list("competition_id", flat=True)
     )
 
 
@@ -32,12 +41,15 @@ def get_visible_matches(user, queryset):
         return queryset
 
     club_ids = get_user_club_ids(user)
-    if not club_ids:
+    competition_ids = get_user_competition_ids(user)
+    if not club_ids or not competition_ids:
         return queryset.none()
 
-    return queryset.filter(
-        Q(home_club_id__in=club_ids) | Q(away_club_id__in=club_ids)
-    ).distinct()
+    return (
+        queryset.filter(home_club_id__in=club_ids)
+        .filter(competition_id__in=competition_ids)
+        .distinct()
+    )
 
 
 class MatchScopedQuerysetMixin:
@@ -53,7 +65,10 @@ def user_can_manage_match(user, match):
         return True
 
     club_ids = set(get_user_club_ids(user))
-    return match.home_club_id in club_ids or match.away_club_id in club_ids
+    competition_ids = set(get_user_competition_ids(user))
+    is_home_match = match.home_club_id in club_ids
+    has_competition_access = match.competition_id in competition_ids
+    return is_home_match and has_competition_access
 
 
 def require_match_access(user, match):
@@ -63,34 +78,3 @@ def require_match_access(user, match):
         raise PermissionDenied
 
     return match
-    
-# # operations/permissions.py
-
-# from django.db.models import Q
-
-# from matches.models import Match
-
-
-# FULL_ACCESS_GROUPS = {"Operations Director"}
-
-
-# def user_has_full_match_access(user):
-#     if not user.is_authenticated:
-#         return False
-
-#     if user.is_superuser:
-#         return True
-
-#     return user.groups.filter(name__in=FULL_ACCESS_GROUPS).exists()
-
-
-# def get_visible_matches(user):
-#     if not user.is_authenticated:
-#         return Match.objects.none()
-
-#     if user_has_full_match_access(user):
-#         return Match.objects.all()
-
-#     return Match.objects.filter(
-#         Q(home_club__owner=user) | Q(away_club__owner=user)
-#     ).distinct()

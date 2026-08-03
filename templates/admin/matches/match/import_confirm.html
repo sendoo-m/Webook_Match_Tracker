@@ -1,0 +1,39 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div style="max-width: 760px;">
+    <h1>Import matches</h1>
+
+    <p>
+        Upload a CSV or Excel file keyed by <code>slug</code>: existing slugs are updated, new ones are created.
+        Columns: slug, competition, home_club, away_club, venue, round_number, title_ar, title_en,
+        description_ar, description_en, event_date, match_start_time, match_end_time, gates_open_time,
+        sale_starts_at. <code>cms_status</code> is ignored on import (workflow-managed).
+    </p>
+    <p>
+        <a href="{% url 'admin:matches_match_template' %}">Download a blank template</a> or
+        <a href="{% url 'admin:matches_match_export' %}">export all matches</a> to see the expected format.
+    </p>
+
+    <form method="post" enctype="multipart/form-data" style="margin-top: 20px;">
+        {% csrf_token %}
+        <p>
+            <label for="id_import_file">File (.csv or .xlsx):</label>
+            <input type="file" id="id_import_file" name="import_file" accept=".csv,.xlsx" required>
+        </p>
+        <p>
+            <label for="id_competition">Only import this section (optional):</label>
+            <select id="id_competition" name="competition">
+                <option value="">All sections</option>
+                {% for competition in competitions %}
+                    <option value="{{ competition.id }}">{{ competition.name_ar }}</option>
+                {% endfor %}
+            </select>
+        </p>
+        <input type="submit" value="Import" class="default" style="margin-left: 8px;">
+        <a href="{% url 'admin:matches_match_changelist' %}" class="button" style="margin-left: 8px;">
+            Cancel
+        </a>
+    </form>
+</div>
+{% endblock %}

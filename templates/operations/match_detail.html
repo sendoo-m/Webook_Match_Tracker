@@ -4,8 +4,17 @@
 
 {% block content %}
 <div class="page-header">
-    <h1 class="page-title">{{ match.title_en }}</h1>
-    <p class="page-subtitle">{{ match.title_ar }}</p>
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">{{ match.title_en }}</h1>
+            <p class="page-subtitle">{{ match.title_ar }}</p>
+        </div>
+
+        <div class="filter-bar">
+            <a class="btn btn-secondary" href="{% url 'operations:match-live' match.pk %}">Live View</a>
+            <a class="btn btn-secondary" href="{% url 'operations:match-outstanding' match.pk %}">Outstanding Items</a>
+        </div>
+    </div>
 </div>
 
 {% include "operations/partials/match_progress_summary.html" %}
@@ -22,10 +31,7 @@
         <div class="meta-value">{{ match.venue }}</div>
     </div>
 
-    <div class="card meta-box">
-        <div class="meta-label">Slug</div>
-        <div class="meta-value">{{ match.slug }}</div>
-    </div>
+    {% include "operations/partials/match_slug_box.html" %}
 
     <div class="card meta-box">
         <div class="meta-label">Home / Away</div>
@@ -33,11 +39,11 @@
     </div>
 </div>
 
-<div style="display:grid; grid-template-columns: minmax(0, 1fr) 320px; gap:24px; align-items:start;">
+<div class="detail-layout">
     <div>
         <div id="checklist-area">
-            <div class="card panel" style="margin-bottom:16px;">
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <div class="card panel">
+                <div class="filter-bar">
                     <button
                         class="btn {% if selected_filter == 'all' %}btn-primary{% endif %}"
                         hx-get="{% url 'operations:match-detail' match.pk %}?filter=all"
@@ -118,7 +124,7 @@
         </div>
     </div>
 
-    <aside style="position:sticky; top:24px; display:grid; gap:16px;">
+    <aside class="detail-sidebar">
         {% include "operations/partials/sidebar_not_started.html" %}
         {% include "operations/partials/sidebar_in_progress.html" %}
         {% include "operations/partials/sidebar_delayed.html" %}
@@ -127,133 +133,3 @@
 
 {% include "operations/partials/activity_log_timeline.html" %}
 {% endblock %}
-
-{% comment %} {% extends "operations/base.html" %}
-
-{% block title %}{{ match.title_en }}{% endblock %}
-
-{% block content %}
-<div class="page-header">
-    <h1 class="page-title">{{ match.title_en }}</h1>
-    <p class="page-subtitle">{{ match.title_ar }}</p>
-</div>
-
-{% include "operations/partials/match_progress_summary.html" %}
-{% include "operations/partials/match_status_badge.html" %}
-
-<div class="meta-grid">
-    <div class="card meta-box">
-        <div class="meta-label">Event Date</div>
-        <div class="meta-value">{{ match.event_date }} {{ match.match_start_time }}</div>
-    </div>
-
-    <div class="card meta-box">
-        <div class="meta-label">Venue</div>
-        <div class="meta-value">{{ match.venue }}</div>
-    </div>
-
-    <div class="card meta-box">
-        <div class="meta-label">Slug</div>
-        <div class="meta-value">{{ match.slug }}</div>
-    </div>
-
-    <div class="card meta-box">
-        <div class="meta-label">Home / Away</div>
-        <div class="meta-value">{{ match.home_club }} vs {{ match.away_club }}</div>
-    </div>
-</div>
-
-<div style="display:grid; grid-template-columns: minmax(0, 1fr) 320px; gap:24px; align-items:start;">
-    <div>
-        <div id="checklist-area">
-            <div class="card panel" style="margin-bottom:16px;">
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                    <button
-                        class="btn {% if selected_filter == 'all' %}btn-primary{% endif %}"
-                        hx-get="{% url 'operations:match-detail' match.pk %}?filter=all"
-                        hx-target="#checklist-area"
-                        hx-select="#checklist-area"
-                        hx-swap="outerHTML"
-                    >
-                        All
-                    </button>
-
-                    <button
-                        class="btn {% if selected_filter == 'not_started' %}btn-primary{% endif %}"
-                        hx-get="{% url 'operations:match-detail' match.pk %}?filter=not_started"
-                        hx-target="#checklist-area"
-                        hx-select="#checklist-area"
-                        hx-swap="outerHTML"
-                    >
-                        Not Started
-                    </button>
-
-                    <button
-                        class="btn {% if selected_filter == 'in_progress' %}btn-primary{% endif %}"
-                        hx-get="{% url 'operations:match-detail' match.pk %}?filter=in_progress"
-                        hx-target="#checklist-area"
-                        hx-select="#checklist-area"
-                        hx-swap="outerHTML"
-                    >
-                        In Progress
-                    </button>
-
-                    <button
-                        class="btn {% if selected_filter == 'delayed' %}btn-primary{% endif %}"
-                        hx-get="{% url 'operations:match-detail' match.pk %}?filter=delayed"
-                        hx-target="#checklist-area"
-                        hx-select="#checklist-area"
-                        hx-swap="outerHTML"
-                    >
-                        Delayed
-                    </button>
-
-                    <button
-                        class="btn {% if selected_filter == 'done' %}btn-primary{% endif %}"
-                        hx-get="{% url 'operations:match-detail' match.pk %}?filter=done"
-                        hx-target="#checklist-area"
-                        hx-select="#checklist-area"
-                        hx-swap="outerHTML"
-                    >
-                        Done
-                    </button>
-
-                    <button
-                        class="btn {% if selected_filter == 'open' %}btn-primary{% endif %}"
-                        hx-get="{% url 'operations:match-detail' match.pk %}?filter=open"
-                        hx-target="#checklist-area"
-                        hx-select="#checklist-area"
-                        hx-swap="outerHTML"
-                    >
-                        Open Only
-                    </button>
-                </div>
-            </div>
-
-            <div id="checklist-groups">
-                {% for category, items in grouped_checklist.items %}
-                    <div class="checklist-group">
-                        <h2>{{ category.name }}</h2>
-
-                        {% for item in items %}
-                            {% include "operations/partials/checklist_item_card.html" with item=item %}
-                        {% endfor %}
-                    </div>
-                {% empty %}
-                    <div class="card panel">
-                        <p>No checklist items found for this match.</p>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    <aside style="position:sticky; top:24px; display:grid; gap:16px;">
-        {% include "operations/partials/sidebar_not_started.html" %}
-        {% include "operations/partials/sidebar_in_progress.html" %}
-        {% include "operations/partials/sidebar_delayed.html" %}
-    </aside>
-</div>
-
-{% include "operations/partials/activity_log_timeline.html" %}
-{% endblock %} {% endcomment %}

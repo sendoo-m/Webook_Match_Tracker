@@ -4,10 +4,10 @@
     <h2 class="panel-title">In Progress</h2>
 
     {% if in_progress_items %}
-        <div style="display:grid; gap:10px;">
+        <div class="sidebar-list">
             {% for item in in_progress_items %}
-                <div style="padding:12px 14px; border:1px solid #bfdbfe; background:#eff6ff; border-radius:12px;">
-                    <div style="font-weight:700; margin-bottom:4px;">{{ item.template_item.title }}</div>
+                <div class="sidebar-item sidebar-item--info">
+                    <div class="sidebar-item-title">{{ item.template_item.title }}</div>
                     <div class="help-text">{{ item.template_item.category.name }}</div>
                 </div>
             {% endfor %}
@@ -16,20 +16,3 @@
         <p class="help-text">No items currently in progress.</p>
     {% endif %}
 </div>
-
-{% comment %} <div id="sidebar-in-progress" class="card panel" hx-swap-oob="true">
-    <h2 class="panel-title">In Progress</h2>
-
-    {% if in_progress_items %}
-        <div style="display:grid; gap:10px;">
-            {% for item in in_progress_items %}
-                <div style="padding:12px 14px; border:1px solid #bfdbfe; background:#eff6ff; border-radius:12px;">
-                    <div style="font-weight:700; margin-bottom:4px;">{{ item.template_item.title }}</div>
-                    <div class="help-text">{{ item.template_item.category.name }}</div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p class="help-text">No items currently in progress.</p>
-    {% endif %}
-</div> {% endcomment %}

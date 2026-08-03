@@ -3,8 +3,8 @@
 <div id="match-status-box" class="card panel" hx-swap-oob="true">
     <h2 class="panel-title">Match Status</h2>
 
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
-        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+    <div class="cms-status-row">
+        <div class="cms-status-left">
             <span class="badge badge-{{ match.cms_status|slugify }}">
                 {{ match.get_cms_status_display }}
             </span>
@@ -14,7 +14,7 @@
             </span>
         </div>
 
-        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <div class="cms-status-actions">
             {% if match.cms_status == match_status.READY_FOR_CMS %}
                 <form
                     method="post"
@@ -22,7 +22,6 @@
                     hx-swap="none"
                     hx-disabled-elt="find button"
                     hx-indicator="#send-to-cms-loading"
-                    style="margin:0; display:flex; align-items:center; gap:8px;"
                 >
                     {% csrf_token %}
                     <button type="submit" class="btn btn-primary">
@@ -42,20 +41,18 @@
         </div>
     </div>
 
-    <div style="padding-top:16px; border-top:1px solid #e5e7eb;">
-        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-            <div>
-                <div style="font-weight:700; margin-bottom:6px;">CMS Status Control</div>
-                <p class="help-text" style="margin:0;">
-                    Choosing <strong>Published</strong> here will make the match appear live on the dashboard immediately.
-                </p>
-            </div>
+    <div class="cms-divider">
+        <div class="cms-control-head">
+            <div class="block-title">CMS Status Control</div>
+            <p class="help-text">
+                Choosing <strong>Published</strong> here will make the match appear live on the dashboard immediately.
+            </p>
         </div>
 
         <form
             hx-post="{% url 'operations:match-cms-status-update' match.pk %}"
             hx-swap="none"
-            style="display:grid; gap:12px; margin-top:14px;"
+            class="cms-control-form"
         >
             {% csrf_token %}
 
@@ -70,7 +67,7 @@
                 </select>
             </div>
 
-            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div class="cms-control-actions">
                 <button type="submit" class="btn btn-primary">
                     Update CMS Status
                 </button>
@@ -85,48 +82,3 @@
         </form>
     </div>
 </div>
-{% comment %} <!-- File: templates/operations/partials/match_status_badge.html -->
-<!-- Path: config/templates/operations/partials/match_status_badge.html -->
-<div id="match-status-box" class="card panel" hx-swap-oob="true">
-    <h2 class="panel-title">Match Status</h2>
-
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-            <span class="badge badge-{{ match.cms_status|slugify }}">
-                {{ match.get_cms_status_display }}
-            </span>
-
-            <span class="help-text">
-                Status is updated automatically based on active required checklist items.
-            </span>
-        </div>
-
-        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-            {% if match.cms_status == match_status.READY_FOR_CMS %}
-                <form
-                    method="post"
-                    hx-post="{% url 'operations:send-to-cms' match.pk %}"
-                    hx-target="#match-status-box"
-                    hx-swap="outerHTML"
-                    hx-disabled-elt="find button"
-                    hx-indicator="#send-to-cms-loading"
-                    style="margin:0; display:flex; align-items:center; gap:8px;"
-                >
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-primary">
-                        Send to CMS
-                    </button>
-                    <span id="send-to-cms-loading" class="inline-indicator">Sending...</span>
-                </form>
-            {% endif %}
-
-            {% if match.cms_status == match_status.SENT_TO_CMS %}
-                <span class="help-text">
-                    Sent
-                    {% if match.sent_to_cms_at %} at {{ match.sent_to_cms_at }}{% endif %}
-                    {% if match.sent_to_cms_by %} by {{ match.sent_to_cms_by }}{% endif %}
-                </span>
-            {% endif %}
-        </div>
-    </div>
-</div> {% endcomment %}

@@ -1,0 +1,6 @@
+<form method="post" action="{% url toggle_url_name obj.pk %}" style="margin:0;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-secondary" style="padding:6px 10px; font-size:12px;">
+        {% if obj.is_active %}Deactivate{% else %}Activate{% endif %}
+    </button>
+</form>

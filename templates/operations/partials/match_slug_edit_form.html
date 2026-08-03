@@ -1,0 +1,16 @@
+<div class="card meta-box" id="match-slug-box" hx-swap-oob="true">
+    <div class="meta-label">Slug</div>
+    <form
+        hx-post="{% url 'operations:match-slug-update' match.pk %}"
+        hx-target="#match-slug-box"
+        hx-swap="outerHTML"
+        style="display:flex; gap:8px; align-items:flex-start;"
+    >
+        {% csrf_token %}
+        <div style="flex:1;">
+            {{ form.slug }}
+            {% for error in form.slug.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary" style="padding:6px 10px; font-size:12px;">Save</button>
+    </form>
+</div>

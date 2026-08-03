@@ -2,6 +2,43 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+
+class Competition(models.Model):
+    name_ar = models.CharField(max_length=150, unique=True)
+    name_en = models.CharField(max_length=150, unique=True)
+    is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["sort_order", "name_ar"]
+
+    def __str__(self):
+        return self.name_ar or self.name_en
+
+
+class UserCompetitionAccess(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="competition_access",
+        on_delete=models.CASCADE,
+    )
+    competition = models.ForeignKey(
+        Competition,
+        related_name="user_access",
+        on_delete=models.CASCADE,
+    )
+    granted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "competition")
+        ordering = ("competition__sort_order", "user__username")
+        verbose_name = "User Competition Access"
+        verbose_name_plural = "User Competition Access Grants"
+
+    def __str__(self):
+        return f"{self.user} → {self.competition}"
+
+
 class Club(models.Model):
     name_ar = models.CharField(max_length=150, unique=True)
     name_en = models.CharField(max_length=150, unique=True)
@@ -46,6 +83,11 @@ class Match(models.Model):
         SENT_TO_CMS = "sent_to_cms", "Sent to CMS"
         PUBLISHED = "published", "Published"
 
+    competition = models.ForeignKey(
+        Competition,
+        related_name="matches",
+        on_delete=models.PROTECT,
+    )
     home_club = models.ForeignKey(
         Club,
         related_name="home_matches",

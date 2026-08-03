@@ -4,5 +4,17 @@
     <li>
         <a href="ops-dashboard/">Operations Dashboard</a>
     </li>
+    <li>
+        <a href="{% url 'admin:matches_match_export' %}">Export All (Excel)</a>
+    </li>
+    <li>
+        <a href="{% url 'admin:matches_match_export' %}?format=csv">Export All (CSV)</a>
+    </li>
+    <li>
+        <a href="{% url 'admin:matches_match_import' %}">Import</a>
+    </li>
+    <li>
+        <a href="{% url 'admin:matches_match_template' %}">Download Import Template</a>
+    </li>
     {{ block.super }}
 {% endblock %}

@@ -1,0 +1,47 @@
+{% extends "operations/base.html" %}
+
+{% block title %}Control Panel{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Control Panel</h1>
+    <p class="page-subtitle">Manage teams, stadiums, users, sections, and checklist criteria.</p>
+</div>
+
+<div class="dashboard-grid-4">
+    <a class="card stat-card" href="{% url 'control_panel:match-list' %}">
+        <div class="stat-label">Matches</div>
+        <div class="help-text">Add and edit match fixtures</div>
+    </a>
+
+    <a class="card stat-card" href="{% url 'control_panel:team-list' %}">
+        <div class="stat-label">Teams</div>
+        <div class="help-text">Clubs competing across sections</div>
+    </a>
+
+    <a class="card stat-card" href="{% url 'control_panel:stadium-list' %}">
+        <div class="stat-label">Stadiums</div>
+        <div class="help-text">Venues used for matches</div>
+    </a>
+
+    <a class="card stat-card" href="{% url 'control_panel:user-list' %}">
+        <div class="stat-label">Users</div>
+        <div class="help-text">Accounts, roles, club ownership, section access</div>
+    </a>
+
+    <a class="card stat-card" href="{% url 'control_panel:section-list' %}">
+        <div class="stat-label">Sections</div>
+        <div class="help-text">Roshan League, King's Cup, AFC Cup, ...</div>
+    </a>
+
+    <a class="card stat-card" href="{% url 'control_panel:checklist-category-list' %}">
+        <div class="stat-label">Checklist Categories</div>
+        <div class="help-text">Groups on the match checklist</div>
+    </a>
+
+    <a class="card stat-card" href="{% url 'control_panel:checklist-item-list' %}">
+        <div class="stat-label">Checklist Items</div>
+        <div class="help-text">The criteria each match must meet</div>
+    </a>
+</div>
+{% endblock %}
