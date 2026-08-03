@@ -1,6 +1,7 @@
-<form method="post" action="{% url toggle_url_name obj.pk %}" style="margin:0;">
+{# control_panel/_toggle_active_button.html #}
+<form method="post" action="{% url toggle_url_name obj.pk %}" class="logout-form">
     {% csrf_token %}
-    <button type="submit" class="btn btn-secondary" style="padding:6px 10px; font-size:12px;">
+    <button type="submit" class="btn btn-secondary btn-sm">
         {% if obj.is_active %}Deactivate{% else %}Activate{% endif %}
     </button>
 </form>

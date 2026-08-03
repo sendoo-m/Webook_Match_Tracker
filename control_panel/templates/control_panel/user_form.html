@@ -1,4 +1,61 @@
+{# control_panel/user_form.html #}
 {% extends "operations/base.html" %}
+
+{% block title %}{{ page_title }} · Control Panel{% endblock %}
+
+{% block content %}
+{% include "control_panel/_subnav.html" %}
+
+<div class="page-header">
+    <h1 class="page-title">{{ page_title }}</h1>
+</div>
+
+<div class="card panel" style="max-width:720px;">
+    <form method="post" class="form-stack">
+        {% csrf_token %}
+
+        <div class="form-group">
+            {{ form.username.label_tag }}
+            {{ form.username }}
+            {% for error in form.username.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.password.label_tag }}
+            {{ form.password }}
+            <p class="help-text">{{ form.password.help_text }}</p>
+            {% for error in form.password.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-group">
+            <label>{{ form.is_active.label_tag }} {{ form.is_active }}</label>
+        </div>
+
+        <div class="form-group">
+            {{ form.group.label_tag }}
+            {{ form.group }}
+            {% for error in form.group.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-group">
+            <label>{{ form.owned_clubs.label_tag }}</label>
+            <div class="checkbox-list">{{ form.owned_clubs }}</div>
+        </div>
+
+        <div class="form-group">
+            <label>{{ form.competitions.label_tag }}</label>
+            <p class="help-text">A user only sees matches for clubs they own AND sections they're granted here.</p>
+            <div class="checkbox-list">{{ form.competitions }}</div>
+        </div>
+
+        <div class="form-actions">
+            <a class="btn btn-secondary" href="{{ list_url }}">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+{% comment %} {% extends "operations/base.html" %}
 
 {% block title %}{{ page_title }} · Control Panel{% endblock %}
 
@@ -51,4 +108,4 @@
         </div>
     </form>
 </div>
-{% endblock %}
+{% endblock %} {% endcomment %}

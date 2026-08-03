@@ -1,5 +1,4 @@
-<!-- File: templates/operations/partials/checklist_item_card.html -->
-<!-- Path: config/templates/operations/partials/checklist_item_card.html -->
+{# templates/operations/partials/checklist_item_card.html #}
 <div
     id="checklist-item-{{ item.id }}"
     class="card checklist-card checklist-card--{{ item.status }}"
@@ -17,92 +16,126 @@
         </span>
     </div>
 
-    <form
-        hx-post="{% url 'operations:checklist-item-update' item.id %}"
-        hx-target="#checklist-item-{{ item.id }}"
-        hx-swap="outerHTML"
-        hx-disabled-elt="find button, find textarea"
-        hx-indicator="#item-loading-{{ item.id }}"
-        class="checklist-card-form"
-    >
-        {% csrf_token %}
-        <input type="hidden" name="selected_filter" value="{{ selected_filter|default:'all' }}">
+    {% if can_edit %}
+        <form
+            hx-post="{% url 'operations:checklist-item-update' item.id %}"
+            hx-target="#checklist-item-{{ item.id }}"
+            hx-swap="outerHTML"
+            hx-disabled-elt="find button, find textarea"
+            hx-indicator="#item-loading-{{ item.id }}"
+            class="checklist-card-form"
+        >
+            {% csrf_token %}
+            <input type="hidden" name="selected_filter" value="{{ selected_filter|default:'all' }}">
 
-        <div id="item-loading-{{ item.id }}" class="inline-indicator">
-            Saving...
-        </div>
-
-        <div class="status-toggle-group">
-            <button
-                type="submit"
-                name="status"
-                value="not_started"
-                class="status-toggle status-toggle-not_started {% if item.status == 'not_started' %}is-active{% endif %}"
-            >
-                Reset
-            </button>
-
-            <button
-                type="submit"
-                name="status"
-                value="in_progress"
-                class="status-toggle status-toggle-in_progress {% if item.status == 'in_progress' %}is-active{% endif %}"
-            >
-                In Progress
-            </button>
-
-            <button
-                type="submit"
-                name="status"
-                value="delayed"
-                class="status-toggle status-toggle-delayed {% if item.status == 'delayed' %}is-active{% endif %}"
-            >
-                Mark Delayed
-            </button>
-
-            <button
-                type="submit"
-                name="status"
-                value="done"
-                class="status-toggle status-toggle-done {% if item.status == 'done' %}is-active{% endif %}"
-            >
-                Mark Done
-            </button>
-        </div>
-
-        <div class="form-group">
-            <label for="note-{{ item.id }}"><strong>Note</strong></label>
-            <textarea
-                name="note"
-                id="note-{{ item.id }}"
-                rows="3"
-                class="form-control"
-                placeholder="Add note..."
-            >{{ item.note }}</textarea>
-        </div>
-
-        <div class="checklist-card-footer">
-            <div class="help-text">
-                {% if item.completed_at %}
-                    Completed at: {{ item.completed_at|date:"F j, Y, g:i a" }}
-                    {% if item.completed_by %} | Completed by: {{ item.completed_by }}{% endif %}
-                {% elif item.status == "not_started" %}
-                    No action taken yet
-                {% elif item.status == "in_progress" %}
-                    Work has started
-                {% elif item.status == "delayed" %}
-                    Waiting for resolution
-                {% endif %}
+            <div id="item-loading-{{ item.id }}" class="inline-indicator">
+                Saving...
             </div>
 
-            <button
-                type="submit"
-                class="btn btn-primary"
-                name="status"
-                value="{{ item.status }}"
-            >
-                Save Note
-            </button>
+            <div class="status-toggle-group">
+                <button
+                    type="submit"
+                    name="status"
+                    value="not_started"
+                    class="status-toggle status-toggle-not_started {% if item.status == 'not_started' %}is-active{% endif %}"
+                >
+                    Reset
+                </button>
+
+                <button
+                    type="submit"
+                    name="status"
+                    value="in_progress"
+                    class="status-toggle status-toggle-in_progress {% if item.status == 'in_progress' %}is-active{% endif %}"
+                >
+                    In Progress
+                </button>
+
+                <button
+                    type="submit"
+                    name="status"
+                    value="delayed"
+                    class="status-toggle status-toggle-delayed {% if item.status == 'delayed' %}is-active{% endif %}"
+                >
+                    Mark Delayed
+                </button>
+
+                <button
+                    type="submit"
+                    name="status"
+                    value="done"
+                    class="status-toggle status-toggle-done {% if item.status == 'done' %}is-active{% endif %}"
+                >
+                    Mark Done
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label for="note-{{ item.id }}"><strong>Note</strong></label>
+                <textarea
+                    name="note"
+                    id="note-{{ item.id }}"
+                    rows="3"
+                    class="form-control"
+                    placeholder="Add note..."
+                >{{ item.note }}</textarea>
+            </div>
+
+            <div class="checklist-card-footer">
+                <div class="help-text">
+                    {% if item.completed_at %}
+                        Completed at: {{ item.completed_at|date:"F j, Y, g:i a" }}
+                        {% if item.completed_by %} | Completed by: {{ item.completed_by }}{% endif %}
+                    {% elif item.status == "not_started" %}
+                        No action taken yet
+                    {% elif item.status == "in_progress" %}
+                        Work has started
+                    {% elif item.status == "delayed" %}
+                        Waiting for resolution
+                    {% endif %}
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                    name="status"
+                    value="{{ item.status }}"
+                >
+                    Save Note
+                </button>
+            </div>
+        </form>
+    {% else %}
+        {# Read-only rendering: same information, no way to change it. #}
+        <div class="checklist-card-form">
+            {% if item.note %}
+                <div class="form-group">
+                    <label><strong>Note</strong></label>
+                    <p class="help-text" style="white-space:pre-wrap;">{{ item.note }}</p>
+                </div>
+            {% endif %}
+
+            {% if item.delay_reason %}
+                <div class="form-group">
+                    <label><strong>Delay reason</strong></label>
+                    <p class="help-text" style="white-space:pre-wrap;">{{ item.delay_reason }}</p>
+                </div>
+            {% endif %}
+
+            <div class="checklist-card-footer">
+                <div class="help-text">
+                    {% if item.completed_at %}
+                        Completed at: {{ item.completed_at|date:"F j, Y, g:i a" }}
+                        {% if item.completed_by %} | Completed by: {{ item.completed_by }}{% endif %}
+                    {% elif item.status == "not_started" %}
+                        No action taken yet
+                    {% elif item.status == "in_progress" %}
+                        Work has started
+                    {% elif item.status == "delayed" %}
+                        Waiting for resolution
+                    {% endif %}
+                </div>
+            </div>
         </div>
-    </form>
+    {% endif %}
 </div>

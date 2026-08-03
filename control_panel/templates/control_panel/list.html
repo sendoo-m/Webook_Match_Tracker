@@ -1,4 +1,59 @@
+{# control_panel/list.html #}
 {% extends "operations/base.html" %}
+
+{% block title %}{{ page_title }} · Control Panel{% endblock %}
+
+{% block content %}
+{% include "control_panel/_subnav.html" %}
+
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">{{ page_title }}</h1>
+            {% block page_subtitle %}{% endblock %}
+        </div>
+
+        <div class="filter-bar">
+            {% if create_url %}
+                <a class="btn btn-primary" href="{{ create_url }}"><i class="ti ti-plus"></i>&nbsp; {{ create_label }}</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% block extra_content %}{% endblock %}
+
+<div class="card panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    {% block table_head %}{% endblock %}
+                </tr>
+            </thead>
+            <tbody>
+                {% block table_body %}{% endblock %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if is_paginated %}
+        <div class="pagination-wrap">
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a class="pagination-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                {% endif %}
+                <span class="pagination-current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                    <a class="pagination-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% comment %} {% extends "operations/base.html" %}
 
 {% block title %}{{ page_title }} · Control Panel{% endblock %}
 
@@ -49,4 +104,4 @@
         </div>
     {% endif %}
 </div>
-{% endblock %}
+{% endblock %} {% endcomment %}

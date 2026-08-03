@@ -1,5 +1,4 @@
-/* File: static/operations/styles.css */
-/* Path: config/static/operations/styles.css */
+/* static/operations/styles.css */
 
 :root {
     /* ===== ألوان الهوية (Figma design tokens) =====
@@ -635,9 +634,12 @@ th {
 }
 
 .badge-draft { background: var(--neutral-soft); color: var(--neutral-text); }
-.badge-in-progress { background: var(--info-soft); color: var(--info); }
-.badge-ready-for-cms { background: var(--success-soft); color: var(--success); }
-.badge-sent-to-cms { background: var(--primary-soft); color: var(--primary); }
+.badge-in-progress,
+.badge-in_progress { background: var(--info-soft); color: var(--info); }
+.badge-ready-for-cms,
+.badge-ready_for_cms { background: var(--success-soft); color: var(--success); }
+.badge-sent-to-cms,
+.badge-sent_to_cms { background: var(--primary-soft); color: var(--primary); }
 .badge-published { background: var(--success-soft); color: var(--success); }
 .badge-completed { background: var(--info-soft); color: var(--info); }
 .badge-cancelled { background: var(--neutral-soft); color: var(--neutral-text); }
@@ -1248,24 +1250,6 @@ th {
     }
 }
 
-@media (max-width: 900px) {
-    .topbar-inner {
-        flex-direction: column;
-        align-items: stretch;
-        gap: var(--space-4);
-    }
-
-    .nav-links {
-        width: 100%;
-    }
-
-    .topbar-user {
-        width: 100%;
-        justify-content: space-between;
-        margin-inline-start: 0;
-    }
-}
-
 @media (max-width: 700px) {
     .stats-grid,
     .dashboard-grid-4,
@@ -1297,3 +1281,69 @@ th {
         flex-direction: column;
     }
 }
+
+/* ================= Control Panel additions ================= */
+
+/* Secondary sub-navigation (Control Panel sections) */
+.subnav {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-8);
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid var(--border);
+}
+
+.subnav-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-2);
+    color: var(--neutral-text);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.subnav-link:hover {
+    background: var(--border);
+    color: var(--text);
+    text-decoration: none;
+}
+
+.subnav-link.is-active {
+    background: var(--primary);
+    color: var(--white);
+}
+
+/* Small button variant, for compact row actions in tables */
+.btn-sm {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+/* Row of action buttons in a table cell (Edit + Activate/Deactivate, etc.) */
+.row-actions {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+}
+
+/* Icon badge used on Control Panel overview cards */
+.stat-card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-pill);
+    margin-bottom: var(--space-4);
+    font-size: 18px;
+}
+
+.stat-card-icon-primary { background: var(--primary-soft); color: var(--primary); }
+.stat-card-icon-info { background: var(--info-soft); color: var(--info); }
+.stat-card-icon-success { background: var(--success-soft); color: var(--success); }
+.stat-card-icon-warning { background: var(--warning-soft); color: var(--warning); }
+.stat-card-icon-danger { background: var(--danger-soft); color: var(--danger); }

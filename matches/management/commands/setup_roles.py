@@ -1,4 +1,4 @@
-# operations/management/commands/setup_roles.py
+# matches/management/commands/setup_roles.py
 
 from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand
@@ -10,4 +10,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         Group.objects.get_or_create(name="Club Manager")
         Group.objects.get_or_create(name="Operations Manager")
-        self.stdout.write(self.style.SUCCESS("Groups created: Club Manager, Operations Manager"))
+        Group.objects.get_or_create(name="Super Admin")
+        Group.objects.get_or_create(name="Viewer")
+        self.stdout.write(self.style.SUCCESS("Groups created: Club Manager, Operations Manager, Super Admin, Viewer"))
+

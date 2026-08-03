@@ -1,10 +1,12 @@
-from operations.permissions import can_view_all_matches
+# control_panel/context_processors.py
+
+from operations.permissions import can_manage_control_panel
 
 from .design_tokens import LIGHT_TOKENS
 
 
 def panel_nav_flag(request):
-    return {"can_view_control_panel": can_view_all_matches(getattr(request, "user", None))}
+    return {"can_view_control_panel": can_manage_control_panel(getattr(request, "user", None))}
 
 
 def design_tokens(request):

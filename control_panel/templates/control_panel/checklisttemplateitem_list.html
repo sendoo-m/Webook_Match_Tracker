@@ -1,4 +1,42 @@
+{# control_panel/checklisttemplateitem_list.html #}
 {% extends "control_panel/list.html" %}
+
+{% block page_subtitle %}
+    <p class="page-subtitle">The criteria that appear on every match's checklist.</p>
+{% endblock %}
+
+{% block table_head %}
+    <th>Category</th>
+    <th>Title</th>
+    <th>Required</th>
+    <th>Status</th>
+    <th></th>
+{% endblock %}
+
+{% block table_body %}
+    {% for item in items %}
+        <tr>
+            <td>{{ item.category.name }}</td>
+            <td>{{ item.title }}</td>
+            <td>{% if item.is_required %}Yes{% else %}No{% endif %}</td>
+            <td>
+                <span class="badge {% if item.is_active %}badge-published{% else %}badge-draft{% endif %}">
+                    {% if item.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+            </td>
+            <td>
+                <div class="row-actions">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:checklist-item-update' item.pk %}">Edit</a>
+                    {% include "control_panel/_toggle_active_button.html" with obj=item toggle_url_name="control_panel:checklist-item-toggle-active" %}
+                </div>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5">No checklist items found.</td></tr>
+    {% endfor %}
+{% endblock %}
+
+{% comment %} {% extends "control_panel/list.html" %}
 
 {% block page_subtitle %}
     <p class="page-subtitle">The criteria that appear on every match's checklist.</p>
@@ -33,4 +71,4 @@
     {% empty %}
         <tr><td colspan="5">No checklist items found.</td></tr>
     {% endfor %}
-{% endblock %}
+{% endblock %} {% endcomment %}

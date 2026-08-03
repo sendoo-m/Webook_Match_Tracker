@@ -1,3 +1,4 @@
+# config/settings.py
 """
 Django settings for config project.
 
@@ -58,6 +59,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'operations.middleware.FriendlyPermissionDeniedMiddleware',  # <- new: turns 403s into toasts
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 

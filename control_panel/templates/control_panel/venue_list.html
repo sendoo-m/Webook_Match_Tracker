@@ -1,4 +1,38 @@
+{# control_panel/venue_list.html #}
 {% extends "control_panel/list.html" %}
+
+{% block table_head %}
+    <th>Name (AR)</th>
+    <th>Name (EN)</th>
+    <th>City</th>
+    <th>Status</th>
+    <th></th>
+{% endblock %}
+
+{% block table_body %}
+    {% for venue in venues %}
+        <tr>
+            <td>{{ venue.name_ar }}</td>
+            <td>{{ venue.name_en|default:"—" }}</td>
+            <td>{{ venue.city|default:"—" }}</td>
+            <td>
+                <span class="badge {% if venue.is_active %}badge-published{% else %}badge-draft{% endif %}">
+                    {% if venue.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+            </td>
+            <td>
+                <div class="row-actions">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:stadium-update' venue.pk %}">Edit</a>
+                    {% include "control_panel/_toggle_active_button.html" with obj=venue toggle_url_name="control_panel:stadium-toggle-active" %}
+                </div>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5">No stadiums found.</td></tr>
+    {% endfor %}
+{% endblock %}
+
+{% comment %} {% extends "control_panel/list.html" %}
 
 {% block table_head %}
     <th>Name (AR)</th>
@@ -29,4 +63,4 @@
     {% empty %}
         <tr><td colspan="5">No stadiums found.</td></tr>
     {% endfor %}
-{% endblock %}
+{% endblock %} {% endcomment %}

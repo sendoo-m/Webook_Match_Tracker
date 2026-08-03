@@ -1,0 +1,11 @@
+{# control_panel/_subnav.html #}
+<nav class="subnav">
+    <a href="{% url 'control_panel:home' %}" class="subnav-link{% if request.resolver_match.url_name == 'home' %} is-active{% endif %}">Overview</a>
+    <a href="{% url 'control_panel:match-list' %}" class="subnav-link{% if 'match' in request.resolver_match.url_name %} is-active{% endif %}">Matches</a>
+    <a href="{% url 'control_panel:team-list' %}" class="subnav-link{% if 'team' in request.resolver_match.url_name %} is-active{% endif %}">Teams</a>
+    <a href="{% url 'control_panel:stadium-list' %}" class="subnav-link{% if 'stadium' in request.resolver_match.url_name %} is-active{% endif %}">Stadiums</a>
+    <a href="{% url 'control_panel:section-list' %}" class="subnav-link{% if 'section' in request.resolver_match.url_name %} is-active{% endif %}">Sections</a>
+    <a href="{% url 'control_panel:checklist-category-list' %}" class="subnav-link{% if 'checklist-category' in request.resolver_match.url_name %} is-active{% endif %}">Categories</a>
+    <a href="{% url 'control_panel:checklist-item-list' %}" class="subnav-link{% if 'checklist-item' in request.resolver_match.url_name %} is-active{% endif %}">Checklist Items</a>
+    <a href="{% url 'control_panel:user-list' %}" class="subnav-link{% if 'user' in request.resolver_match.url_name %} is-active{% endif %}">Users</a>
+</nav>

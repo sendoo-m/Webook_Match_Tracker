@@ -1,4 +1,38 @@
+{# control_panel/user_list.html #}
 {% extends "control_panel/list.html" %}
+
+{% block table_head %}
+    <th>Username</th>
+    <th>Role</th>
+    <th>Owned Clubs</th>
+    <th>Status</th>
+    <th></th>
+{% endblock %}
+
+{% block table_body %}
+    {% for user in users %}
+        <tr>
+            <td>{{ user.username }}{% if user.is_superuser %} <span class="mini-badge mini-badge-info">Superuser</span>{% endif %}</td>
+            <td>{% for group in user.groups.all %}{{ group.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+            <td>{{ user.owned_clubs.count }}</td>
+            <td>
+                <span class="badge {% if user.is_active %}badge-published{% else %}badge-draft{% endif %}">
+                    {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+            </td>
+            <td>
+                <div class="row-actions">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:user-update' user.pk %}">Edit</a>
+                    {% include "control_panel/_toggle_active_button.html" with obj=user toggle_url_name="control_panel:user-toggle-active" %}
+                </div>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5">No users found.</td></tr>
+    {% endfor %}
+{% endblock %}
+
+{% comment %} {% extends "control_panel/list.html" %}
 
 {% block table_head %}
     <th>Username</th>
@@ -29,4 +63,4 @@
     {% empty %}
         <tr><td colspan="5">No users found.</td></tr>
     {% endfor %}
-{% endblock %}
+{% endblock %} {% endcomment %}

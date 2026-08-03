@@ -1,10 +1,13 @@
+# control_panel/permissions.py
+
 from django.contrib.auth.mixins import UserPassesTestMixin
 
-from operations.permissions import can_view_all_matches
+from operations.permissions import can_manage_control_panel
 
 
 class ControlPanelAccessMixin(UserPassesTestMixin):
     raise_exception = True
+    permission_denied_message = "You don't have access to the control panel — your account is limited to viewing only."
 
     def test_func(self):
-        return can_view_all_matches(self.request.user)
+        return can_manage_control_panel(self.request.user)

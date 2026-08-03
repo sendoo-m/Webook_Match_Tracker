@@ -1,4 +1,64 @@
+{# control_panel/match_list.html #}
 {% extends "control_panel/list.html" %}
+
+{% block extra_content %}
+<div class="card panel">
+    <form method="get" action="{% url 'control_panel:match-export' %}" class="filters">
+        <div class="field-group">
+            <label>{{ export_form.competition.label }}</label>
+            {{ export_form.competition }}
+        </div>
+        <div class="field-group">
+            <label>{{ export_form.format.label }}</label>
+            {{ export_form.format }}
+        </div>
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <button type="submit">Export</button>
+        </div>
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <a class="btn btn-secondary" href="{% url 'control_panel:match-import' %}">Import</a>
+        </div>
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <a class="btn btn-secondary" href="{% url 'control_panel:match-template' %}">Download Template</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block table_head %}
+    <th>Match</th>
+    <th>Competition</th>
+    <th>Round</th>
+    <th>Date</th>
+    <th>Status</th>
+    <th></th>
+{% endblock %}
+
+{% block table_body %}
+    {% for match in matches %}
+        <tr>
+            <td>{{ match.title_en }}</td>
+            <td>{{ match.competition.name_ar }}</td>
+            <td>{{ match.round_number|default:"—" }}</td>
+            <td>{{ match.event_date|default:"TBC" }} {{ match.match_start_time }}</td>
+            <td>
+                <span class="badge badge-{{ match.cms_status|slugify }}">
+                    {{ match.get_cms_status_display }}
+                </span>
+            </td>
+            <td>
+                <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:match-update' match.pk %}">Edit</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="6">No matches found.</td></tr>
+    {% endfor %}
+{% endblock %}
+
+{% comment %} {% extends "control_panel/list.html" %}
 
 {% block extra_content %}
 <div class="card panel">
@@ -55,4 +115,4 @@
     {% empty %}
         <tr><td colspan="6">No matches found.</td></tr>
     {% endfor %}
-{% endblock %}
+{% endblock %} {% endcomment %}

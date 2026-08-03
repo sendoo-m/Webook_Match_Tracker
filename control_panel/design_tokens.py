@@ -1,3 +1,4 @@
+# control_panel/design_tokens.py
 """
 Design tokens auto-generated from Figma (Dark/Light).
 Source files: ___Dark_tokens__3_.json / __Light_tokens__2_.json

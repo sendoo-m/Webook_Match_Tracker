@@ -1,4 +1,99 @@
+{# control_panel/match_import.html #}
 {% extends "operations/base.html" %}
+
+{% block title %}Import Matches · Control Panel{% endblock %}
+
+{% block content %}
+{% include "control_panel/_subnav.html" %}
+
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">Import Matches</h1>
+            <p class="page-subtitle">
+                Upload a CSV or Excel file keyed by slug (existing slugs are updated, new ones are created).
+                <a href="{% url 'control_panel:match-template' %}">Download a blank template</a> or
+                <a href="{% url 'control_panel:match-export' %}">export the current matches</a> to see the expected columns.
+            </p>
+        </div>
+        <div class="filter-bar">
+            <a class="btn btn-secondary" href="{% url 'control_panel:match-list' %}">Back to Matches</a>
+        </div>
+    </div>
+</div>
+
+<div class="card panel" style="max-width:640px;">
+    <form method="post" enctype="multipart/form-data" class="form-stack">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}<p class="help-text">{{ field.help_text }}</p>{% endif %}
+                {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Import</button>
+        </div>
+    </form>
+</div>
+
+{% if result %}
+<div class="card panel">
+    <h2 class="panel-title">Import Results</h2>
+    <p class="help-text">
+        Created: {{ result.created }} &middot; Updated: {{ result.updated }} &middot;
+        Skipped (filtered out): {{ result.skipped|length }} &middot; Errors: {{ result.errors|length }}
+    </p>
+
+    {% if result.errors %}
+        <h3 class="panel-title">Errors</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Row</th>
+                        <th>Problem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row_number, message in result.errors %}
+                        <tr>
+                            <td>{{ row_number }}</td>
+                            <td>{{ message }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    {% if result.skipped %}
+        <h3 class="panel-title">Skipped (outside selected section filter)</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Row</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row_number, message in result.skipped %}
+                        <tr>
+                            <td>{{ row_number }}</td>
+                            <td>{{ message }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+{% comment %} {% extends "operations/base.html" %}
 
 {% block title %}Import Matches · Control Panel{% endblock %}
 
@@ -89,4 +184,4 @@
     {% endif %}
 </div>
 {% endif %}
-{% endblock %}
+{% endblock %} {% endcomment %}

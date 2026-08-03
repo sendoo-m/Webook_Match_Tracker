@@ -1,4 +1,61 @@
+{# control_panel/home.html #}
 {% extends "operations/base.html" %}
+
+{% block title %}Control Panel{% endblock %}
+
+{% block content %}
+{% include "control_panel/_subnav.html" %}
+
+<div class="page-header">
+    <h1 class="page-title">Control Panel</h1>
+    <p class="page-subtitle">Manage teams, stadiums, users, sections, and checklist criteria.</p>
+</div>
+
+<div class="dashboard-grid-4">
+    <a class="card stat-card" href="{% url 'control_panel:match-list' %}">
+        <span class="stat-card-icon stat-card-icon-primary"><i class="ti ti-calendar-event"></i></span>
+        <div class="stat-label">Matches</div>
+        <div class="help-text">Add and edit match fixtures</div>
+    </a>
+
+    <a class="card stat-card" href="{% url 'control_panel:team-list' %}">
+        <span class="stat-card-icon stat-card-icon-info"><i class="ti ti-shield"></i></span>
+        <div class="stat-label">Teams</div>
+        <div class="help-text">Clubs competing across sections</div>
+    </a>
+
+    <a class="card stat-card" href="{% url 'control_panel:stadium-list' %}">
+        <span class="stat-card-icon stat-card-icon-success"><i class="ti ti-building-stadium"></i></span>
+        <div class="stat-label">Stadiums</div>
+        <div class="help-text">Venues used for matches</div>
+    </a>
+
+    <a class="card stat-card" href="{% url 'control_panel:user-list' %}">
+        <span class="stat-card-icon stat-card-icon-warning"><i class="ti ti-users"></i></span>
+        <div class="stat-label">Users</div>
+        <div class="help-text">Accounts, roles, club ownership, section access</div>
+    </a>
+
+    <a class="card stat-card" href="{% url 'control_panel:section-list' %}">
+        <span class="stat-card-icon stat-card-icon-danger"><i class="ti ti-trophy"></i></span>
+        <div class="stat-label">Sections</div>
+        <div class="help-text">Roshan League, King's Cup, AFC Cup, ...</div>
+    </a>
+
+    <a class="card stat-card" href="{% url 'control_panel:checklist-category-list' %}">
+        <span class="stat-card-icon stat-card-icon-primary"><i class="ti ti-list-details"></i></span>
+        <div class="stat-label">Checklist Categories</div>
+        <div class="help-text">Groups on the match checklist</div>
+    </a>
+
+    <a class="card stat-card" href="{% url 'control_panel:checklist-item-list' %}">
+        <span class="stat-card-icon stat-card-icon-info"><i class="ti ti-list-check"></i></span>
+        <div class="stat-label">Checklist Items</div>
+        <div class="help-text">The criteria each match must meet</div>
+    </a>
+</div>
+{% endblock %}
+{% comment %} {% extends "operations/base.html" %}
 
 {% block title %}Control Panel{% endblock %}
 
@@ -44,4 +101,4 @@
         <div class="help-text">The criteria each match must meet</div>
     </a>
 </div>
-{% endblock %}
+{% endblock %} {% endcomment %}

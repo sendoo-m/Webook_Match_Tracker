@@ -1,4 +1,38 @@
+{# control_panel/competition_list.html #}
 {% extends "control_panel/list.html" %}
+
+{% block table_head %}
+    <th>Name (AR)</th>
+    <th>Name (EN)</th>
+    <th>Order</th>
+    <th>Status</th>
+    <th></th>
+{% endblock %}
+
+{% block table_body %}
+    {% for competition in competitions %}
+        <tr>
+            <td>{{ competition.name_ar }}</td>
+            <td>{{ competition.name_en }}</td>
+            <td>{{ competition.sort_order }}</td>
+            <td>
+                <span class="badge {% if competition.is_active %}badge-published{% else %}badge-draft{% endif %}">
+                    {% if competition.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+            </td>
+            <td>
+                <div class="row-actions">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:section-update' competition.pk %}">Edit</a>
+                    {% include "control_panel/_toggle_active_button.html" with obj=competition toggle_url_name="control_panel:section-toggle-active" %}
+                </div>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5">No sections found.</td></tr>
+    {% endfor %}
+{% endblock %}
+
+{% comment %} {% extends "control_panel/list.html" %}
 
 {% block table_head %}
     <th>Name (AR)</th>
@@ -29,4 +63,4 @@
     {% empty %}
         <tr><td colspan="5">No sections found.</td></tr>
     {% endfor %}
-{% endblock %}
+{% endblock %} {% endcomment %}
