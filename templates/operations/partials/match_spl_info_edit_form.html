@@ -1,0 +1,32 @@
+<div class="card meta-box" id="match-spl-info-box">
+    <div class="meta-label">SPL Report Info</div>
+    <form
+        hx-post="{% url 'operations:match-spl-info-update' match.pk %}"
+        hx-target="#match-spl-info-box"
+        hx-swap="outerHTML"
+        style="display:flex; flex-direction:column; gap:8px;"
+    >
+        {% csrf_token %}
+        {% for error in form.non_field_errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+
+        <p class="help-text">
+            Actual release date is set automatically when the CMS Status is changed to Published.
+        </p>
+
+        <label style="display:flex; align-items:center; gap:6px;">
+            {{ form.ticketing_plan_approved }} {{ form.ticketing_plan_approved.label }}
+        </label>
+
+        <label style="display:flex; align-items:center; gap:6px;">
+            {{ form.spl_tickets_sent }} {{ form.spl_tickets_sent.label }}
+        </label>
+
+        <div>
+            {{ form.spl_comments.label_tag }}
+            {{ form.spl_comments }}
+            {% for error in form.spl_comments.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="padding:6px 10px; font-size:12px; align-self:flex-start;">Save</button>
+    </form>
+</div>

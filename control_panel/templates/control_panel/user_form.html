@@ -21,6 +21,18 @@
         </div>
 
         <div class="form-group">
+            {{ form.first_name.label_tag }}
+            {{ form.first_name }}
+            {% for error in form.first_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.last_name.label_tag }}
+            {{ form.last_name }}
+            {% for error in form.last_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-group">
             {{ form.password.label_tag }}
             {{ form.password }}
             <p class="help-text">{{ form.password.help_text }}</p>
@@ -72,6 +84,18 @@
             {{ form.username.label_tag }}
             {{ form.username }}
             {% for error in form.username.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.first_name.label_tag }}
+            {{ form.first_name }}
+            {% for error in form.first_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.last_name.label_tag }}
+            {{ form.last_name }}
+            {% for error in form.last_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
         </div>
 
         <div class="form-group">

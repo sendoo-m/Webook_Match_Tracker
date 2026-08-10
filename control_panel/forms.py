@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
 from checklists.models import ChecklistCategory, ChecklistTemplateItem
+from control_panel.models import FeedbackEntry, ReleaseNote
 from matches.models import Club, Competition, Match, UserCompetitionAccess, Venue
 
 User = get_user_model()
@@ -16,7 +17,7 @@ RIYADH_TZ = ZoneInfo("Asia/Riyadh")
 class ClubForm(forms.ModelForm):
     class Meta:
         model = Club
-        fields = ["name_ar", "name_en", "short_name", "owner", "is_active"]
+        fields = ["name_ar", "name_en", "short_name", "logo", "owner", "is_active"]
 
 
 class VenueForm(forms.ModelForm):
@@ -50,7 +51,13 @@ class MatchForm(forms.ModelForm):
             "match_end_time",
             "gates_open_time",
             "sale_starts_at",
+            "ticketing_plan_approved",
+            "spl_tickets_sent",
+            "spl_comments",
         ]
+        # actual_release_at is NOT editable here on purpose: it's stamped
+        # automatically from the CMS Status Control when a match is marked
+        # Published (see operations/views/cms.py), not typed in manually.
         widgets = {
             "event_date": forms.DateInput(attrs={"type": "date"}),
             "match_start_time": forms.TimeInput(attrs={"type": "time"}),
@@ -59,6 +66,7 @@ class MatchForm(forms.ModelForm):
             "sale_starts_at": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "description_ar": forms.Textarea(attrs={"rows": 3}),
             "description_en": forms.Textarea(attrs={"rows": 3}),
+            "spl_comments": forms.Textarea(attrs={"rows": 3}),
         }
 
     def clean(self):
@@ -154,7 +162,7 @@ class UserForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ["username", "is_active"]
+        fields = ["username", "first_name", "last_name", "is_active"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -198,3 +206,34 @@ class UserForm(forms.ModelForm):
         ).delete()
         for competition in selected_competitions:
             UserCompetitionAccess.objects.get_or_create(user=user, competition=competition)
+
+
+class FeedbackEntryForm(forms.ModelForm):
+    class Meta:
+        model = FeedbackEntry
+        fields = [
+            "title",
+            "category",
+            "submitted_by",
+            "situation_before",
+            "suggestion",
+            "situation_after",
+            "status",
+            "decision_reason",
+        ]
+        widgets = {
+            "situation_before": forms.Textarea(attrs={"rows": 3}),
+            "suggestion": forms.Textarea(attrs={"rows": 3}),
+            "situation_after": forms.Textarea(attrs={"rows": 3}),
+            "decision_reason": forms.Textarea(attrs={"rows": 2}),
+        }
+
+
+class ReleaseNoteForm(forms.ModelForm):
+    class Meta:
+        model = ReleaseNote
+        fields = ["version", "release_date", "highlights"]
+        widgets = {
+            "release_date": forms.DateInput(attrs={"type": "date"}),
+            "highlights": forms.Textarea(attrs={"rows": 6, "placeholder": "One highlight per line"}),
+        }

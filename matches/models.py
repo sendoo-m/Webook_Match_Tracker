@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
@@ -43,6 +44,7 @@ class Club(models.Model):
     name_ar = models.CharField(max_length=150, unique=True)
     name_en = models.CharField(max_length=150, unique=True)
     short_name = models.CharField(max_length=50, blank=True)
+    logo = models.ImageField(upload_to="club_logos/", blank=True, null=True)
     is_active = models.BooleanField(default=True)
 
     owner = models.ForeignKey(
@@ -120,6 +122,28 @@ class Match(models.Model):
     match_start_time = models.TimeField(null=True, blank=True)
     match_end_time = models.TimeField(null=True, blank=True)
 
+    discount_code = models.CharField(max_length=50, blank=True)
+    discount_percentage = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(100)],
+    )
+    discount_ticket_count = models.PositiveIntegerField(null=True, blank=True)
+
+    # SPL report fields. Round, date, teams, stadium, and release date reuse
+    # the fields above (round_number, event_date, home_club/away_club, venue,
+    # sale_starts_at) - only the SPL-specific extras live here. KV/Webook
+    # Images and Webook Readiness are NOT stored: they're derived from the
+    # match checklist (see operations/views/helpers.py build_spl_report_row).
+    actual_release_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When tickets actually went live, if different from the planned sale_starts_at.",
+    )
+    ticketing_plan_approved = models.BooleanField(default=False)
+    spl_tickets_sent = models.BooleanField(default=False)
+    spl_comments = models.TextField(blank=True)
+
     cms_status = models.CharField(
         max_length=30,
         choices=Status.choices,
@@ -142,6 +166,10 @@ class Match(models.Model):
 
     def __str__(self):
         return self.title_en
+
+    @property
+    def has_discount(self):
+        return bool(self.discount_code)
 
     def refresh_checklist_status(self):
         active_items = self.checklist_items.filter(is_active=True)

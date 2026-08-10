@@ -1,0 +1,30 @@
+{# control_panel/release_note_list.html #}
+{% extends "control_panel/list.html" %}
+
+{% block page_subtitle %}
+    <p class="page-subtitle">
+        Manage entries shown on the public <a href="{% url 'operations:changelog' %}">What's New</a> page.
+    </p>
+{% endblock %}
+
+{% block table_head %}
+    <th>Version</th>
+    <th>Release Date</th>
+    <th>Highlights</th>
+    <th></th>
+{% endblock %}
+
+{% block table_body %}
+    {% for note in release_notes %}
+        <tr>
+            <td>v{{ note.version }}</td>
+            <td>{{ note.release_date }}</td>
+            <td>{{ note.highlight_lines|length }} item{{ note.highlight_lines|length|pluralize }}</td>
+            <td>
+                <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:release-note-update' note.pk %}">Edit</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="4">No release notes yet.</td></tr>
+    {% endfor %}
+{% endblock %}

@@ -4,11 +4,32 @@
 
 {% block title %}Operations Dashboard{% endblock %}
 
+{% block page_help %}
+    <p>
+        This is the <strong>Operations Dashboard</strong> — a live snapshot of every match: what's
+        live right now, what's starting soon, what needs attention, and what's ready for ticket sale.
+    </p>
+    <p>
+        Use the filter chips in the "Filtered Matches" table to narrow down to exactly the matches
+        you care about. The page refreshes itself automatically every few minutes.
+    </p>
+{% endblock %}
+
 {% block content %}
+<div
+    id="dashboard-content-root"
+    hx-get="{% url 'operations:dashboard' %}?view={{ selected_view }}"
+    hx-trigger="every 180s"
+    hx-target="#dashboard-content-root"
+    hx-swap="outerHTML"
+    hx-select="#dashboard-content-root"
+    hx-disinherit="*"
+>
 <div class="page-header">
     <h1 class="page-title">Operations Dashboard</h1>
     <p class="page-subtitle">
         Readiness, live visibility, ticket-sale readiness, alerts, and post-match follow-up.
+        <span class="help-text">Auto-refreshes every 3 minutes.</span>
     </p>
 </div>
 
@@ -289,4 +310,5 @@
 </div>
 
 {% include "operations/partials/dashboard_filtered_matches_panel.html" %}
+</div>
 {% endblock %}

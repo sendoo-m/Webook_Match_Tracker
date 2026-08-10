@@ -10,7 +10,7 @@ from operations.permissions import (
     user_can_manage_match,
 )
 
-from .helpers import build_match_detail_side_context
+from .helpers import build_match_detail_side_context, build_spl_report_row
 
 
 class MatchDetailView(LoginRequiredMixin, MatchScopedQuerysetMixin, DetailView):
@@ -42,4 +42,5 @@ class MatchDetailView(LoginRequiredMixin, MatchScopedQuerysetMixin, DetailView):
         context["can_edit_slug"] = can_manage_control_panel(self.request.user)
 
         context.update(build_match_detail_side_context(self.object, selected_filter=selected_filter))
+        context.update(build_spl_report_row(self.object))
         return context

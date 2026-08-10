@@ -2,6 +2,14 @@
 
 {% block title %}Matches{% endblock %}
 
+{% block page_help %}
+    <p>
+        This is the <strong>Matches</strong> list — every match you have access to, with its
+        readiness progress, CMS status, venue, and any active discount at a glance.
+    </p>
+    <p>Click a match to open its full checklist and details, or use the filters to narrow the list.</p>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <h1 class="page-title">Matches</h1>
@@ -59,6 +67,7 @@
                     <th>Progress</th>
                     <th>Delayed</th>
                     <th>Venue</th>
+                    <th>Discount</th>
                 </tr>
             </thead>
             <tbody>
@@ -73,9 +82,11 @@
                         </span>
                     </td>
                     <td>
-                        <div>{{ match.done_items }} / {{ match.total_items }}</div>
-                        <div class="progress">
-                            <div class="progress-bar" style="width:{% widthratio match.done_items match.total_items 100 %}%"></div>
+                        <div class="progress-with-label">
+                            <div class="progress">
+                                <div class="progress-bar" style="width:{% widthratio match.done_items match.total_items 100 %}%"></div>
+                            </div>
+                            <span class="progress-label">{% widthratio match.done_items match.total_items 100 %}%</span>
                         </div>
                     </td>
                     <td>
@@ -86,10 +97,17 @@
                         {% endif %}
                     </td>
                     <td>{{ match.venue }}</td>
+                    <td>
+                        {% if match.has_discount %}
+                            <span class="mini-badge mini-badge-success">{{ match.discount_code }}</span>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7">No matches found.</td>
+                    <td colspan="8">No matches found.</td>
                 </tr>
                 {% endfor %}
             </tbody>

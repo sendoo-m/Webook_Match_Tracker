@@ -1,5 +1,5 @@
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.core.paginator import Paginator
 from django.db.models import Case, IntegerField, Prefetch, Value, When
@@ -79,6 +79,7 @@ def build_dashboard_match_state(match, now):
     is_today = False
     is_past = False
     starting_within_48h = False
+    match_finished = False
 
     if match_dt:
         from django.utils import timezone
@@ -91,10 +92,22 @@ def build_dashboard_match_state(match, now):
         is_past = local_match_dt < now
         starting_within_48h = 0 <= hours_to_match <= STARTING_SOON_HOURS
 
+        # A match is only "live" up to its scheduled end - use match_end_time
+        # when the coordinator set one, otherwise fall back to a standard
+        # LIVE_MATCH_DURATION_HOURS window after kickoff.
+        if match.match_end_time:
+            end_dt = datetime.combine(match.event_date, match.match_end_time)
+            if timezone.is_naive(end_dt):
+                end_dt = timezone.make_aware(end_dt)
+            end_dt = timezone.localtime(end_dt)
+        else:
+            end_dt = local_match_dt + timedelta(hours=LIVE_MATCH_DURATION_HOURS)
+        match_finished = now >= end_dt
+
     ready_for_ticket_sale = non_post_match_total > 0 and non_post_match_pending == 0
 
     from matches.models import Match
-    published_is_live = match.cms_status == Match.Status.PUBLISHED
+    published_is_live = match.cms_status == Match.Status.PUBLISHED and not match_finished
     auto_live_by_ops = (
         not is_past
         and prep_window_started
@@ -141,6 +154,7 @@ def build_dashboard_match_state(match, now):
         "is_today": is_today,
         "is_past": is_past,
         "is_live_now": is_live_now,
+        "match_finished": match_finished,
         "starting_within_48h": starting_within_48h,
         "ready_for_ticket_sale": ready_for_ticket_sale,
         "needs_reports": needs_reports,
@@ -159,6 +173,29 @@ def build_dashboard_match_state(match, now):
         "non_post_match_total": non_post_match_total,
         "non_post_match_done": non_post_match_done,
         "non_post_match_pending": non_post_match_pending,
+    }
+
+
+KV_CATEGORY_NAME = "KVs"
+
+
+def build_spl_report_row(match):
+    active_items = _get_active_items(match)
+    kv_items = [item for item in active_items if item.template_item.category.name == KV_CATEGORY_NAME]
+    non_post_match_items = [
+        item for item in active_items
+        if item.template_item.category.name != POST_MATCH_CATEGORY_NAME
+    ]
+
+    kv_ready = bool(kv_items) and all(item.status == MatchChecklistItem.Status.DONE for item in kv_items)
+    webook_ready = bool(non_post_match_items) and all(
+        item.status == MatchChecklistItem.Status.DONE for item in non_post_match_items
+    )
+
+    return {
+        "match": match,
+        "kv_ready": kv_ready,
+        "webook_ready": webook_ready,
     }
 
 

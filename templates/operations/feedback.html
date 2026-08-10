@@ -1,0 +1,78 @@
+{% extends "operations/base.html" %}
+
+{% block title %}Feedback{% endblock %}
+
+{% block page_help %}
+    <p>
+        This page lists <strong>feedback and suggestions</strong> from the team — what was
+        suggested, what changed, and whether it was accepted, rejected, or implemented.
+    </p>
+    <p>Use the "Submit Feedback" button (or the feedback icon) to send in a new idea.</p>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">Feedback – Recommendations and Suggestions – Software Improvements – Design Improvements – Infrastructure Improvements</h1>
+            <p class="page-subtitle">
+                A running record of ideas suggested by the team, what changed because of them, and why each one was accepted, rejected, or implemented.
+            </p>
+        </div>
+
+        <div class="filter-bar">
+            <a class="btn btn-primary" href="{% url 'operations:feedback-submit' %}"><i class="ti ti-plus"></i> Submit Feedback</a>
+        </div>
+    </div>
+</div>
+
+{% for category_label, entries in grouped_entries.items %}
+    <div class="card panel dashboard-section">
+        <h2 class="panel-title">{{ category_label }}</h2>
+
+        <div class="dashboard-list">
+            {% for entry in entries %}
+                <div class="card feedback-entry-card">
+                    <div class="match-row-top">
+                        <div>
+                            <h3 class="match-row-title">{{ entry.title }}</h3>
+                            <div class="help-text">Suggested by {{ entry.submitted_by }}</div>
+                        </div>
+                        <span class="badge badge-{{ entry.status|slugify }}">
+                            {{ entry.get_status_display }}
+                        </span>
+                    </div>
+
+                    <div class="feedback-entry-body">
+                        <div>
+                            <div class="meta-label">Before</div>
+                            <p>{{ entry.situation_before|linebreaksbr }}</p>
+                        </div>
+
+                        <div>
+                            <div class="meta-label">Suggestion</div>
+                            <p>{{ entry.suggestion|linebreaksbr }}</p>
+                        </div>
+
+                        {% if entry.situation_after %}
+                            <div>
+                                <div class="meta-label">After</div>
+                                <p>{{ entry.situation_after|linebreaksbr }}</p>
+                            </div>
+                        {% endif %}
+
+                        {% if entry.decision_reason %}
+                            <div>
+                                <div class="meta-label">Why</div>
+                                <p>{{ entry.decision_reason|linebreaksbr }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <p class="help-text">No entries in this category yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+{% endfor %}
+{% endblock %}

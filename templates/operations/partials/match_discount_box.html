@@ -1,0 +1,26 @@
+<div class="card meta-box" id="match-discount-box">
+    <div class="meta-label">Discount Code</div>
+    <div class="meta-value" style="display:flex; align-items:center; gap:8px; justify-content:space-between;">
+        {% if match.has_discount %}
+            <span>
+                {{ match.discount_code }}
+                <span class="mini-badge mini-badge-success">-{{ match.discount_percentage }}%</span>
+                <span class="mini-badge mini-badge-info">{{ match.discount_ticket_count }} tickets</span>
+            </span>
+        {% else %}
+            <span class="help-text">No discount code set.</span>
+        {% endif %}
+
+        {% if can_edit %}
+            <button
+                class="btn btn-secondary"
+                style="padding:4px 8px; font-size:12px;"
+                hx-get="{% url 'operations:match-discount-edit' match.pk %}"
+                hx-target="#match-discount-box"
+                hx-swap="outerHTML"
+            >
+                {% if match.has_discount %}Edit{% else %}Add{% endif %}
+            </button>
+        {% endif %}
+    </div>
+</div>

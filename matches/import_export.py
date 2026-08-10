@@ -78,6 +78,57 @@ def export_matches_xlsx(queryset):
     return buffer.getvalue()
 
 
+SPL_REPORT_FIELDS = [
+    "Matchweek",
+    "Match Date",
+    "Home Team",
+    "Away Team",
+    "Stadium",
+    "Release Date",
+    "Actual Release Date",
+    "Ticketing Plan Status",
+    "KV / Webook Images",
+    "Webook Readiness",
+    "SPL Complimentary Tickets",
+    "Comments",
+    "Coordinator (Webook)",
+]
+
+
+def _spl_report_row_values(row):
+    match = row["match"]
+    return [
+        match.round_number if match.round_number is not None else "",
+        match.event_date.isoformat() if match.event_date else "",
+        match.home_club.name_en,
+        match.away_club.name_en,
+        match.venue.name_en if match.venue else "",
+        match.sale_starts_at.astimezone(RIYADH_TZ).strftime("%Y-%m-%d %H:%M") if match.sale_starts_at else "",
+        match.actual_release_at.astimezone(RIYADH_TZ).strftime("%Y-%m-%d %H:%M") if match.actual_release_at else "",
+        "Approved" if match.ticketing_plan_approved else "Not Approved",
+        "Ready" if row["kv_ready"] else "Not Ready",
+        "Ready" if row["webook_ready"] else "Not Ready",
+        "Sent" if match.spl_tickets_sent else "Not Sent",
+        match.spl_comments,
+        (match.home_club.owner.get_full_name() or match.home_club.owner.username) if match.home_club.owner_id else "",
+    ]
+
+
+def export_spl_report_xlsx(rows):
+    """rows: iterable of dicts shaped like operations.views.helpers.build_spl_report_row's output."""
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "SPL Report"
+    ws.append(SPL_REPORT_FIELDS)
+
+    for row in rows:
+        ws.append(_spl_report_row_values(row))
+
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    return buffer.getvalue()
+
+
 def build_import_template_xlsx():
     wb = openpyxl.Workbook()
     ws = wb.active

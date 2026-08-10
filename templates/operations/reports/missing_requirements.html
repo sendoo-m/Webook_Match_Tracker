@@ -1,6 +1,15 @@
 {% extends "operations/base.html" %}
+{% load display_helpers %}
 
 {% block title %}Missing Operational Requirements{% endblock %}
+
+{% block page_help %}
+    <p>
+        This report lists every match with <strong>pending operational items</strong> — things
+        that still need to be done before the match is ready.
+    </p>
+    <p>Click "Details" under a match to see exactly which items are outstanding and why.</p>
+{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -48,7 +57,7 @@
             <select name="user">
                 <option value="">All</option>
                 {% for u in users %}
-                    <option value="{{ u.id }}" {% if selected_user == u.id|stringformat:"s" %}selected{% endif %}>{{ u.username }}</option>
+                    <option value="{{ u.id }}" {% if selected_user == u.id|stringformat:"s" %}selected{% endif %}>{{ u|display_name }}</option>
                 {% endfor %}
             </select>
         </div>

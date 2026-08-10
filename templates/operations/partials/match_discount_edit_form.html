@@ -1,0 +1,32 @@
+<div class="card meta-box" id="match-discount-box">
+    <div class="meta-label">Discount Code</div>
+    <form
+        hx-post="{% url 'operations:match-discount-update' match.pk %}"
+        hx-target="#match-discount-box"
+        hx-swap="outerHTML"
+        style="display:flex; flex-direction:column; gap:8px;"
+    >
+        {% csrf_token %}
+        {% for error in form.non_field_errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+
+        <div>
+            {{ form.discount_code.label_tag }}
+            {{ form.discount_code }}
+            {% for error in form.discount_code.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div>
+            {{ form.discount_percentage.label_tag }}
+            {{ form.discount_percentage }}
+            {% for error in form.discount_percentage.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div>
+            {{ form.discount_ticket_count.label_tag }}
+            {{ form.discount_ticket_count }}
+            {% for error in form.discount_ticket_count.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="padding:6px 10px; font-size:12px; align-self:flex-start;">Save</button>
+    </form>
+</div>

@@ -42,4 +42,12 @@ urlpatterns = [
     path("checklist-items/new/", views.ChecklistItemCreateView.as_view(), name="checklist-item-create"),
     path("checklist-items/<int:pk>/edit/", views.ChecklistItemUpdateView.as_view(), name="checklist-item-update"),
     path("checklist-items/<int:pk>/toggle-active/", views.ChecklistItemToggleActiveView.as_view(), name="checklist-item-toggle-active"),
+
+    path("feedback/", views.FeedbackEntryListView.as_view(), name="feedback-list"),
+    path("feedback/new/", views.FeedbackEntryCreateView.as_view(), name="feedback-create"),
+    path("feedback/<int:pk>/edit/", views.FeedbackEntryUpdateView.as_view(), name="feedback-update"),
+
+    path("release-notes/", views.ReleaseNoteListView.as_view(), name="release-note-list"),
+    path("release-notes/new/", views.ReleaseNoteCreateView.as_view(), name="release-note-create"),
+    path("release-notes/<int:pk>/edit/", views.ReleaseNoteUpdateView.as_view(), name="release-note-update"),
 ]

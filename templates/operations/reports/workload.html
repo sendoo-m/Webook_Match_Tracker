@@ -1,6 +1,14 @@
 {% extends "operations/base.html" %}
+{% load display_helpers %}
 
 {% block title %}Coordinator Workload{% endblock %}
+
+{% block page_help %}
+    <p>
+        This report shows <strong>workload by coordinator, club, and round</strong> — how many
+        matches each person still has to finish before they're published.
+    </p>
+{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -40,7 +48,7 @@
             <select name="user">
                 <option value="">All</option>
                 {% for u in users %}
-                    <option value="{{ u.id }}" {% if selected_user == u.id|stringformat:"s" %}selected{% endif %}>{{ u.username }}</option>
+                    <option value="{{ u.id }}" {% if selected_user == u.id|stringformat:"s" %}selected{% endif %}>{{ u|display_name }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -99,7 +107,7 @@
                 <tbody>
                     {% for row in by_user|dictsortreversed:"remaining" %}
                     <tr>
-                        <td>{{ row.home_club__owner__username|default:"—" }}</td>
+                        <td>{{ row.coordinator_display_name }}</td>
                         <td>{{ row.total }}</td>
                         <td>
                             {% if row.remaining %}
@@ -225,13 +233,14 @@
                     <th>Round</th>
                     <th>Date</th>
                     <th>Status</th>
+                    <th>Discount</th>
                 </tr>
             </thead>
             <tbody>
                 {% for match in matches %}
                 <tr>
                     <td><a href="{% url 'operations:match-detail' match.pk %}">{{ match.title_en }}</a></td>
-                    <td>{{ match.home_club.owner.username|default:"—" }}</td>
+                    <td>{{ match.home_club.owner|display_name }}</td>
                     <td>{{ match.competition.name_ar }}</td>
                     <td>{{ match.round_number|default:"—" }}</td>
                     <td>{{ match.event_date }} {{ match.match_start_time }}</td>
@@ -240,9 +249,16 @@
                             {{ match.get_cms_status_display }}
                         </span>
                     </td>
+                    <td>
+                        {% if match.has_discount %}
+                            <span class="mini-badge mini-badge-success">{{ match.discount_code }}</span>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="6">No matches found.</td></tr>
+                <tr><td colspan="7">No matches found.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

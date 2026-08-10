@@ -12,7 +12,11 @@
 {% block table_body %}
     {% for user in users %}
         <tr>
-            <td>{{ user.username }}{% if user.is_superuser %} <span class="mini-badge mini-badge-info">Superuser</span>{% endif %}</td>
+            <td>
+                {{ user.username }}
+                {% if user.get_full_name %}<span class="help-text">({{ user.get_full_name }})</span>{% endif %}
+                {% if user.is_superuser %} <span class="mini-badge mini-badge-info">Superuser</span>{% endif %}
+            </td>
             <td>{% for group in user.groups.all %}{{ group.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
             <td>{{ user.owned_clubs.count }}</td>
             <td>
@@ -45,7 +49,11 @@
 {% block table_body %}
     {% for user in users %}
         <tr>
-            <td>{{ user.username }}{% if user.is_superuser %} <span class="mini-badge mini-badge-info">Superuser</span>{% endif %}</td>
+            <td>
+                {{ user.username }}
+                {% if user.get_full_name %}<span class="help-text">({{ user.get_full_name }})</span>{% endif %}
+                {% if user.is_superuser %} <span class="mini-badge mini-badge-info">Superuser</span>{% endif %}
+            </td>
             <td>{% for group in user.groups.all %}{{ group.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
             <td>{{ user.owned_clubs.count }}</td>
             <td>

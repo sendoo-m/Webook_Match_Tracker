@@ -12,7 +12,13 @@ from matches.models import Match
 from operations.models import MatchActivityLog
 from operations.permissions import MatchScopedQuerysetMixin, require_match_access
 
-from .helpers import build_match_progress_context, build_match_detail_side_context, get_match_activity_page_context, log_match_activity
+from .helpers import (
+    build_match_detail_side_context,
+    build_match_progress_context,
+    build_spl_report_row,
+    get_match_activity_page_context,
+    log_match_activity,
+)
 
 class SendToCMSView(LoginRequiredMixin, MatchScopedQuerysetMixin, View):
     def post(self, request, pk):
@@ -65,6 +71,13 @@ class MatchCMSStatusUpdateView(LoginRequiredMixin, MatchScopedQuerysetMixin, Vie
             match.sent_to_cms_at = None
             match.sent_to_cms_by = None
             update_fields.extend(["sent_to_cms_at", "sent_to_cms_by"])
+        elif new_status == Match.Status.PUBLISHED and not match.actual_release_at:
+            # The SPL report's "Actual Release Date" is derived from this
+            # control rather than typed in manually - it's the moment the
+            # match actually went live, not a plan someone can edit after
+            # the fact.
+            match.actual_release_at = timezone.now()
+            update_fields.append("actual_release_at")
         match.save(update_fields=update_fields)
         old_status_label = dict(Match.Status.choices).get(old_status, old_status)
         new_status_label = dict(Match.Status.choices).get(new_status, new_status)
@@ -77,8 +90,17 @@ class MatchCMSStatusUpdateView(LoginRequiredMixin, MatchScopedQuerysetMixin, Vie
         progress_html = render_to_string("operations/partials/match_progress_summary.html", detail_context, request=request)
         status_html = render_to_string("operations/partials/match_status_badge.html", detail_context, request=request)
         activity_html = render_to_string("operations/partials/activity_log_timeline.html", detail_context, request=request)
+        # This form posts with hx-swap="none" (see match_status_badge.html) and
+        # relies entirely on out-of-band swaps, so this fragment needs the oob
+        # attribute here - unlike its own Edit/Save actions, which target and
+        # swap this same box directly.
+        spl_info_html = render_to_string(
+            "operations/partials/match_spl_info_box.html",
+            {"match": match, "can_edit": True, "oob": True, **build_spl_report_row(match)},
+            request=request,
+        )
         response_html = progress_html + status_html + activity_html
         if request.headers.get("HX-Request") == "true":
-            return HttpResponse(response_html)
+            return HttpResponse(response_html + spl_info_html)
         messages.success(request, "CMS status updated successfully.")
         return redirect("operations:match-detail", pk=match.pk)

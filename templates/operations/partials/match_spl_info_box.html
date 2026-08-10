@@ -1,0 +1,37 @@
+<div class="card meta-box" id="match-spl-info-box"{% if oob %} hx-swap-oob="true"{% endif %}>
+    <div class="meta-label">SPL Report Info</div>
+    <div class="meta-value" style="display:flex; flex-direction:column; gap:6px;">
+        <div class="mini-badges">
+            <span class="mini-badge mini-badge-{% if match.ticketing_plan_approved %}success{% else %}neutral{% endif %}">
+                Ticketing Plan: {% if match.ticketing_plan_approved %}Approved{% else %}Not Approved{% endif %}
+            </span>
+            <span class="mini-badge mini-badge-{% if match.spl_tickets_sent %}success{% else %}neutral{% endif %}">
+                SPL Tickets: {% if match.spl_tickets_sent %}Sent{% else %}Not Sent{% endif %}
+            </span>
+            <span class="mini-badge mini-badge-{% if kv_ready %}success{% else %}neutral{% endif %}">
+                KV / Webook Images: {% if kv_ready %}Ready{% else %}Not Ready{% endif %}
+            </span>
+            <span class="mini-badge mini-badge-{% if webook_ready %}success{% else %}neutral{% endif %}">
+                Webook Readiness: {% if webook_ready %}Ready{% else %}Not Ready{% endif %}
+            </span>
+        </div>
+
+        <div class="help-text">Actual release: {{ match.actual_release_at|default:"Not set" }}</div>
+
+        {% if match.spl_comments %}
+            <div class="help-text">Comments: {{ match.spl_comments }}</div>
+        {% endif %}
+
+        {% if can_edit %}
+            <button
+                class="btn btn-secondary"
+                style="padding:4px 8px; font-size:12px; align-self:flex-start;"
+                hx-get="{% url 'operations:match-spl-info-edit' match.pk %}"
+                hx-target="#match-spl-info-box"
+                hx-swap="outerHTML"
+            >
+                Edit
+            </button>
+        {% endif %}
+    </div>
+</div>

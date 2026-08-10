@@ -14,15 +14,15 @@
         </div>
         <div class="field-group">
             <label>&nbsp;</label>
-            <button type="submit">Export</button>
+            <button type="submit"><i class="ti ti-download"></i> Export</button>
         </div>
         <div class="field-group">
             <label>&nbsp;</label>
-            <a class="btn btn-secondary" href="{% url 'control_panel:match-import' %}">Import</a>
+            <a class="btn btn-secondary" href="{% url 'control_panel:match-import' %}"><i class="ti ti-upload"></i> Import</a>
         </div>
         <div class="field-group">
             <label>&nbsp;</label>
-            <a class="btn btn-secondary" href="{% url 'control_panel:match-template' %}">Download Template</a>
+            <a class="btn btn-secondary" href="{% url 'control_panel:match-template' %}"><i class="ti ti-file-download"></i> Download Template</a>
         </div>
     </form>
 </div>
@@ -34,6 +34,7 @@
     <th>Round</th>
     <th>Date</th>
     <th>Status</th>
+    <th>Discount</th>
     <th></th>
 {% endblock %}
 
@@ -50,11 +51,18 @@
                 </span>
             </td>
             <td>
+                {% if match.has_discount %}
+                    <span class="mini-badge mini-badge-success">{{ match.discount_code }} (-{{ match.discount_percentage }}%, {{ match.discount_ticket_count }} tix)</span>
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+            <td>
                 <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:match-update' match.pk %}">Edit</a>
             </td>
         </tr>
     {% empty %}
-        <tr><td colspan="6">No matches found.</td></tr>
+        <tr><td colspan="7">No matches found.</td></tr>
     {% endfor %}
 {% endblock %}
 
@@ -73,15 +81,15 @@
         </div>
         <div class="field-group">
             <label>&nbsp;</label>
-            <button type="submit">Export</button>
+            <button type="submit"><i class="ti ti-download"></i> Export</button>
         </div>
         <div class="field-group">
             <label>&nbsp;</label>
-            <a class="btn btn-secondary" href="{% url 'control_panel:match-import' %}">Import</a>
+            <a class="btn btn-secondary" href="{% url 'control_panel:match-import' %}"><i class="ti ti-upload"></i> Import</a>
         </div>
         <div class="field-group">
             <label>&nbsp;</label>
-            <a class="btn btn-secondary" href="{% url 'control_panel:match-template' %}">Download Template</a>
+            <a class="btn btn-secondary" href="{% url 'control_panel:match-template' %}"><i class="ti ti-file-download"></i> Download Template</a>
         </div>
     </form>
 </div>

@@ -39,10 +39,18 @@ class CoordinatorWorkloadReportView(LoginRequiredMixin, ControlPanelAccessMixin,
 
         by_user = list(
             matches.filter(home_club__owner__isnull=False)
-            .values("home_club__owner_id", "home_club__owner__username")
+            .values(
+                "home_club__owner_id",
+                "home_club__owner__username",
+                "home_club__owner__first_name",
+                "home_club__owner__last_name",
+            )
             .annotate(total=Count("id"), remaining=Count("id", filter=remaining_filter))
             .order_by("-remaining", "home_club__owner__username")
         )
+        for row in by_user:
+            full_name = f"{row['home_club__owner__first_name']} {row['home_club__owner__last_name']}".strip()
+            row["coordinator_display_name"] = full_name or row["home_club__owner__username"]
         by_club = list(
             matches.values("home_club_id", "home_club__name_ar")
             .annotate(total=Count("id"), remaining=Count("id", filter=remaining_filter))

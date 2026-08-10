@@ -3,6 +3,14 @@
 
 {% block title %}{{ match.title_en }}{% endblock %}
 
+{% block page_help %}
+    <p>
+        This is a single <strong>match's detail page</strong> — its checklist, discount code,
+        SPL report info, CMS status, and activity history all in one place.
+    </p>
+    <p>If you manage this match, you can update checklist items and settings directly here.</p>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div class="page-header-row">
@@ -17,8 +25,8 @@
         </div>
 
         <div class="filter-bar">
-            <a class="btn btn-secondary" href="{% url 'operations:match-live' match.pk %}">Live View</a>
-            <a class="btn btn-secondary" href="{% url 'operations:match-outstanding' match.pk %}">Outstanding Items</a>
+            <a class="btn btn-secondary" href="{% url 'operations:match-live' match.pk %}"><i class="ti ti-broadcast"></i> Live View</a>
+            <a class="btn btn-secondary" href="{% url 'operations:match-outstanding' match.pk %}"><i class="ti ti-list-check"></i> Outstanding Items</a>
         </div>
     </div>
 </div>
@@ -41,8 +49,15 @@
 
     <div class="card meta-box">
         <div class="meta-label">Home / Away</div>
-        <div class="meta-value">{{ match.home_club }} vs {{ match.away_club }}</div>
+        <div class="meta-value" style="display:flex; align-items:center; gap:8px;">
+            {% include "operations/partials/club_chip.html" with club=match.home_club role="home" %}
+            <span class="help-text">vs</span>
+            {% include "operations/partials/club_chip.html" with club=match.away_club role="away" %}
+        </div>
     </div>
+
+    {% include "operations/partials/match_discount_box.html" %}
+    {% include "operations/partials/match_spl_info_box.html" %}
 </div>
 
 <div class="detail-layout">
@@ -144,6 +159,14 @@
 
 {% block title %}{{ match.title_en }}{% endblock %}
 
+{% block page_help %}
+    <p>
+        This is a single <strong>match's detail page</strong> — its checklist, discount code,
+        SPL report info, CMS status, and activity history all in one place.
+    </p>
+    <p>If you manage this match, you can update checklist items and settings directly here.</p>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div class="page-header-row">
@@ -153,8 +176,8 @@
         </div>
 
         <div class="filter-bar">
-            <a class="btn btn-secondary" href="{% url 'operations:match-live' match.pk %}">Live View</a>
-            <a class="btn btn-secondary" href="{% url 'operations:match-outstanding' match.pk %}">Outstanding Items</a>
+            <a class="btn btn-secondary" href="{% url 'operations:match-live' match.pk %}"><i class="ti ti-broadcast"></i> Live View</a>
+            <a class="btn btn-secondary" href="{% url 'operations:match-outstanding' match.pk %}"><i class="ti ti-list-check"></i> Outstanding Items</a>
         </div>
     </div>
 </div>
@@ -177,8 +200,15 @@
 
     <div class="card meta-box">
         <div class="meta-label">Home / Away</div>
-        <div class="meta-value">{{ match.home_club }} vs {{ match.away_club }}</div>
+        <div class="meta-value" style="display:flex; align-items:center; gap:8px;">
+            {% include "operations/partials/club_chip.html" with club=match.home_club role="home" %}
+            <span class="help-text">vs</span>
+            {% include "operations/partials/club_chip.html" with club=match.away_club role="away" %}
+        </div>
     </div>
+
+    {% include "operations/partials/match_discount_box.html" %}
+    {% include "operations/partials/match_spl_info_box.html" %}
 </div>
 
 <div class="detail-layout">

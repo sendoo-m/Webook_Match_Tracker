@@ -21,7 +21,7 @@
                 hx-swap="outerHTML"
                 hx-push-url="true"
             >
-                All
+                <i class="ti ti-list"></i> All
             </a>
 
             <a
@@ -32,7 +32,7 @@
                 hx-swap="outerHTML"
                 hx-push-url="true"
             >
-                Live
+                <i class="ti ti-broadcast"></i> Live
             </a>
 
             <a
@@ -43,7 +43,7 @@
                 hx-swap="outerHTML"
                 hx-push-url="true"
             >
-                Ready
+                <i class="ti ti-ticket"></i> Ready
             </a>
 
             <a
@@ -54,7 +54,7 @@
                 hx-swap="outerHTML"
                 hx-push-url="true"
             >
-                Alerts
+                <i class="ti ti-alert-triangle"></i> Alerts
             </a>
 
             <a
@@ -65,7 +65,7 @@
                 hx-swap="outerHTML"
                 hx-push-url="true"
             >
-                Reports
+                <i class="ti ti-file-text"></i> Reports
             </a>
 
             <a
@@ -76,7 +76,7 @@
                 hx-swap="outerHTML"
                 hx-push-url="true"
             >
-                Upcoming
+                <i class="ti ti-calendar-time"></i> Upcoming
             </a>
 
             <a
@@ -87,10 +87,12 @@
                 hx-swap="outerHTML"
                 hx-push-url="true"
             >
-                Past
+                <i class="ti ti-history"></i> Past
             </a>
         </div>
     </div>
+
+    <div id="delayed-details-panel-slot"></div>
 
     <div class="table-wrap">
         <table>
@@ -101,17 +103,20 @@
                     <th>Timing</th>
                     <th>Readiness</th>
                     <th>Pre-match</th>
-                    <th>Post-match</th>
+                    {% comment %} <th>Post-match</th> {% endcomment %}
                     <th>Delayed</th>
                     <th>CMS Status</th>
+                    <th>Discount</th>
                 </tr>
             </thead>
             <tbody>
                 {% for card in featured_matches %}
                     <tr>
                         <td>
-                            <a href="{% url 'operations:match-detail' card.match.pk %}">
-                                {{ card.match.title_en }}
+                            <a href="{% url 'operations:match-detail' card.match.pk %}" class="match-row-link">
+                                {% include "operations/partials/club_chip.html" with club=card.match.home_club role="home" %}
+                                <span class="help-text">vs</span>
+                                {% include "operations/partials/club_chip.html" with club=card.match.away_club role="away" %}
                             </a>
                         </td>
 
@@ -122,15 +127,12 @@
                                 <span class="mini-badge mini-badge-live">
                                     <span class="live-dot"></span>LIVE
                                 </span>
-                                {% if card.published_is_live %}
-                                    <div class="help-text">Published on CMS</div>
-                                {% elif card.auto_live_by_ops %}
-                                    <div class="help-text">Auto live in 20-day window</div>
-                                {% endif %}
-                            {% elif card.days_to_match == 0 %}
-                                Today
+                            {% elif card.is_past %}
+                                Finished
+                            {% elif card.hours_to_match is not None and card.hours_to_match < 24 %}
+                                in {{ card.hours_to_match|floatformat:0 }}h
                             {% elif card.days_to_match is not None %}
-                                {{ card.days_to_match }} day{{ card.days_to_match|pluralize }} left
+                                in {{ card.days_to_match }} day{{ card.days_to_match|pluralize }}
                             {% else %}
                                 —
                             {% endif %}
@@ -148,12 +150,34 @@
                             {% endif %}
                         </td>
 
-                        <td>{{ card.non_post_match_done }} / {{ card.non_post_match_total }}</td>
-                        <td>{{ card.post_match_done }} / {{ card.post_match_total }}</td>
+                        <td>
+                            <div class="progress-with-label">
+                                <div class="progress">
+                                    <div class="progress-bar" style="width:{% widthratio card.non_post_match_done card.non_post_match_total 100 %}%"></div>
+                                </div>
+                                <span class="progress-label">{% widthratio card.non_post_match_done card.non_post_match_total 100 %}%</span>
+                            </div>
+                        </td>
+                        {% comment %} <td>
+                            <div class="progress-with-label">
+                                <div class="progress">
+                                    <div class="progress-bar" style="width:{% widthratio card.post_match_done card.post_match_total 100 %}%"></div>
+                                </div>
+                                <span class="progress-label">{% widthratio card.post_match_done card.post_match_total 100 %}%</span>
+                            </div>
+                        </td> {% endcomment %}
 
                         <td>
                             {% if card.delayed_items %}
-                                <span class="mini-badge mini-badge-danger">{{ card.delayed_items }}</span>
+                                <button
+                                    type="button"
+                                    class="mini-badge mini-badge-danger link-badge"
+                                    hx-get="{% url 'operations:match-delayed-details' card.match.pk %}"
+                                    hx-target="#delayed-details-panel-slot"
+                                    hx-swap="innerHTML"
+                                >
+                                    {{ card.delayed_items }}
+                                </button>
                             {% else %}
                                 0
                             {% endif %}
@@ -164,10 +188,18 @@
                                 {{ card.match.get_cms_status_display }}
                             </span>
                         </td>
+
+                        <td>
+                            {% if card.match.has_discount %}
+                                <span class="mini-badge mini-badge-success">{{ card.match.discount_code }}</span>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="8">No matches found for this filter.</td>
+                        <td colspan="9">No matches found for this filter.</td>
                     </tr>
                 {% endfor %}
             </tbody>

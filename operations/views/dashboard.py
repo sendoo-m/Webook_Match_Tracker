@@ -15,7 +15,14 @@ class OperationsDashboardView(LoginRequiredMixin, MatchScopedQuerysetMixin, Temp
     template_name = "operations/dashboard.html"
 
     def get_template_names(self):
-        if self.request.headers.get("HX-Request") == "true":
+        # The filter chips (All/Live/Ready/...) swap only the filtered-matches
+        # table. The auto-refresh poll (see dashboard.html) targets the whole
+        # page instead and uses hx-select to pull out just its own root div,
+        # so it needs the FULL template rendered, not this partial.
+        if (
+            self.request.headers.get("HX-Request") == "true"
+            and self.request.headers.get("HX-Target") == "filtered-matches-panel"
+        ):
             return ["operations/partials/dashboard_filtered_matches_panel.html"]
         return [self.template_name]
 
@@ -51,14 +58,20 @@ class OperationsDashboardView(LoginRequiredMixin, MatchScopedQuerysetMixin, Temp
             reverse=True,
         )
 
+        # Live matches already have their own dedicated section above this
+        # table, so the "all"/"upcoming" table views exclude them to avoid
+        # showing the same match twice. The "Live" filter chip still shows
+        # every currently-live match via live_matches, untouched.
+        non_live_upcoming_matches = [c for c in upcoming_matches if not c["is_live_now"]]
+
         featured_map = {
             "live": live_matches,
             "ready": ready_for_ticket_sale_matches,
             "alerts": prep_alert_matches,
             "reports": matches_needing_reports,
-            "upcoming": upcoming_matches,
+            "upcoming": non_live_upcoming_matches,
             "past": past_matches,
-            "all": upcoming_matches,
+            "all": non_live_upcoming_matches,
         }
         featured_matches = featured_map.get(selected_view, upcoming_matches)
 

@@ -1,15 +1,193 @@
 {% load static %}
+{% load display_helpers %}
+
+<script>
+    (function () {
+        const savedTheme = localStorage.getItem('operations-theme');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.dataset.theme = savedTheme || (systemDark ? 'dark' : 'light');
+    })();
+</script>
+
+<link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="{% static 'design_tokens.css' %}">
+<link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=8">
+
+<meta name="htmx-config" content='{"includeIndicatorStyles": true}'>
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+
+{% url 'operations:dashboard' as dashboard_url %}
+{% url 'operations:match-list' as match_list_url %}
+{% url 'operations:calendar' as calendar_url %}
+{% url 'operations:missing-requirements-report' as missing_url %}
+{% url 'operations:spl-report' as spl_report_url %}
+{% url 'operations:feedback' as feedback_url %}
+{% url 'operations:feedback-submit' as feedback_submit_url %}
+{% url 'operations:changelog' as changelog_url %}
+{% url 'operations:workload-report' as workload_url %}
+{% url 'control_panel:home' as control_panel_url %}
+
+<div class="app-shell">
+    {% if request.user.is_authenticated %}
+        <aside class="sidebar">
+            <a class="sidebar-logo" href="{{ dashboard_url }}">
+                <img src="{% static 'images/Webook_logo.png' %}" alt="Webook" class="sidebar-logo-img">
+                
+                <span class="sidebar-logo-text">Event Tracker</span>
+            </a>
+
+            <nav class="sidebar-nav" aria-label="Main navigation">
+                <a href="{{ dashboard_url }}" class="sidebar-link{% if request.path == dashboard_url %} is-active{% endif %}">
+                    <i class="ti ti-layout-dashboard"></i><span>Dashboard</span>
+                </a>
+                <a href="{{ match_list_url }}" class="sidebar-link{% if request.path == match_list_url %} is-active{% endif %}">
+                    <i class="ti ti-calendar-event"></i><span>Matches</span>
+                </a>
+                <a href="{{ calendar_url }}" class="sidebar-link{% if request.path == calendar_url %} is-active{% endif %}">
+                    <i class="ti ti-calendar"></i><span>Calendar</span>
+                </a>
+                <a href="{{ missing_url }}" class="sidebar-link{% if request.path == missing_url %} is-active{% endif %}">
+                    <i class="ti ti-alert-triangle"></i><span>Missing items</span>
+                </a>
+                <a href="{{ spl_report_url }}" class="sidebar-link{% if request.path == spl_report_url %} is-active{% endif %}">
+                    <i class="ti ti-report"></i><span>SPL Report</span>
+                </a>
+                {% if can_view_control_panel %}
+                <a href="{{ workload_url }}" class="sidebar-link{% if request.path == workload_url %} is-active{% endif %}">
+                    <i class="ti ti-chart-bar"></i><span>Workload</span>
+                </a>
+                <a href="{{ control_panel_url }}" class="sidebar-link{% if request.path == control_panel_url %} is-active{% endif %}">
+                    <i class="ti ti-settings"></i><span>Control panel</span>
+                </a>
+                {% endif %}
+                <a href="{{ feedback_url }}" class="sidebar-link{% if request.path == feedback_url %} is-active{% endif %}">
+                    <i class="ti ti-message-2-star"></i><span>Feedback</span>
+                </a>
+                <a href="{{ changelog_url }}" class="sidebar-link{% if request.path == changelog_url %} is-active{% endif %}">
+                    <i class="ti ti-versions"></i><span>What's New</span>
+                </a>
+                {% comment %} <a href="/admin/" target="_blank" rel="noopener noreferrer" class="sidebar-link">
+                    <i class="ti ti-external-link"></i><span>Admin</span>
+                </a> {% endcomment %}
+            </nav>
+
+            <div class="sidebar-footer">
+                <span class="user-chip">{{ request.user|display_name }}</span>
+
+                <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch color theme">
+                    <i class="ti ti-moon" aria-hidden="true"></i>
+                    <span>Dark mode</span>
+                </button>
+
+                <form method="post" action="{% url 'logout' %}" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-btn btn-block">Logout</button>
+                </form>
+            </div>
+        </aside>
+    {% endif %}
+
+    <main class="app-main">
+        <div id="toast-container" class="page-toast-wrap" aria-live="polite">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="page-toast page-toast-{{ message.tags|default:'info' }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+
+        <footer class="system-footer">
+            <div class="system-footer-inner">
+                <div class="system-footer-title">Operations · Webook</div>
+
+                <div class="system-footer-credits">
+                    <span>Created &amp; implemented: Mohamed Gamal</span>
+                    <span>Team lead: Mohamed Akram</span>
+                    <span>Development: Ayman Al-Basha</span>
+                    <span>Department head: Ahmed Othman</span>
+                </div>
+
+                <div class="system-footer-brand">
+                    <img src="{% static 'images/Webook_logo.png' %}" alt="Webook" class="system-footer-logo">
+                    <span>Made with love in KSA · <strong>Webook.com</strong></span>
+                </div>
+            </div>
+        </footer>
+    </main>
+</div>
+
+{% if request.user.is_authenticated %}
+    <button type="button" class="fab fab-training" title="Quick tour" aria-controls="training-panel" aria-expanded="false">
+        <i class="ti ti-help"></i>
+    </button>
+
+    <a href="{{ feedback_submit_url }}" class="fab fab-feedback" title="Submit feedback &amp; suggestions">
+        <i class="ti ti-message-2-star"></i>
+    </a>
+
+    <div id="training-panel" class="training-panel">
+        <div class="training-panel-head">
+            <strong>Quick tour</strong>
+            <button type="button" class="training-panel-close" aria-label="Close quick tour">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        {% block page_help %}
+            <p>This system tracks every match from setup to kickoff in one place.</p>
+            <p><strong>Why it helps:</strong> see what is done, overdue, and who owns it at a glance.</p>
+        {% endblock %}
+    </div>
+{% endif %}
+
+<script>
+    (function () {
+        const root = document.documentElement;
+        const themeButton = document.getElementById('theme-toggle');
+        const trainingButton = document.querySelector('.fab-training');
+        const trainingPanel = document.getElementById('training-panel');
+        const trainingClose = document.querySelector('.training-panel-close');
+
+        function renderThemeButton() {
+            if (!themeButton) return;
+            const isDark = root.dataset.theme === 'dark';
+            themeButton.querySelector('i').className = isDark ? 'ti ti-sun' : 'ti ti-moon';
+            themeButton.querySelector('span').textContent = isDark ? 'Light mode' : 'Dark mode';
+        }
+
+        themeButton?.addEventListener('click', function () {
+            root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('operations-theme', root.dataset.theme);
+            renderThemeButton();
+        });
+
+        function setTrainingPanel(open) {
+            if (!trainingPanel || !trainingButton) return;
+            trainingPanel.classList.toggle('is-open', open);
+            trainingButton.setAttribute('aria-expanded', String(open));
+        }
+
+        trainingButton?.addEventListener('click', () => setTrainingPanel(!trainingPanel.classList.contains('is-open')));
+        trainingClose?.addEventListener('click', () => setTrainingPanel(false));
+        renderThemeButton();
+    })();
+</script>
+{% comment %} {% load static %}
+{% load display_helpers %}
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <title>{% block title %}Webook Match Tracker{% endblock %}</title>
+    <title>{% block title %}Webook Event Tracker{% endblock %}</title>
 
     <link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     <link rel="stylesheet" href="{% static 'design_tokens.css' %}">
-    <link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=6">
+    <link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=7">
 
     <meta name="htmx-config" content='{"includeIndicatorStyles": true}'>
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
@@ -19,6 +197,10 @@
     {% url 'operations:dashboard' as dashboard_url %}
     {% url 'operations:match-list' as match_list_url %}
     {% url 'operations:missing-requirements-report' as missing_url %}
+    {% url 'operations:spl-report' as spl_report_url %}
+    {% url 'operations:feedback' as feedback_url %}
+    {% url 'operations:feedback-submit' as feedback_submit_url %}
+    {% url 'operations:changelog' as changelog_url %}
     {% url 'operations:workload-report' as workload_url %}
     {% url 'control_panel:home' as control_panel_url %}
 
@@ -26,8 +208,8 @@
         {% if request.user.is_authenticated %}
             <aside class="sidebar">
                 <a class="sidebar-logo" href="{{ dashboard_url }}">
-                    <img src="{% static 'images/webook-logo.svg' %}" alt="Webook" class="sidebar-logo-img">
-                    <span class="sidebar-logo-text">Match Tracker</span>
+                    <img src="{% static 'images/Webook_logo.png' %}" alt="Webook" class="sidebar-logo-img">
+                    <span class="sidebar-logo-text">Event Tracker</span>
                 </a>
 
                 <nav class="sidebar-nav">
@@ -42,6 +224,18 @@
                     <a href="{{ missing_url }}" class="sidebar-link{% if request.path == missing_url %} is-active{% endif %}">
                         <i class="ti ti-alert-triangle"></i>
                         <span>Missing items</span>
+                    </a>
+                    <a href="{{ spl_report_url }}" class="sidebar-link{% if request.path == spl_report_url %} is-active{% endif %}">
+                        <i class="ti ti-report"></i>
+                        <span>SPL Report</span>
+                    </a>
+                    <a href="{{ feedback_url }}" class="sidebar-link{% if request.path == feedback_url %} is-active{% endif %}">
+                        <i class="ti ti-message-2-star"></i>
+                        <span>Feedback</span>
+                    </a>
+                    <a href="{{ changelog_url }}" class="sidebar-link{% if request.path == changelog_url %} is-active{% endif %}">
+                        <i class="ti ti-versions"></i>
+                        <span>What's New</span>
                     </a>
                     {% if can_view_control_panel %}
                         <a href="{{ workload_url }}" class="sidebar-link{% if request.path == workload_url %} is-active{% endif %}">
@@ -60,7 +254,7 @@
                 </nav>
 
                 <div class="sidebar-footer">
-                    <span class="user-chip">{{ request.user.username }}</span>
+                    <span class="user-chip">{{ request.user|display_name }}</span>
                     <form method="post" action="{% url 'logout' %}" class="logout-form">
                         {% csrf_token %}
                         <button type="submit" class="logout-btn btn-block">Logout</button>
@@ -86,5 +280,60 @@
         </div>
     </div>
 
+     <footer class="system-footer">
+        <div class="system-footer-inner">
+            <div class="system-footer-title">Operations Section · Webook</div>
+            <div class="system-footer-credits">
+                <span>Created with love, concept and implementation: Mohamed Gamal</span>
+                <span>Team leader and follow-up: Mohamed Akram</span>
+                <span>Discussion and development: Ayman Al-Basha</span>
+                <span>Department head: Ahmed Othman</span>
+            </div>
+            <div class="system-footer-brand">
+                <img src="{% static 'images/Webook_logo.png' %}" alt="Webook" class="system-footer-logo">
+                <span>Made with love, KSA · powered by <strong>Webook.com</strong></span>
+            </div>
+        </div>
+    </footer> 
+
+
+    {% if request.user.is_authenticated %}
+        <button
+            type="button"
+            class="fab fab-training"
+            title="Quick tour"
+            onclick="document.getElementById('training-panel').classList.toggle('is-open')"
+        >
+            <i class="ti ti-help"></i>
+        </button>
+
+        <a href="{{ feedback_submit_url }}" class="fab fab-feedback" title="Submit feedback &amp; suggestions">
+            <i class="ti ti-message-2-star"></i>
+        </a>
+
+        <div id="training-panel" class="training-panel">
+            <div class="training-panel-head">
+                <strong>Quick tour</strong>
+                <button
+                    type="button"
+                    class="training-panel-close"
+                    onclick="document.getElementById('training-panel').classList.remove('is-open')"
+                >
+                    <i class="ti ti-x"></i>
+                </button>
+            </div>
+            {% block page_help %}
+                <p>
+                    This system tracks every match from setup to kickoff in one place: checklists,
+                    ticket readiness, discounts, SPL reporting, and CMS status.
+                </p>
+                <p>
+                    <strong>Why it helps:</strong> see what's done, what's overdue, and who owns it
+                    at a glance — no spreadsheets, no guessing, no training needed to get started.
+                </p>
+            {% endblock %}
+        </div>
+    {% endif %}
+
 </body>
-</html>
+</html> {% endcomment %}

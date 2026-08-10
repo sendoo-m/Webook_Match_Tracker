@@ -2,6 +2,7 @@
 {% extends "control_panel/list.html" %}
 
 {% block table_head %}
+    <th>Logo</th>
     <th>Name (AR)</th>
     <th>Name (EN)</th>
     <th>Short Name</th>
@@ -13,6 +14,13 @@
 {% block table_body %}
     {% for club in clubs %}
         <tr>
+            <td>
+                {% if club.logo %}
+                    <img src="{{ club.logo.url }}" alt="{{ club.name_en }}" class="club-logo-thumb">
+                {% else %}
+                    <span class="help-text">—</span>
+                {% endif %}
+            </td>
             <td>{{ club.name_ar }}</td>
             <td>{{ club.name_en }}</td>
             <td>{{ club.short_name|default:"—" }}</td>
@@ -30,13 +38,14 @@
             </td>
         </tr>
     {% empty %}
-        <tr><td colspan="6">No teams found.</td></tr>
+        <tr><td colspan="7">No teams found.</td></tr>
     {% endfor %}
 {% endblock %}
 
 {% comment %} {% extends "control_panel/list.html" %}
 
 {% block table_head %}
+    <th>Logo</th>
     <th>Name (AR)</th>
     <th>Name (EN)</th>
     <th>Short Name</th>
@@ -48,6 +57,13 @@
 {% block table_body %}
     {% for club in clubs %}
         <tr>
+            <td>
+                {% if club.logo %}
+                    <img src="{{ club.logo.url }}" alt="{{ club.name_en }}" class="club-logo-thumb">
+                {% else %}
+                    <span class="help-text">—</span>
+                {% endif %}
+            </td>
             <td>{{ club.name_ar }}</td>
             <td>{{ club.name_en }}</td>
             <td>{{ club.short_name|default:"—" }}</td>
@@ -65,6 +81,6 @@
             </td>
         </tr>
     {% empty %}
-        <tr><td colspan="6">No teams found.</td></tr>
+        <tr><td colspan="7">No teams found.</td></tr>
     {% endfor %}
 {% endblock %} {% endcomment %}

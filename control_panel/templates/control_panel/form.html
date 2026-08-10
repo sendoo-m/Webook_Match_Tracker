@@ -3,6 +3,10 @@
 
 {% block title %}{{ page_title }} · Control Panel{% endblock %}
 
+{% block page_help %}
+    <p>You're managing <strong>{{ page_title }}</strong> here — fill in the fields and save when you're done.</p>
+{% endblock %}
+
 {% block content %}
 {% include "control_panel/_subnav.html" %}
 
@@ -11,7 +15,7 @@
 </div>
 
 <div class="card panel" style="max-width:640px;">
-    <form method="post" class="form-stack">
+    <form method="post" class="form-stack" enctype="multipart/form-data">
         {% csrf_token %}
 
         {% for field in form %}
@@ -41,7 +45,7 @@
 </div>
 
 <div class="card panel" style="max-width:640px;">
-    <form method="post" class="form-stack">
+    <form method="post" class="form-stack" enctype="multipart/form-data">
         {% csrf_token %}
 
         {% for field in form %}

@@ -3,6 +3,10 @@
 
 {% block title %}{{ page_title }} · Control Panel{% endblock %}
 
+{% block page_help %}
+    <p>You're managing <strong>{{ page_title }}</strong> here — add, edit, or review entries as needed.</p>
+{% endblock %}
+
 {% block content %}
 {% include "control_panel/_subnav.html" %}
 

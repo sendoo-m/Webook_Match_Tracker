@@ -14,6 +14,7 @@ from .competitions import (
     SectionToggleActiveView,
     SectionUpdateView,
 )
+from .feedback import FeedbackEntryCreateView, FeedbackEntryListView, FeedbackEntryUpdateView
 from .home import PanelHomeView
 from .matches import (
     MatchAdminCreateView,
@@ -23,6 +24,7 @@ from .matches import (
     MatchImportView,
     MatchTemplateView,
 )
+from .release_notes import ReleaseNoteCreateView, ReleaseNoteListView, ReleaseNoteUpdateView
 from .users import UserCreateView, UserListView, UserToggleActiveView, UserUpdateView
 from .venues import (
     StadiumCreateView,
@@ -39,6 +41,9 @@ __all__ = [
     "ChecklistItemListView",
     "ChecklistItemToggleActiveView",
     "ChecklistItemUpdateView",
+    "FeedbackEntryCreateView",
+    "FeedbackEntryListView",
+    "FeedbackEntryUpdateView",
     "MatchAdminCreateView",
     "MatchAdminListView",
     "MatchAdminUpdateView",
@@ -46,6 +51,9 @@ __all__ = [
     "MatchImportView",
     "MatchTemplateView",
     "PanelHomeView",
+    "ReleaseNoteCreateView",
+    "ReleaseNoteListView",
+    "ReleaseNoteUpdateView",
     "SectionCreateView",
     "SectionListView",
     "SectionToggleActiveView",
