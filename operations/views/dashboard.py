@@ -72,6 +72,7 @@ class OperationsDashboardView(LoginRequiredMixin, MatchScopedQuerysetMixin, Temp
             "upcoming": non_live_upcoming_matches,
             "past": past_matches,
             "all": non_live_upcoming_matches,
+            "starting_soon": starting_soon_matches,
         }
         featured_matches = featured_map.get(selected_view, upcoming_matches)
 

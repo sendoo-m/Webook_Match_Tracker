@@ -51,19 +51,24 @@ class MatchForm(forms.ModelForm):
             "match_end_time",
             "gates_open_time",
             "sale_starts_at",
+            "actual_release_at",
             "ticketing_plan_approved",
             "spl_tickets_sent",
             "spl_comments",
         ]
-        # actual_release_at is NOT editable here on purpose: it's stamped
-        # automatically from the CMS Status Control when a match is marked
-        # Published (see operations/views/cms.py), not typed in manually.
+        # actual_release_at defaults to being stamped automatically from the
+        # CMS Status Control when a match is marked Published (see
+        # operations/views/cms.py) - that stamp only fires once and never
+        # overwrites an existing value. It's editable here too, so it can be
+        # corrected or backfilled for matches published before this field
+        # existed.
         widgets = {
             "event_date": forms.DateInput(attrs={"type": "date"}),
             "match_start_time": forms.TimeInput(attrs={"type": "time"}),
             "match_end_time": forms.TimeInput(attrs={"type": "time"}),
             "gates_open_time": forms.TimeInput(attrs={"type": "time"}),
             "sale_starts_at": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            "actual_release_at": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "description_ar": forms.Textarea(attrs={"rows": 3}),
             "description_en": forms.Textarea(attrs={"rows": 3}),
             "spl_comments": forms.Textarea(attrs={"rows": 3}),
@@ -82,6 +87,12 @@ class MatchForm(forms.ModelForm):
         # value the coordinator entered as Asia/Riyadh, matching the import
         # command's convention, instead of Django's UTC default.
         value = self.cleaned_data.get("sale_starts_at")
+        if value:
+            return value.replace(tzinfo=RIYADH_TZ)
+        return value
+
+    def clean_actual_release_at(self):
+        value = self.cleaned_data.get("actual_release_at")
         if value:
             return value.replace(tzinfo=RIYADH_TZ)
         return value

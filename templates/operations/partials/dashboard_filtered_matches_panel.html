@@ -36,6 +36,17 @@
             </a>
 
             <a
+                href="?view=starting_soon"
+                class="filter-chip {% if selected_view == 'starting_soon' %}is-active{% endif %}"
+                hx-get="{% url 'operations:dashboard' %}?view=starting_soon"
+                hx-target="#filtered-matches-panel"
+                hx-swap="outerHTML"
+                hx-push-url="true"
+            >
+                <i class="ti ti-clock"></i> Starting Soon
+            </a>
+
+            <a
                 href="?view=ready"
                 class="filter-chip {% if selected_view == 'ready' %}is-active{% endif %}"
                 hx-get="{% url 'operations:dashboard' %}?view=ready"

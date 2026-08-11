@@ -7,13 +7,16 @@
         This is the <strong>Matches</strong> list — every match you have access to, with its
         readiness progress, CMS status, venue, and any active discount at a glance.
     </p>
-    <p>Click a match to open its full checklist and details, or use the filters to narrow the list.</p>
+    <p>
+        Matches already over are hidden by default - use the "Period" filter and switch to
+        "Past Matches" to see them.
+    </p>
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
     <h1 class="page-title">Matches</h1>
-    <p class="page-subtitle">Browse, filter, and open each match checklist.</p>
+    <p class="page-subtitle">Browse, filter, and open each match checklist. Past matches are hidden by default.</p>
 </div>
 
 <div class="card panel">
@@ -49,11 +52,21 @@
         </div>
 
         <div class="field-group">
+            <label>Period</label>
+            <select name="period">
+                <option value="upcoming" {% if selected_period == "upcoming" %}selected{% endif %}>Upcoming</option>
+                <option value="past" {% if selected_period == "past" %}selected{% endif %}>Past Matches</option>
+            </select>
+        </div>
+
+        <div class="field-group">
             <label>&nbsp;</label>
             <button type="submit">Apply Filters</button>
         </div>
     </form>
 </div>
+
+<div id="delayed-details-panel-slot"></div>
 
 <div class="card panel">
     <div class="table-wrap">
@@ -91,7 +104,15 @@
                     </td>
                     <td>
                         {% if match.delayed_items %}
-                            <span class="badge badge-delayed">{{ match.delayed_items }}</span>
+                            <button
+                                type="button"
+                                class="badge badge-delayed link-badge"
+                                hx-get="{% url 'operations:match-delayed-details' match.pk %}"
+                                hx-target="#delayed-details-panel-slot"
+                                hx-swap="innerHTML"
+                            >
+                                {{ match.delayed_items }}
+                            </button>
                         {% else %}
                             0
                         {% endif %}

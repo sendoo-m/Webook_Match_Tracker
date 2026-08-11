@@ -1,4 +1,6 @@
 
+from datetime import date
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Q
 from django.views.generic import ListView
@@ -37,18 +39,28 @@ class MatchListView(LoginRequiredMixin, MatchScopedQuerysetMixin, ListView):
                     ),
                 ),
             )
-            .order_by("event_date", "match_start_time", "id")
         )
         qs = self.filter_matches_queryset(qs)
         status = self.request.GET.get("status")
         club = self.request.GET.get("club")
         competition = self.request.GET.get("competition")
+        period = self.request.GET.get("period", "upcoming")
         if status:
             qs = qs.filter(cms_status=status)
         if club:
             qs = qs.filter(Q(home_club__id=club) | Q(away_club__id=club))
         if competition:
             qs = qs.filter(competition_id=competition)
+
+        today = date.today()
+        if period == "past":
+            # Matches whose day has already ended - most recent first.
+            qs = qs.filter(event_date__lt=today).order_by("-event_date", "-match_start_time", "-id")
+        else:
+            # Default view: hide matches that are already over. Matches with
+            # no date yet (still being set up) stay visible so they aren't lost.
+            qs = qs.filter(Q(event_date__gte=today) | Q(event_date__isnull=True))
+            qs = qs.order_by("event_date", "match_start_time", "id")
         return qs
 
     def get_context_data(self, **kwargs):
@@ -66,4 +78,5 @@ class MatchListView(LoginRequiredMixin, MatchScopedQuerysetMixin, ListView):
         context["selected_status"] = self.request.GET.get("status", "")
         context["selected_club"] = self.request.GET.get("club", "")
         context["selected_competition"] = self.request.GET.get("competition", "")
+        context["selected_period"] = self.request.GET.get("period", "upcoming")
         return context

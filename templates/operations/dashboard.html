@@ -34,45 +34,45 @@
 </div>
 
 <div class="dashboard-stats-grid">
-    <div class="card stat-card stat-card-neutral">
+    <a class="card stat-card stat-card-neutral" href="{% url 'operations:match-list' %}">
         <div class="stat-label">Total Matches</div>
         <div class="stat-value">{{ stats.total_matches }}</div>
-    </div>
+    </a>
 
-    <div class="card stat-card stat-card-live">
+    <a class="card stat-card stat-card-live" href="{% url 'operations:dashboard' %}?view=live#filtered-matches-panel">
         <div class="stat-label">Live Now</div>
         <div class="stat-value">{{ stats.live_matches }}</div>
-    </div>
+    </a>
 
-    <div class="card stat-card stat-card-info">
+    <a class="card stat-card stat-card-info" href="{% url 'operations:dashboard' %}?view=starting_soon#filtered-matches-panel">
         <div class="stat-label">Starting in 48h</div>
         <div class="stat-value">{{ stats.starting_soon_matches }}</div>
-    </div>
+    </a>
 
-    <div class="card stat-card stat-card-success">
+    <a class="card stat-card stat-card-success" href="{% url 'operations:dashboard' %}?view=ready#filtered-matches-panel">
         <div class="stat-label">Ready for Ticket Sale</div>
         <div class="stat-value">{{ stats.ready_for_ticket_sale_matches }}</div>
-    </div>
+    </a>
 
-    <div class="card stat-card stat-card-warning">
+    <a class="card stat-card stat-card-warning" href="{% url 'operations:dashboard' %}?view=alerts#filtered-matches-panel">
         <div class="stat-label">Prep Alerts</div>
         <div class="stat-value">{{ stats.prep_alert_matches }}</div>
-    </div>
+    </a>
 
-    <div class="card stat-card stat-card-danger">
+    <a class="card stat-card stat-card-danger" href="{% url 'operations:dashboard' %}?view=reports#filtered-matches-panel">
         <div class="stat-label">Needs Reports</div>
         <div class="stat-value">{{ stats.matches_needing_reports }}</div>
-    </div>
+    </a>
 
-    <div class="card stat-card stat-card-upcoming">
+    <a class="card stat-card stat-card-upcoming" href="{% url 'operations:dashboard' %}?view=upcoming#filtered-matches-panel">
         <div class="stat-label">Upcoming</div>
         <div class="stat-value">{{ stats.upcoming_matches }}</div>
-    </div>
+    </a>
 
-    <div class="card stat-card stat-card-past">
+    <a class="card stat-card stat-card-past" href="{% url 'operations:dashboard' %}?view=past#filtered-matches-panel">
         <div class="stat-label">Past Matches</div>
         <div class="stat-value">{{ stats.past_matches }}</div>
-    </div>
+    </a>
 </div>
 
 <div class="card panel dashboard-section">

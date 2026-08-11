@@ -9,9 +9,15 @@
         {% csrf_token %}
         {% for error in form.non_field_errors %}<p class="field-error">{{ error }}</p>{% endfor %}
 
-        <p class="help-text">
-            Actual release date is set automatically when the CMS Status is changed to Published.
-        </p>
+        <div>
+            {{ form.actual_release_at.label_tag }}
+            {{ form.actual_release_at }}
+            <p class="help-text">
+                Set automatically when CMS Status changes to Published - only if it isn't already
+                set. Edit it here to correct it or to backfill matches published before this existed.
+            </p>
+            {% for error in form.actual_release_at.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
 
         <label style="display:flex; align-items:center; gap:6px;">
             {{ form.ticketing_plan_approved }} {{ form.ticketing_plan_approved.label }}
