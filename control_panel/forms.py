@@ -10,7 +10,7 @@ from matches.models import Club, Competition, Match, UserCompetitionAccess, Venu
 
 User = get_user_model()
 
-MANAGEABLE_GROUP_NAMES = ("Club Manager", "Operations Manager")
+MANAGEABLE_GROUP_NAMES = ("Club Manager", "Operations Manager", "Viewer")
 RIYADH_TZ = ZoneInfo("Asia/Riyadh")
 
 

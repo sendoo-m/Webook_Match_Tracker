@@ -1,0 +1,56 @@
+{% if selected_round %}
+    <div class="round-preview-matches">
+        {% for card in featured_matches %}
+            <div
+                class="round-preview-card"
+                role="button"
+                tabindex="0"
+                data-modal-trigger
+                onclick="OperationsModal.open('match-modal-overlay')"
+                hx-get="{% url 'operations:match-quick-view' card.match.pk %}"
+                hx-target="#match-modal-body"
+                hx-swap="innerHTML"
+            >
+                <div class="round-preview-card-head">
+                    <span class="round-preview-round-tag">Round {{ card.match.round_number|default:"—" }}</span>
+                    <span class="round-preview-status">
+                        {% if card.is_live_now %}
+                            <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
+                        {% elif card.match_finished %}
+                            <span class="mini-badge mini-badge-neutral"><i class="ti ti-flag-2"></i> Finished</span>
+                        {% else %}
+                            <span class="badge badge-{{ card.match.cms_status|slugify }}">{{ card.match.get_cms_status_display }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="round-preview-teams">
+                    {% include "operations/partials/club_chip.html" with club=card.match.home_club role="home" %}
+                    <span class="help-text">vs</span>
+                    {% include "operations/partials/club_chip.html" with club=card.match.away_club role="away" %}
+                </div>
+                <div class="round-preview-meta">
+                    <span><i class="ti ti-calendar-event"></i> {{ card.match.event_date|default:"TBC" }}</span>
+                    {% if card.match.match_start_time %}
+                        <span><i class="ti ti-clock"></i> {{ card.match.match_start_time|time:"H:i" }}</span>
+                    {% endif %}
+                    {% if card.match.venue %}
+                        <span><i class="ti ti-map-pin"></i> {{ card.match.venue }}</span>
+                    {% endif %}
+                </div>
+                {% if show_export_link %}
+                    <a
+                        href="{% url 'operations:spl-report-export' %}?match={{ card.match.pk }}"
+                        class="round-preview-export-link"
+                        onclick="event.stopPropagation()"
+                    >
+                        <i class="ti ti-file-spreadsheet"></i> Export this match
+                    </a>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p class="help-text">No matches found for Round {{ selected_round }}.</p>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="help-text">Pick a round above to preview its matches.</p>
+{% endif %}

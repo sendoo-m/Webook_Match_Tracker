@@ -1,17 +1,12 @@
 {% load static %}
 {% load display_helpers %}
 
-<script>
-    (function () {
-        const savedTheme = localStorage.getItem('operations-theme');
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.documentElement.dataset.theme = savedTheme || (systemDark ? 'dark' : 'light');
-    })();
-</script>
+<script src="{% static 'operations/js/theme-init.js' %}"></script>
+<script src="{% static 'operations/js/sidebar-init.js' %}"></script>
 
 <link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="{% static 'design_tokens.css' %}">
-<link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=8">
+<link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=39">
 
 <meta name="htmx-config" content='{"includeIndicatorStyles": true}'>
 <script src="https://unpkg.com/htmx.org@1.9.12"></script>
@@ -21,7 +16,6 @@
 {% url 'operations:calendar' as calendar_url %}
 {% url 'operations:missing-requirements-report' as missing_url %}
 {% url 'operations:spl-report' as spl_report_url %}
-{% url 'operations:feedback' as feedback_url %}
 {% url 'operations:feedback-submit' as feedback_submit_url %}
 {% url 'operations:changelog' as changelog_url %}
 {% url 'operations:workload-report' as workload_url %}
@@ -30,67 +24,102 @@
 <div class="app-shell">
     {% if request.user.is_authenticated %}
         <aside class="sidebar">
+            <button
+                type="button"
+                class="sidebar-toggle"
+                id="sidebar-toggle"
+                aria-label="Collapse sidebar"
+                aria-expanded="true"
+                aria-controls="sidebar-nav"
+            >
+                <i class="ti ti-chevron-left"></i>
+            </button>
+
             <a class="sidebar-logo" href="{{ dashboard_url }}">
                 <img src="{% static 'images/Webook_logo.png' %}" alt="Webook" class="sidebar-logo-img">
-                
+
             </a>
-            <a class="sidebar-logo" href="{{ dashboard_url }}">
-                
-                <span class="sidebar-logo-text" style="font-weight: bold;">Webook Event Tracker</span>
+            <a class="sidebar-logo sidebar-logo-secondary" href="{{ dashboard_url }}">
+
+                <span class="sidebar-logo-text" style="font-weight: bold;">Event Tracker</span>
             </a>
 
-            <nav class="sidebar-nav" aria-label="Main navigation">
-                <a href="{{ dashboard_url }}" class="sidebar-link{% if request.path == dashboard_url %} is-active{% endif %}">
+            <nav class="sidebar-nav" id="sidebar-nav" aria-label="Main navigation">
+                <a href="{{ dashboard_url }}" title="Dashboard" class="sidebar-link{% if request.path == dashboard_url %} is-active{% endif %}">
                     <i class="ti ti-layout-dashboard"></i><span>Dashboard</span>
                 </a>
-                <a href="{{ match_list_url }}" class="sidebar-link{% if request.path == match_list_url %} is-active{% endif %}">
-                    <i class="ti ti-calendar-event"></i><span>Matches</span>
+                {% if not is_viewer_only %}
+                <a href="{{ match_list_url }}" title="Events" class="sidebar-link{% if request.path == match_list_url %} is-active{% endif %}">
+                    <i class="ti ti-calendar-event"></i><span>Events</span>
                 </a>
-                <a href="{{ calendar_url }}" class="sidebar-link{% if request.path == calendar_url %} is-active{% endif %}">
+                {% endif %}
+                <a href="{{ calendar_url }}" title="Calendar" class="sidebar-link{% if request.path == calendar_url %} is-active{% endif %}">
                     <i class="ti ti-calendar"></i><span>Calendar</span>
                 </a>
-                <a href="{{ missing_url }}" class="sidebar-link{% if request.path == missing_url %} is-active{% endif %}">
-                    <i class="ti ti-alert-triangle"></i><span>Missing items</span>
-                </a>
-                <a href="{{ spl_report_url }}" class="sidebar-link{% if request.path == spl_report_url %} is-active{% endif %}">
+                {% if is_viewer_only %}
+                <a href="{{ spl_report_url }}" title="SPL Report" class="sidebar-link{% if request.path == spl_report_url %} is-active{% endif %}">
                     <i class="ti ti-report"></i><span>SPL Report</span>
                 </a>
+                {% endif %}
+                {% if not is_viewer_only %}
+                <a href="{{ missing_url }}" title="Missing items" class="sidebar-link{% if request.path == missing_url %} is-active{% endif %}">
+                    <i class="ti ti-alert-triangle"></i><span>Missing items</span>
+                </a>
+                {% endif %}
                 {% if can_view_control_panel %}
-                <a href="{{ workload_url }}" class="sidebar-link{% if request.path == workload_url %} is-active{% endif %}">
+                <a href="{{ workload_url }}" title="Workload" class="sidebar-link{% if request.path == workload_url %} is-active{% endif %}">
                     <i class="ti ti-chart-bar"></i><span>Workload</span>
                 </a>
-                <a href="{{ control_panel_url }}" class="sidebar-link{% if request.path == control_panel_url %} is-active{% endif %}">
+                <a href="{{ control_panel_url }}" title="Control panel" class="sidebar-link{% if request.path == control_panel_url %} is-active{% endif %}">
                     <i class="ti ti-settings"></i><span>Control panel</span>
                 </a>
                 {% endif %}
-                <a href="{{ feedback_url }}" class="sidebar-link{% if request.path == feedback_url %} is-active{% endif %}">
-                    <i class="ti ti-message-2-star"></i><span>Feedback</span>
-                </a>
-                <a href="{{ changelog_url }}" class="sidebar-link{% if request.path == changelog_url %} is-active{% endif %}">
-                    <i class="ti ti-versions"></i><span>What's New</span>
-                </a>
                 {% comment %} <a href="/admin/" target="_blank" rel="noopener noreferrer" class="sidebar-link">
                     <i class="ti ti-external-link"></i><span>Admin</span>
                 </a> {% endcomment %}
             </nav>
 
             <div class="sidebar-footer">
-                <span class="user-chip">{{ request.user|display_name }}</span>
+                {% if not is_viewer_only %}
+                <a
+                    href="{{ changelog_url }}"
+                    title="What's New{% if latest_release_version %} - v{{ latest_release_version }}{% endif %}"
+                    class="sidebar-whats-new{% if request.path == changelog_url %} is-active{% endif %}"
+                >
+                    <i class="ti ti-versions"></i><span>What's New</span>
+                    {% if latest_release_version %}<span class="sidebar-whats-new-version">v{{ latest_release_version }}</span>{% endif %}
+                </a>
+                {% endif %}
+                <span class="user-chip" title="{{ request.user|display_name }}">
+                    <i class="ti ti-user-circle"></i><span>{{ request.user|display_name }}</span>
+                </span>
 
-                <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch color theme">
+                <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch color theme" title="Switch color theme">
                     <i class="ti ti-moon" aria-hidden="true"></i>
                     <span>Dark mode</span>
                 </button>
 
                 <form method="post" action="{% url 'logout' %}" class="logout-form">
                     {% csrf_token %}
-                    <button type="submit" class="logout-btn btn-block">Logout</button>
+                    <button type="submit" class="logout-btn btn-block" title="Logout">
+                        <i class="ti ti-logout" aria-hidden="true"></i><span>Logout</span>
+                    </button>
                 </form>
             </div>
         </aside>
     {% endif %}
 
     <main class="app-main">
+        {% if request.session.impersonator_id %}
+            <div class="impersonation-banner">
+                <span><i class="ti ti-user-shield"></i> You're logged in as <strong>{{ request.user|display_name }}</strong> for support purposes.</span>
+                <form method="post" action="{% url 'control_panel:stop-impersonating' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-secondary btn-sm">Return to my account</button>
+                </form>
+            </div>
+        {% endif %}
+
         <div id="toast-container" class="page-toast-wrap" aria-live="polite">
             {% if messages %}
                 {% for message in messages %}
@@ -128,9 +157,18 @@
         <i class="ti ti-help"></i>
     </button>
 
-    <a href="{{ feedback_submit_url }}" class="fab fab-feedback" title="Submit feedback &amp; suggestions">
+    <button
+        type="button"
+        class="fab fab-feedback"
+        title="Submit feedback &amp; suggestions"
+        aria-controls="feedback-modal-overlay"
+        aria-expanded="false"
+        hx-get="{{ feedback_submit_url }}"
+        hx-target="#feedback-modal-body"
+        hx-swap="innerHTML"
+    >
         <i class="ti ti-message-2-star"></i>
-    </a>
+    </button>
 
     <div id="training-panel" class="training-panel">
         <div class="training-panel-head">
@@ -144,40 +182,43 @@
             <p><strong>Why it helps:</strong> see what is done, overdue, and who owns it at a glance.</p>
         {% endblock %}
     </div>
+
+    <div id="feedback-modal-overlay" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-head">
+                <strong>Submit Feedback</strong>
+                <button type="button" class="modal-close" id="feedback-modal-close" aria-label="Close">
+                    <i class="ti ti-x"></i>
+                </button>
+            </div>
+            <div id="feedback-modal-body">
+                <p class="help-text">Loading…</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="match-modal-overlay" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-head">
+                <strong>Match Quick View</strong>
+                <button type="button" class="modal-close" id="match-modal-close" aria-label="Close">
+                    <i class="ti ti-x"></i>
+                </button>
+            </div>
+            <div id="match-modal-body">
+                <p class="help-text">Loading…</p>
+            </div>
+        </div>
+    </div>
 {% endif %}
 
-<script>
-    (function () {
-        const root = document.documentElement;
-        const themeButton = document.getElementById('theme-toggle');
-        const trainingButton = document.querySelector('.fab-training');
-        const trainingPanel = document.getElementById('training-panel');
-        const trainingClose = document.querySelector('.training-panel-close');
-
-        function renderThemeButton() {
-            if (!themeButton) return;
-            const isDark = root.dataset.theme === 'dark';
-            themeButton.querySelector('i').className = isDark ? 'ti ti-sun' : 'ti ti-moon';
-            themeButton.querySelector('span').textContent = isDark ? 'Light mode' : 'Dark mode';
-        }
-
-        themeButton?.addEventListener('click', function () {
-            root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
-            localStorage.setItem('operations-theme', root.dataset.theme);
-            renderThemeButton();
-        });
-
-        function setTrainingPanel(open) {
-            if (!trainingPanel || !trainingButton) return;
-            trainingPanel.classList.toggle('is-open', open);
-            trainingButton.setAttribute('aria-expanded', String(open));
-        }
-
-        trainingButton?.addEventListener('click', () => setTrainingPanel(!trainingPanel.classList.contains('is-open')));
-        trainingClose?.addEventListener('click', () => setTrainingPanel(false));
-        renderThemeButton();
-    })();
-</script>
+<script src="{% static 'operations/js/modal.js' %}"></script>
+<script src="{% static 'operations/js/theme-toggle.js' %}"></script>
+<script src="{% static 'operations/js/sidebar-toggle.js' %}"></script>
+<script src="{% static 'operations/js/training-panel.js' %}"></script>
+<script src="{% static 'operations/js/feedback-modal.js' %}"></script>
+<script src="{% static 'operations/js/match-modal.js' %}"></script>
+{% block extra_js %}{% endblock %}
 {% comment %} {% load static %}
 {% load display_helpers %}
 <!doctype html>

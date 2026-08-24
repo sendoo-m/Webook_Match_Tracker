@@ -1,0 +1,55 @@
+{% load display_helpers %}
+<div class="match-quick-view">
+    <div class="match-quick-view-teams">
+        <div class="match-quick-view-club">
+            {% if match.home_club.logo %}
+                <img src="{{ match.home_club.logo.url }}" alt="{{ match.home_club.name_en }}" class="match-quick-view-logo">
+            {% endif %}
+            <span><i class="ti ti-home"></i> {{ match.home_club.name_ar|default:match.home_club.name_en }}</span>
+        </div>
+        <span class="match-quick-view-vs">vs</span>
+        <div class="match-quick-view-club">
+            {% if match.away_club.logo %}
+                <img src="{{ match.away_club.logo.url }}" alt="{{ match.away_club.name_en }}" class="match-quick-view-logo">
+            {% endif %}
+            <span><i class="ti ti-plane-departure"></i> {{ match.away_club.name_ar|default:match.away_club.name_en }}</span>
+        </div>
+    </div>
+
+    <div class="match-quick-view-meta">
+        <span><i class="ti ti-list-numbers"></i> Round {{ match.round_number|default:"—" }}</span>
+        <span><i class="ti ti-calendar-event"></i> {{ match.event_date|default:"TBC" }}</span>
+        {% if match.match_start_time %}
+            <span><i class="ti ti-clock"></i> {{ match.match_start_time|time:"H:i" }}</span>
+        {% endif %}
+    </div>
+
+    <div class="missing-popup-items">
+        {% for item in pending_items %}
+            <div class="missing-popup-item">
+                <div class="missing-popup-item-head">
+                    <span class="missing-popup-item-category">
+                        <i class="ti {{ item.template_item.category.name|category_icon }}"></i>
+                        {{ item.template_item.category.name }}
+                    </span>
+                    <span class="badge badge-{{ item.status|slugify }}">{{ item.get_status_display }}</span>
+                </div>
+                <div class="missing-popup-item-title">{{ item.template_item.title }}</div>
+                {% if item.note %}
+                    <div class="missing-popup-item-note"><i class="ti ti-note"></i> {{ item.note }}</div>
+                {% endif %}
+                {% if item.delay_reason %}
+                    <div class="missing-popup-item-note missing-popup-item-delay">
+                        <i class="ti ti-alert-circle"></i> {{ item.delay_reason }}
+                    </div>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p class="help-text">No pending items for this match.</p>
+        {% endfor %}
+    </div>
+
+    <a href="{% url 'operations:match-outstanding' match.pk %}" class="btn btn-primary match-quick-view-link">
+        Open Outstanding Items <i class="ti ti-arrow-right"></i>
+    </a>
+</div>

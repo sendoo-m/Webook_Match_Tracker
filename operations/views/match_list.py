@@ -31,26 +31,25 @@ class MatchListView(LoginRequiredMixin, MatchScopedQuerysetMixin, ListView):
                         checklist_items__is_active=True,
                     ),
                 ),
-                delayed_items=Count(
-                    "checklist_items",
-                    filter=Q(
-                        checklist_items__status=MatchChecklistItem.Status.DELAYED,
-                        checklist_items__is_active=True,
-                    ),
-                ),
             )
         )
         qs = self.filter_matches_queryset(qs)
         status = self.request.GET.get("status")
-        club = self.request.GET.get("club")
+        home_club = self.request.GET.get("home_club")
+        away_club = self.request.GET.get("away_club")
         competition = self.request.GET.get("competition")
+        round_number = self.request.GET.get("round")
         period = self.request.GET.get("period", "upcoming")
         if status:
             qs = qs.filter(cms_status=status)
-        if club:
-            qs = qs.filter(Q(home_club__id=club) | Q(away_club__id=club))
+        if home_club:
+            qs = qs.filter(home_club_id=home_club)
+        if away_club:
+            qs = qs.filter(away_club_id=away_club)
         if competition:
             qs = qs.filter(competition_id=competition)
+        if round_number:
+            qs = qs.filter(round_number=round_number)
 
         today = date.today()
         if period == "past":
@@ -75,8 +74,11 @@ class MatchListView(LoginRequiredMixin, MatchScopedQuerysetMixin, ListView):
             is_active=True, id__in=allowed_competition_ids
         ).order_by("sort_order", "name_ar")
         context["status_choices"] = Match.Status.choices
+        context["available_rounds"] = range(1, 35)
         context["selected_status"] = self.request.GET.get("status", "")
-        context["selected_club"] = self.request.GET.get("club", "")
+        context["selected_home_club"] = self.request.GET.get("home_club", "")
+        context["selected_away_club"] = self.request.GET.get("away_club", "")
         context["selected_competition"] = self.request.GET.get("competition", "")
+        context["selected_round"] = self.request.GET.get("round", "")
         context["selected_period"] = self.request.GET.get("period", "upcoming")
         return context

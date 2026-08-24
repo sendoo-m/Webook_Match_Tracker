@@ -29,7 +29,7 @@ class MatchDetailView(LoginRequiredMixin, MatchScopedQuerysetMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        selected_filter = self.request.GET.get("filter", "all")
+        selected_filter = self.request.GET.get("filter", "open")
         context["match_status"] = Match.Status
 
         # can_edit is per-MATCH: a Club Manager can edit their own home

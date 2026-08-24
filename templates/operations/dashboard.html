@@ -1,4 +1,5 @@
 {% extends "operations/base.html" %}
+{% load static %}
 <!-- File: templates/operations/dashboard.html -->
 <!-- Path: config/templates/operations/dashboard.html -->
 
@@ -7,18 +8,19 @@
 {% block page_help %}
     <p>
         This is the <strong>Operations Dashboard</strong> — a live snapshot of every match: what's
-        live right now, what's starting soon, what needs attention, and what's ready for ticket sale.
+        live right now and what needs attention (Alerts & Deadlines).
     </p>
     <p>
-        Use the filter chips in the "Filtered Matches" table to narrow down to exactly the matches
-        you care about. The page refreshes itself automatically every few minutes.
+        Use the round strip and filter chips in the "Filtered Matches" table to narrow down to exactly
+        the matches you care about - including Ready for Sale and Needs Reports. The page refreshes
+        itself automatically every few minutes.
     </p>
 {% endblock %}
 
 {% block content %}
 <div
     id="dashboard-content-root"
-    hx-get="{% url 'operations:dashboard' %}?view={{ selected_view }}"
+    hx-get="{% url 'operations:dashboard' %}?view={{ selected_view }}&round={{ selected_round }}"
     hx-trigger="every 180s"
     hx-target="#dashboard-content-root"
     hx-swap="outerHTML"
@@ -31,6 +33,29 @@
         Readiness, live visibility, ticket-sale readiness, alerts, and post-match follow-up.
         <span class="help-text">Auto-refreshes every 3 minutes.</span>
     </p>
+</div>
+
+<div class="quick-actions">
+    <a href="{% url 'operations:match-list' %}" class="quick-action">
+        <i class="ti ti-calendar-event"></i><span>Events</span>
+    </a>
+    <a href="{% url 'operations:calendar' %}" class="quick-action">
+        <i class="ti ti-calendar"></i><span>Calendar</span>
+    </a>
+    <a href="{% url 'operations:missing-requirements-report' %}" class="quick-action">
+        <i class="ti ti-alert-triangle"></i><span>Missing Items</span>
+    </a>
+    <a href="{% url 'operations:spl-report' %}" class="quick-action">
+        <i class="ti ti-report"></i><span>SPL Report</span>
+    </a>
+    {% if can_view_control_panel %}
+        <a href="{% url 'operations:workload-report' %}" class="quick-action">
+            <i class="ti ti-chart-bar"></i><span>Workload</span>
+        </a>
+    {% endif %}
+    <a href="{% url 'operations:feedback' %}" class="quick-action">
+        <i class="ti ti-message-2-star"></i><span>Feedback</span>
+    </a>
 </div>
 
 <div class="dashboard-stats-grid">
@@ -77,238 +102,132 @@
 
 <div class="card panel dashboard-section">
     <div class="dashboard-section-head">
-        <h2 class="panel-title">Live Matches</h2>
-        <span class="help-text">{{ stats.live_matches }} live now</span>
+        <h2 class="panel-title"><i class="ti ti-shirt-sport"></i> Teams</h2>
+        <span class="help-text">Click a team to preview their next home matches</span>
     </div>
 
-    <div class="dashboard-list dashboard-list-compact">
-        {% for card in live_matches %}
-            <div class="match-row-compact">
-                <div class="match-row-compact-main">
-                    <div>
-                        <h3 class="match-row-title">
-                            <a href="{% url 'operations:match-detail' card.match.pk %}">
-                                {{ card.match.title_en }}
-                            </a>
-                        </h3>
-                        <div class="match-meta">
-                            {{ card.match.event_date }} {{ card.match.match_start_time }}
-                            {% if card.match.venue %} · {{ card.match.venue }}{% endif %}
-                        </div>
-                    </div>
-
-                    <div class="mini-badges">
-                        <span class="mini-badge mini-badge-live">
-                            <span class="live-dot"></span>LIVE
-                        </span>
-
-                        {% if card.published_is_live %}
-                            <span class="mini-badge mini-badge-info">Published</span>
-                        {% elif card.auto_live_by_ops %}
-                            <span class="mini-badge mini-badge-success">20-day Auto</span>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="match-row-compact-stats">
-                    <span class="compact-stat"><strong>{{ card.non_post_match_done }}</strong>/{{ card.non_post_match_total }} pre-match</span>
-                    <span class="compact-stat"><strong>{{ card.post_match_pending }}</strong> post pending</span>
-                    <span class="compact-stat">{{ card.match.get_cms_status_display }}</span>
-                    <a class="compact-stat" href="{% url 'operations:match-live' card.match.pk %}">Live View →</a>
-                </div>
+    <div class="team-scroll-strip">
+        {% for club in all_clubs %}
+            <div
+                class="team-chip"
+                role="button"
+                tabindex="0"
+                data-modal-trigger
+                onclick="OperationsModal.open('match-modal-overlay')"
+                hx-get="{% url 'operations:team-quick-view' club.pk %}"
+                hx-target="#match-modal-body"
+                hx-swap="innerHTML"
+                title="{{ club.name_en }}"
+            >
+                {% if club.logo %}
+                    <img src="{{ club.logo.url }}" alt="{{ club.name_en }}" class="team-chip-logo">
+                {% endif %}
+                <span>{{ club.name_ar|default:club.name_en }}</span>
             </div>
         {% empty %}
-            <p class="help-text">No live matches right now.</p>
+            <p class="help-text">No teams found.</p>
         {% endfor %}
     </div>
 </div>
 
-<div class="dashboard-grid-2">
-    <div class="card panel dashboard-section">
-        <h2 class="panel-title">Starting within 48h</h2>
-
-        <div class="dashboard-list">
-            {% for card in starting_soon_matches %}
-                <div class="match-row match-row-soon">
-                    <div class="match-row-top">
-                        <div>
-                            <h3 class="match-row-title">
-                                <a href="{% url 'operations:match-detail' card.match.pk %}">
-                                    {{ card.match.title_en }}
-                                </a>
-                            </h3>
-                            <div class="match-meta">
-                                {{ card.match.event_date }} {{ card.match.match_start_time }}
-                                {% if card.match.venue %} · {{ card.match.venue }}{% endif %}
-                            </div>
-                        </div>
-
-                        <div class="mini-badges">
-                            {% if card.is_live_now %}
-                                <span class="mini-badge mini-badge-live">
-                                    <span class="live-dot"></span>LIVE
-                                </span>
-                            {% elif card.days_to_match == 0 %}
-                                <span class="mini-badge mini-badge-warning">Today</span>
-                            {% else %}
-                                <span class="mini-badge mini-badge-info">Within 48h</span>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="row-progress">
-                        <div class="row-progress-box">
-                            <div class="row-progress-label">Pre-match Pending</div>
-                            <div class="row-progress-value">{{ card.non_post_match_pending }}</div>
-                        </div>
-
-                        <div class="row-progress-box">
-                            <div class="row-progress-label">Post-match Pending</div>
-                            <div class="row-progress-value">{{ card.post_match_pending }}</div>
-                        </div>
-
-                        <div class="row-progress-box">
-                            <div class="row-progress-label">Delayed</div>
-                            <div class="row-progress-value">{{ card.delayed_items }}</div>
-                        </div>
-                    </div>
-                </div>
-            {% empty %}
-                <p class="help-text">No matches starting within the next 48 hours.</p>
-            {% endfor %}
-        </div>
+<div class="card panel dashboard-section">
+    <div class="dashboard-section-head">
+        <h2 class="panel-title"><i class="ti ti-list-numbers"></i> Rounds</h2>
+        <span class="help-text">Click a round to preview its matches</span>
     </div>
 
-    <div class="card panel dashboard-section">
-        <h2 class="panel-title">Alerts & Deadlines</h2>
+    <div class="round-scroll-strip">
+        {% for r in available_rounds %}
+            <a
+                href="?round={{ r }}"
+                class="round-chip {% if selected_round == r|stringformat:'s' %}is-active{% endif %}"
+                hx-get="{% url 'operations:dashboard' %}?round={{ r }}"
+                hx-target="#round-preview-panel"
+                hx-swap="innerHTML"
+                hx-push-url="true"
+            >
+                {{ r }}
+            </a>
+        {% endfor %}
+    </div>
 
-        <div class="dashboard-list">
-            {% for card in prep_alert_matches %}
-                <div class="alert-card alert-{{ card.alert_level|default:'neutral' }}">
-                    <div class="alert-head">
-                        <div>
-                            <div class="alert-title">
-                                <a href="{% url 'operations:match-detail' card.match.pk %}">
-                                    {{ card.match.title_en }}
-                                </a>
-                            </div>
-                            <div class="help-text">
-                                Starts in {{ card.days_to_match }} day{{ card.days_to_match|pluralize }}
-                                · Prep window is {{ prep_window_days }} days
-                            </div>
-                        </div>
+    <div id="round-preview-panel">
+        {% include "operations/partials/dashboard_round_preview.html" %}
+    </div>
+</div>
 
+<details class="card panel dashboard-section dashboard-collapsible">
+    <summary class="dashboard-collapsible-summary">
+        <span class="panel-title">Live Matches</span>
+        <span class="help-text">{{ stats.live_matches }} live now</span>
+    </summary>
+
+    <div class="round-preview-matches">
+        {% for card in live_matches %}
+            <a href="{% url 'operations:match-live' card.match.pk %}" class="round-preview-card">
+                <div class="round-preview-card-head">
+                    <span class="round-preview-round-tag">Round {{ card.match.round_number|default:"—" }}</span>
+                    <span class="round-preview-status">
+                        <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
+                    </span>
+                </div>
+                <div class="round-preview-teams">
+                    {% include "operations/partials/club_chip.html" with club=card.match.home_club role="home" %}
+                    <span class="help-text">vs</span>
+                    {% include "operations/partials/club_chip.html" with club=card.match.away_club role="away" %}
+                </div>
+            </a>
+        {% empty %}
+            <p class="help-text">No live matches right now.</p>
+        {% endfor %}
+    </div>
+</details>
+
+<details class="card panel dashboard-section dashboard-collapsible">
+    <summary class="dashboard-collapsible-summary">
+        <span class="panel-title">Alerts & Deadlines</span>
+        <span class="help-text">{{ stats.prep_alert_matches }} alert{{ stats.prep_alert_matches|pluralize }}</span>
+    </summary>
+
+    <div class="round-preview-matches">
+        {% for card in prep_alert_matches %}
+            <div
+                class="round-preview-card"
+                role="button"
+                tabindex="0"
+                data-modal-trigger
+                onclick="OperationsModal.open('match-modal-overlay')"
+                hx-get="{% url 'operations:match-quick-view' card.match.pk %}"
+                hx-target="#match-modal-body"
+                hx-swap="innerHTML"
+            >
+                <div class="round-preview-card-head">
+                    <span class="round-preview-round-tag">Round {{ card.match.round_number|default:"—" }}</span>
+                    <span class="round-preview-status">
                         <span class="mini-badge mini-badge-{{ card.alert_level|default:'neutral' }}">
                             {{ card.alert_text }}
                         </span>
-                    </div>
-
-                    <div class="row-progress">
-                        <div class="row-progress-box">
-                            <div class="row-progress-label">Pre-match Pending</div>
-                            <div class="row-progress-value">{{ card.non_post_match_pending }}</div>
-                        </div>
-
-                        <div class="row-progress-box">
-                            <div class="row-progress-label">Done</div>
-                            <div class="row-progress-value">{{ card.done_items }}</div>
-                        </div>
-
-                        <div class="row-progress-box">
-                            <div class="row-progress-label">Delayed</div>
-                            <div class="row-progress-value">{{ card.delayed_items }}</div>
-                        </div>
-                    </div>
+                    </span>
                 </div>
-            {% empty %}
-                <p class="help-text">No prep alerts right now.</p>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
-<div class="dashboard-grid-2">
-    <div class="card panel dashboard-section">
-        <h2 class="panel-title">Ready for Ticket Sale</h2>
-
-        <div class="dashboard-list">
-            {% for card in ready_for_ticket_sale_matches %}
-                <div class="match-row match-row-ready">
-                    <div class="match-row-top">
-                        <div>
-                            <h3 class="match-row-title">
-                                <a href="{% url 'operations:match-detail' card.match.pk %}">
-                                    {{ card.match.title_en }}
-                                </a>
-                            </h3>
-                            <div class="match-meta">
-                                {{ card.match.event_date }} {{ card.match.match_start_time }}
-                                {% if card.match.venue %} · {{ card.match.venue }}{% endif %}
-                            </div>
-                        </div>
-
-                        <div class="mini-badges">
-                            <span class="mini-badge mini-badge-success">Ready for Ticket Sale</span>
-                            {% if card.days_to_match is not None %}
-                                <span class="mini-badge mini-badge-info">
-                                    {{ card.days_to_match }} day{{ card.days_to_match|pluralize }} left
-                                </span>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="help-text">
-                        Only post-match items remain: {{ card.post_match_pending }} pending out of {{ card.post_match_total }}.
-                    </div>
+                <div class="round-preview-teams">
+                    {% include "operations/partials/club_chip.html" with club=card.match.home_club role="home" %}
+                    <span class="help-text">vs</span>
+                    {% include "operations/partials/club_chip.html" with club=card.match.away_club role="away" %}
                 </div>
-            {% empty %}
-                <p class="help-text">No matches are fully ready for ticket sale yet.</p>
-            {% endfor %}
-        </div>
-    </div>
-
-    <div class="card panel dashboard-section">
-        <h2 class="panel-title">Past Matches / Needs Reports</h2>
-
-        <div class="dashboard-list">
-            {% for card in matches_needing_reports %}
-                <div class="match-row match-row-danger">
-                    <div class="match-row-top">
-                        <div>
-                            <h3 class="match-row-title">
-                                <a href="{% url 'operations:match-detail' card.match.pk %}">
-                                    {{ card.match.title_en }}
-                                </a>
-                            </h3>
-                            <div class="match-meta">
-                                {{ card.match.event_date }} {{ card.match.match_start_time }}
-                            </div>
-                        </div>
-
-                        <div class="mini-badges">
-                            <span class="mini-badge mini-badge-danger">Reports Pending</span>
-                        </div>
-                    </div>
-
-                    <div class="row-progress">
-                        <div class="row-progress-box">
-                            <div class="row-progress-label">Post-match Pending</div>
-                            <div class="row-progress-value">{{ card.post_match_pending }}</div>
-                        </div>
-
-                        <div class="row-progress-box">
-                            <div class="row-progress-label">Completed</div>
-                            <div class="row-progress-value">{{ card.done_items }} / {{ card.total_items }}</div>
-                        </div>
-                    </div>
+                <div class="round-preview-meta">
+                    <span><i class="ti ti-calendar-time"></i> {{ card.days_to_match }} day{{ card.days_to_match|pluralize }}</span>
                 </div>
-            {% empty %}
-                <p class="help-text">No past matches are waiting on reports.</p>
-            {% endfor %}
-        </div>
+            </div>
+        {% empty %}
+            <p class="help-text">No prep alerts right now.</p>
+        {% endfor %}
     </div>
-</div>
+</details>
 
 {% include "operations/partials/dashboard_filtered_matches_panel.html" %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'operations/js/round-strip.js' %}"></script>
 {% endblock %}

@@ -45,6 +45,52 @@ def can_manage_control_panel(user):
     ).exists()
 
 
+def is_super_admin(user):
+    """
+    True only for the top-tier accounts: Django superuser or in the
+    "Super Admin" group. Stricter than can_manage_control_panel (which also
+    lets Operations Manager in) - this gates user impersonation ("login
+    as"), where only the most trusted accounts should be allowed, and no
+    account at this level can be impersonated by another.
+    """
+    if not getattr(user, "is_authenticated", False):
+        return False
+
+    return user.is_superuser or user.groups.filter(name="Super Admin").exists()
+
+
+class ExcludeViewerAccessMixin:
+    """Blocks the read-only Viewer role from a view entirely (e.g. Missing
+    Operational Requirements, which is operations-internal - the SPL team's
+    equivalent is the SPL Report). Everyone else passes through unchanged."""
+
+    permission_denied_message = "This report isn't available to Viewer accounts - see the SPL Report instead."
+
+    def dispatch(self, request, *args, **kwargs):
+        if is_viewer_only(request.user):
+            from django.core.exceptions import PermissionDenied
+
+            raise PermissionDenied(self.permission_denied_message)
+        return super().dispatch(request, *args, **kwargs)
+
+
+def is_viewer_only(user):
+    """
+    True for accounts whose ENTIRE access is the read-only Viewer role (the
+    external SPL monitoring team) - never true for anyone who is also a
+    manager/admin, even if they happen to also sit in the "Viewer" group.
+    Gates the simplified Viewer dashboard/sidebar and the narrow SPL-plan
+    confirmation action.
+    """
+    if not getattr(user, "is_authenticated", False):
+        return False
+
+    if can_manage_control_panel(user):
+        return False
+
+    return user.groups.filter(name__in=VIEWER_GROUPS).exists()
+
+
 def can_view_all_matches(user):
     """
     True for users allowed to SEE every match across every club and

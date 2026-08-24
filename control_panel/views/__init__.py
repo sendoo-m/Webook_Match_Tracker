@@ -16,6 +16,7 @@ from .competitions import (
 )
 from .feedback import FeedbackEntryCreateView, FeedbackEntryListView, FeedbackEntryUpdateView
 from .home import PanelHomeView
+from .impersonate import ImpersonateUserView, StopImpersonatingView
 from .matches import (
     MatchAdminCreateView,
     MatchAdminListView,
@@ -44,6 +45,7 @@ __all__ = [
     "FeedbackEntryCreateView",
     "FeedbackEntryListView",
     "FeedbackEntryUpdateView",
+    "ImpersonateUserView",
     "MatchAdminCreateView",
     "MatchAdminListView",
     "MatchAdminUpdateView",
@@ -62,6 +64,7 @@ __all__ = [
     "StadiumListView",
     "StadiumToggleActiveView",
     "StadiumUpdateView",
+    "StopImpersonatingView",
     "TeamCreateView",
     "TeamListView",
     "TeamToggleActiveView",

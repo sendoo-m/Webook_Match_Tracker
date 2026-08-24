@@ -58,6 +58,7 @@
     --container: 100%;
     --content-gutter: clamp(14px, 1.5vw, 26px);
     --sidebar-width: 232px;
+    --sidebar-width-collapsed: 80px;
 }
 
 * {
@@ -86,6 +87,26 @@ html[data-theme="light"] {
     --border: #e1e3e8;
     --border-strong: #c9ccd4;
     --white: #ffffff;
+
+    /* Semantic colors were previously left to design_tokens.css's
+       prefers-color-scheme query, which only tracks the OS setting - not
+       this manual toggle. That let a manually-toggled dark page keep
+       light-mode badge backgrounds (e.g. pale yellow) underneath, which is
+       what made warning/danger/etc. badges look broken. This toggle is now
+       the single source of truth for all of them. */
+    --warning: #F6B100;
+    --warning-soft: #FFF8DD;
+    --danger: #F8285A;
+    --danger-soft: #FFEEF3;
+    --success: #17C653;
+    --success-soft: #EAFFF1;
+    --info: #7239EA;
+    --info-soft: #F8F5FF;
+    --primary: #FF2C79;
+    --primary-soft: #FFD4E4;
+    --live: #D81A48;
+    --neutral-soft: #F5F5F6;
+    --neutral-text: #8B8E9A;
 }
 
 html[data-theme="dark"] {
@@ -98,6 +119,20 @@ html[data-theme="dark"] {
     --border: #2e323b;
     --border-strong: #464b57;
     --white: #ffffff;
+
+    --warning: #F6B100;
+    --warning-soft: #F6B10033;
+    --danger: #F8285A;
+    --danger-soft: #F8285A33;
+    --success: #17C653;
+    --success-soft: #17C65333;
+    --info: #7239EA;
+    --info-soft: #7239EA33;
+    --primary: #FF2C79;
+    --primary-soft: #FFD4E4;
+    --live: #D81A48;
+    --neutral-soft: #2F2F32;
+    --neutral-text: #8B8E9A;
 }
 
 a {
@@ -208,6 +243,80 @@ button:hover,
     top: 0;
     height: 100vh;
     overflow-y: auto;
+    overflow-x: hidden;
+    transition: width 0.2s ease, flex-basis 0.2s ease;
+}
+
+.sidebar-toggle {
+    align-self: flex-end;
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    color: var(--muted);
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+.sidebar-toggle i {
+    font-size: 15px;
+    transition: transform 0.2s ease;
+}
+
+@media (min-width: 1041px) {
+    html[data-sidebar="collapsed"] .sidebar {
+        width: var(--sidebar-width-collapsed);
+        flex-basis: var(--sidebar-width-collapsed);
+    }
+
+    html[data-sidebar="collapsed"] .sidebar-toggle {
+        align-self: center;
+    }
+
+    html[data-sidebar="collapsed"] .sidebar-toggle i {
+        transform: rotate(180deg);
+    }
+
+    html[data-sidebar="collapsed"] .sidebar-logo-secondary,
+    html[data-sidebar="collapsed"] .sidebar-link span,
+    html[data-sidebar="collapsed"] .user-chip span,
+    html[data-sidebar="collapsed"] .theme-toggle span,
+    html[data-sidebar="collapsed"] .logout-btn span,
+    html[data-sidebar="collapsed"] .sidebar-whats-new span,
+    html[data-sidebar="collapsed"] .sidebar-whats-new-version {
+        display: none;
+    }
+
+    html[data-sidebar="collapsed"] .sidebar-logo,
+    html[data-sidebar="collapsed"] .sidebar-link,
+    html[data-sidebar="collapsed"] .user-chip,
+    html[data-sidebar="collapsed"] .sidebar-whats-new {
+        justify-content: center;
+    }
+
+    html[data-sidebar="collapsed"] .sidebar-logo {
+        padding: var(--space-2) 0;
+    }
+
+    html[data-sidebar="collapsed"] .sidebar-logo-img {
+        height: 26px;
+    }
+
+    html[data-sidebar="collapsed"] .sidebar-link {
+        padding: var(--space-3);
+    }
+
+    html[data-sidebar="collapsed"] .user-chip {
+        width: auto;
+        padding: 8px;
+    }
 }
 
 .app-main {
@@ -238,6 +347,8 @@ button:hover,
 .sidebar-logo-img {
     height: 40px;
     width: auto;
+    max-width: 100%;
+    transition: height 0.2s ease;
 }
 
 .sidebar-logo-text {
@@ -304,6 +415,35 @@ button:hover,
     width: fit-content;
 }
 
+.sidebar-whats-new {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: fit-content;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+}
+
+.sidebar-whats-new i {
+    font-size: 13px;
+}
+
+.sidebar-whats-new:hover,
+.sidebar-whats-new.is-active {
+    color: var(--text);
+    text-decoration: underline;
+}
+
+.sidebar-whats-new-version {
+    padding: 1px 6px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-2);
+    font-size: 11px;
+    font-weight: 700;
+}
+
 .logout-form {
     margin: 0;
 }
@@ -346,6 +486,10 @@ button:hover,
         align-items: center;
     }
 
+    .sidebar-toggle {
+        display: none;
+    }
+
     .sidebar-nav {
         flex-direction: row;
         flex-wrap: wrap;
@@ -363,6 +507,26 @@ button:hover,
     .theme-toggle {
         width: auto;
     }
+}
+
+/* Impersonation banner - shown to anyone currently logged in as another
+   account via Control Panel > Users > "Login as", so it's always obvious
+   and easy to back out of regardless of what page they're on. */
+.impersonation-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    padding: var(--space-3) var(--content-gutter);
+    background: var(--warning-soft);
+    color: var(--warning);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.impersonation-banner form {
+    margin: 0;
 }
 
 /* Toasts */
@@ -386,19 +550,19 @@ button:hover,
 }
 
 .page-toast-success {
-    border-color: #a7d9b8;
+    border-color: var(--success);
     background: var(--success-soft);
     color: var(--success);
 }
 
 .page-toast-error {
-    border-color: #eab3b3;
+    border-color: var(--danger);
     background: var(--danger-soft);
     color: var(--danger);
 }
 
 .page-toast-info {
-    border-color: #b9c9f7;
+    border-color: var(--info);
     background: var(--info-soft);
     color: var(--info);
 }
@@ -487,6 +651,43 @@ button:hover,
     margin-bottom: 6px;
 }
 
+/* Collapsible dashboard sections - collapsed by default, click the title to
+   reveal. Native <details>/<summary> so it works with zero custom JS. */
+.dashboard-collapsible {
+    padding: 0;
+}
+
+.dashboard-collapsible-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+    list-style: none;
+    cursor: pointer;
+    padding: var(--space-6);
+}
+
+.dashboard-collapsible-summary::-webkit-details-marker {
+    display: none;
+}
+
+.dashboard-collapsible-summary .panel-title::before {
+    content: "▸ ";
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.dashboard-collapsible[open] .dashboard-collapsible-summary .panel-title::before {
+    content: "▾ ";
+}
+
+.dashboard-collapsible > .round-preview-matches,
+.dashboard-collapsible > .table-wrap {
+    padding: 0 var(--space-6) var(--space-6);
+    margin-top: 0;
+}
+
 .dashboard-list {
     display: grid;
     gap: var(--space-4);
@@ -495,6 +696,366 @@ button:hover,
 .dashboard-list-compact {
     display: grid;
     gap: var(--space-3);
+}
+
+/* Quick action shortcuts */
+.quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-bottom: var(--space-8);
+}
+
+.quick-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.quick-action i {
+    font-size: 16px;
+    color: var(--primary);
+}
+
+.quick-action:hover {
+    background: var(--surface-2);
+    text-decoration: none;
+    border-color: var(--primary);
+}
+
+/* Round selector - horizontal scroll strip */
+.round-scroll-wrap {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.round-scroll-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+.round-scroll-strip {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+}
+
+.round-chip {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.round-chip:hover {
+    background: var(--surface-2);
+    text-decoration: none;
+}
+
+.round-chip.is-active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--white);
+}
+
+/* Teams strip - horizontal list of club logos above the round strip */
+.team-scroll-strip {
+    display: flex;
+    gap: var(--space-3);
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+}
+
+.team-chip {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 6px 14px 6px 6px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.team-chip:hover {
+    border-color: var(--primary);
+    background: var(--surface-2);
+}
+
+.team-chip:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.team-chip-logo {
+    height: 24px;
+    width: 24px;
+    object-fit: contain;
+    border-radius: 999px;
+    background: var(--surface-2);
+    flex: 0 0 auto;
+}
+
+/* Round preview - simple cards shown when a round chip is clicked, and
+   reused for Live Matches / Alerts & Deadlines. 4 per row by default,
+   stepping down as the row runs out of room (see Responsive section). */
+.round-preview-matches {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-6);
+}
+
+.round-preview-card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    text-decoration: none;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.round-preview-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+.round-preview-card:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Round tag sits next to the status badge in one head row now (previously
+   floated above the card and stacked over the status badge at the bottom -
+   confusing when both happened to be similarly-colored). Kept neutral on
+   purpose so it never visually competes with whatever color the adjacent
+   status/LIVE badge is. */
+.round-preview-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.round-preview-round-tag {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    background: var(--neutral-soft);
+    color: var(--neutral-text);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+}
+
+.round-preview-status {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+.round-preview-teams {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.round-preview-teams .club-chip {
+    min-width: 0;
+    flex: 0 1 auto;
+}
+
+.round-preview-teams .club-chip span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.round-preview-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.round-preview-meta i {
+    margin-right: 4px;
+}
+
+.round-preview-export-link {
+    align-self: flex-start;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.round-preview-export-link:hover {
+    text-decoration: underline;
+}
+
+/* Matches list - flip cards. Click flips to a back face with status,
+   progress, venue and discount instead of a wide table. Bigger cards than
+   the calendar's (which was too small/unclear and got reverted to plain
+   round tags), so the flip has room to be legible. */
+.match-cards-grid {
+    align-items: stretch;
+}
+
+.match-flip-card {
+    perspective: 1200px;
+    cursor: pointer;
+    outline: none;
+}
+
+.match-flip-card:focus-visible .match-flip-card-face {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.match-flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 190px;
+    transition: transform 0.5s;
+    transform-style: preserve-3d;
+}
+
+.match-flip-card.is-flipped .match-flip-card-inner {
+    transform: rotateY(180deg);
+}
+
+.match-flip-card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    padding: var(--space-4) var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+/* Content anchors at the top of both faces instead of centering - the
+   front's 3 lines and the back's 5-6 lines otherwise leave very different
+   amounts of empty space depending which is showing. .match-flip-card-link
+   still pulls itself to the bottom via margin-top: auto, so any leftover
+   room collapses into one gap right above it instead of spreading out. */
+.match-flip-card-front {
+    justify-content: flex-start;
+}
+
+.match-flip-card-back {
+    transform: rotateY(180deg);
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+.match-flip-card-round {
+    align-self: flex-start;
+    background: var(--neutral-soft);
+    color: var(--neutral-text);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+}
+
+.match-flip-card-teams {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.match-flip-card-teams .club-chip {
+    min-width: 0;
+    flex: 0 1 auto;
+}
+
+.match-flip-card-teams .club-chip span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.match-flip-card-date {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.match-flip-card-line {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.match-flip-card-line--positive {
+    color: var(--success);
+}
+
+.match-flip-card-link {
+    margin-top: auto;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+    text-decoration: none;
 }
 
 /* Stat cards - flat, accent border instead of gradient */
@@ -565,6 +1126,7 @@ a.stat-card:hover {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
     padding: 8px 14px;
     border-radius: var(--radius-pill);
     border: 1px solid var(--border-strong);
@@ -581,9 +1143,13 @@ a.stat-card:hover {
 }
 
 .filter-chip.is-active {
-    background: var(--text);
+    /* Was background: var(--text) - --text flips from dark to light between
+       themes, so this rendered as a near-white chip with white text (i.e.
+       invisible) in dark mode. --primary stays the same vivid color in both
+       themes, matching the already-correct .subnav-link.is-active pattern. */
+    background: var(--primary);
     color: var(--white);
-    border-color: var(--text);
+    border-color: var(--primary);
 }
 
 .filters {
@@ -599,6 +1165,18 @@ a.stat-card:hover {
     flex-direction: column;
     gap: 6px;
     min-width: 200px;
+}
+
+/* A filter field that's fixed rather than a real choice (e.g. the SPL
+   Report's Competition, always Roshan League) - looks like a disabled
+   input so it reads as "this isn't editable" instead of a normal value. */
+.spl-fixed-filter {
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--muted);
+    font-weight: 600;
 }
 
 .form-control {
@@ -772,12 +1350,134 @@ th {
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    padding: 4px 6px;
+    margin: -4px -6px;
+    transition: background-color 0.15s ease;
+}
+
+.match-row-link:hover {
+    background: var(--surface-2);
+}
+
+.match-row-link:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
 }
 
 .link-badge {
     border: none;
     cursor: pointer;
     font-family: inherit;
+}
+
+.match-row-trigger {
+    background: none;
+    padding: 0;
+    color: var(--primary);
+    font-size: inherit;
+    font-weight: 600;
+    text-align: left;
+}
+
+.match-row-trigger:hover {
+    text-decoration: underline;
+}
+
+/* Match quick-view popup card (round preview / delayed / team strip clicks) */
+.match-quick-view-teams {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+}
+
+.match-quick-view-club {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.match-quick-view-logo {
+    height: 48px;
+    width: 48px;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+}
+
+.match-quick-view-vs {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    flex: 0 0 auto;
+}
+
+.match-quick-view-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: var(--space-4);
+}
+
+.match-quick-view-badges {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-4);
+}
+
+.match-quick-view-progress {
+    margin-bottom: var(--space-5);
+}
+
+.match-quick-view-link {
+    width: 100%;
+    justify-content: center;
+}
+
+.match-quick-view-empty {
+    text-align: center;
+}
+
+.match-quick-view-empty .match-quick-view-club {
+    align-items: center;
+    margin-bottom: var(--space-3);
+}
+
+/* SPL fields folded into the quick-view popup for Viewer accounts, instead
+   of a separate full-page destination - keeps it one fast card. */
+.match-quick-view-spl-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border);
+}
+
+.match-quick-view-spl-item--wide {
+    grid-column: span 2;
+}
+
+.match-quick-view-spl-item .meta-label {
+    font-size: 11px;
+    margin-bottom: 2px;
+}
+
+.match-quick-view-spl-item .meta-value {
+    font-size: 13px;
 }
 
 .delayed-details-panel {
@@ -833,11 +1533,15 @@ th {
     margin-top: 4px;
 }
 
-.summary-tile--warning { border-color: #f2d9a8; background: var(--warning-soft); }
-.summary-tile--info { border-color: #b9c9f7; background: var(--info-soft); }
-.summary-tile--success { border-color: #a7d9b8; background: var(--success-soft); }
-.summary-tile--danger { border-color: #eab3b3; background: var(--danger-soft); }
-.summary-tile--primary { border-color: #a9d2ce; background: var(--primary-soft); }
+/* Hardcoded pastel border colors didn't adapt to dark mode - they stayed as
+   light tints even once the "-soft" background switched to a dark tint,
+   producing a mismatched look. Using the semantic color itself adapts correctly
+   since it's now defined per-theme (see html[data-theme] above). */
+.summary-tile--warning { border-color: var(--warning); background: var(--warning-soft); }
+.summary-tile--info { border-color: var(--info); background: var(--info-soft); }
+.summary-tile--success { border-color: var(--success); background: var(--success-soft); }
+.summary-tile--danger { border-color: var(--danger); background: var(--danger-soft); }
+.summary-tile--primary { border-color: var(--primary); background: var(--primary-soft); }
 
 /* Meta */
 .meta-grid {
@@ -905,9 +1609,18 @@ th {
 }
 
 .checklist-card {
-    padding: var(--space-6);
-    margin-bottom: var(--space-5);
+    padding: var(--space-3) var(--space-5);
+    margin-bottom: var(--space-3);
     border-left: 3px solid var(--border-strong);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Paired with hx-swap="outerHTML swap:300ms" on the item form - once a
+   status change no longer belongs in the active filter (e.g. Done while
+   viewing "Open Only"), the card fades out instead of vanishing instantly. */
+.checklist-card.htmx-swapping {
+    opacity: 0;
+    transform: scale(0.97) translateY(-6px);
 }
 
 .checklist-card--not_started { border-left-color: var(--warning); }
@@ -915,34 +1628,45 @@ th {
 .checklist-card--delayed { border-left-color: var(--danger); }
 .checklist-card--done { border-left-color: var(--success); opacity: 0.85; }
 
-.checklist-card-head {
+/* Checklist item row - everything on one line (title, status, actions,
+   note button) to keep the list compact; the note/delay-reason text moved
+   into a popup (see checklist_item_note_form.html) instead of sitting open
+   on the page permanently. */
+.checklist-row-form {
     display: flex;
-    justify-content: space-between;
-    gap: var(--space-4);
-    align-items: flex-start;
-    margin-bottom: var(--space-5);
+    align-items: center;
     flex-wrap: wrap;
+    gap: var(--space-3);
 }
 
-.checklist-card-title {
-    margin: 0 0 4px;
-    font-size: 16px;
+.checklist-row-title {
+    flex: 1 1 240px;
+    font-weight: 600;
+    font-size: 14px;
 }
 
-.checklist-card-desc {
-    margin: 0;
-    color: var(--muted);
+.checklist-row-note-btn {
+    flex: 0 0 auto;
 }
 
-.checklist-card-form {
-    display: grid;
-    gap: var(--space-4);
+.checklist-row-note-btn--filled {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.checklist-row-note-preview {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .status-toggle-group {
     display: flex;
     gap: var(--space-2);
     flex-wrap: wrap;
+    flex: 0 0 auto;
 }
 
 .status-toggle {
@@ -955,17 +1679,25 @@ th {
     font-size: 13px;
 }
 
-.status-toggle.is-active.status-toggle-not_started { background: var(--warning); border-color: var(--warning); color: var(--white); }
+/* White text on the bright warning yellow has poor contrast in any theme -
+   use a fixed dark text color instead (from design_tokens.css, constant
+   regardless of theme, meant exactly for text on top of vivid backgrounds). */
+.status-toggle.is-active.status-toggle-not_started { background: var(--warning); border-color: var(--warning); color: var(--content-fixed-content-dark-fixed); }
 .status-toggle.is-active.status-toggle-in_progress { background: var(--info); border-color: var(--info); color: var(--white); }
 .status-toggle.is-active.status-toggle-delayed { background: var(--danger); border-color: var(--danger); color: var(--white); }
 .status-toggle.is-active.status-toggle-done { background: var(--success); border-color: var(--success); color: var(--white); }
 
-.checklist-card-footer {
+/* Note/delay-reason popup (opened from the "Note"/"Delay Reason" button) */
+.checklist-note-modal-title {
+    margin: 0 0 var(--space-4);
+    font-size: 15px;
+}
+
+.checklist-note-modal-actions {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space-4);
-    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
 }
 
 /* Sidebar lists (needs first action / in progress / delayed) */
@@ -981,9 +1713,9 @@ th {
     background: var(--surface);
 }
 
-.sidebar-item--warning { border-color: #f2d9a8; background: var(--warning-soft); }
-.sidebar-item--info { border-color: #b9c9f7; background: var(--info-soft); }
-.sidebar-item--danger { border-color: #eab3b3; background: var(--danger-soft); }
+.sidebar-item--warning { border-color: var(--warning); background: var(--warning-soft); }
+.sidebar-item--info { border-color: var(--info); background: var(--info-soft); }
+.sidebar-item--danger { border-color: var(--danger); background: var(--danger-soft); }
 
 .sidebar-item-title {
     font-weight: 700;
@@ -991,30 +1723,61 @@ th {
 }
 
 /* CMS status panel */
-.cms-status-row {
+.match-status-head {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: var(--space-6);
     flex-wrap: wrap;
-    margin-bottom: var(--space-6);
 }
 
-.cms-status-left,
-.cms-status-actions {
+.badge-lg {
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+.match-status-live-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-sm);
+    background: var(--success-soft);
+}
+
+.match-status-send-row {
+    margin-top: var(--space-5);
     display: flex;
     align-items: center;
     gap: var(--space-4);
     flex-wrap: wrap;
 }
 
-.cms-divider {
+.cms-control {
+    margin-top: var(--space-6);
     padding-top: var(--space-6);
     border-top: 1px solid var(--border);
 }
 
 .cms-control-head {
-    margin-bottom: 4px;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+}
+
+.cms-control-icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-size: 15px;
 }
 
 .block-title {
@@ -1025,14 +1788,17 @@ th {
 .cms-control-form {
     display: grid;
     gap: var(--space-4);
-    margin-top: var(--space-5);
 }
 
-.cms-control-actions {
+.cms-control-row {
     display: flex;
-    align-items: center;
-    gap: var(--space-3);
+    align-items: flex-end;
+    gap: var(--space-4);
     flex-wrap: wrap;
+}
+
+.cms-control-row .field-group {
+    min-width: 220px;
 }
 
 /* Activity log timeline */
@@ -1100,9 +1866,76 @@ th {
     font-weight: 700;
 }
 
-.match-meta {
-    font-size: 13px;
+.missing-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: var(--space-3);
+}
+
+.missing-category-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    background: var(--warning-soft);
+    color: var(--warning);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Missing-requirements popup - vertical item list instead of a wide table,
+   so it fits the shared quick-view modal's width. */
+.missing-popup-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    max-height: 320px;
+    overflow-y: auto;
+    margin-bottom: var(--space-5);
+}
+
+.missing-popup-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: var(--space-3) var(--space-4);
+}
+
+.missing-popup-item-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: 4px;
+}
+
+.missing-popup-item-category {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 700;
     color: var(--muted);
+    text-transform: uppercase;
+}
+
+.missing-popup-item-title {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.missing-popup-item-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.missing-popup-item-delay {
+    color: var(--danger);
 }
 
 .row-progress {
@@ -1360,7 +2193,7 @@ th {
 
 .calendar-day {
     background: var(--surface);
-    min-height: 110px;
+    min-height: 132px;
     padding: var(--space-2);
     display: flex;
     flex-direction: column;
@@ -1392,28 +2225,116 @@ th {
     gap: 3px;
 }
 
+/* Match tags - just the round number, click opens the quick-view popup
+   instead of a flip animation (too small/unclear once a day has 3+ matches). */
 .calendar-match-chip {
-    display: block;
-    font-size: 11px;
-    line-height: 1.3;
-    padding: 3px 5px;
-    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    text-align: left;
     background: var(--info-soft);
     color: var(--info);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 4px 8px;
+    font-size: 11px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.calendar-match-chip:hover {
+    background: var(--info);
+    color: var(--white);
+}
+
+.calendar-match-chip:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+}
+
+/* Live matches get the danger/live color instead of the neutral info blue,
+   plus a pulsing dot instead of the round tag, so they stand out from
+   matches that are merely upcoming. */
+.calendar-match-chip--live {
+    background: var(--live);
+    color: var(--white);
+}
+
+.calendar-match-chip--live:hover {
+    background: var(--live);
+    opacity: 0.85;
+}
+
+/* Finished matches fade into the background - still findable, but visually
+   out of the way of what's upcoming or live right now. */
+.calendar-match-chip--finished {
+    background: var(--neutral-soft);
+    color: var(--neutral-text);
+    opacity: 0.7;
+}
+
+.calendar-match-chip--finished:hover {
+    background: var(--neutral-soft);
+    opacity: 1;
+}
+
+.calendar-match-chip-round {
+    flex: 0 0 auto;
+    font-weight: 800;
+}
+
+.calendar-match-chip-teams {
+    flex: 1 1 auto;
+    min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.calendar-match-time {
+.calendar-more {
+    display: block;
+    width: 100%;
+    text-align: left;
+    font-size: 11px;
     font-weight: 700;
-    margin-right: 4px;
+    color: var(--primary);
+    background: none;
+    border: none;
+    padding: 2px 5px;
+    cursor: pointer;
+    font-family: inherit;
 }
 
-.calendar-more {
-    font-size: 11px;
-    color: var(--muted);
-    padding: 0 5px;
+.calendar-more:hover {
+    text-decoration: underline;
+    background: none;
+}
+
+/* Popups that list several .round-preview-card items as a plain vertical
+   stack instead of the dashboard's multi-column grid - the "+N more" day
+   popup and the team quick-view's next-matches list both render inside the
+   narrow shared quick-view modal. */
+.calendar-day-popup-date {
+    margin-bottom: var(--space-4);
+    font-weight: 700;
+    color: var(--text);
+}
+
+.popup-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.team-next-matches-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
 }
 
 @media (max-width: 900px) {
@@ -1421,35 +2342,6 @@ th {
         grid-template-columns: repeat(7, minmax(80px, 1fr));
         overflow-x: auto;
     }
-}
-
-.details-disclosure {
-    margin-top: var(--space-5);
-}
-
-.details-summary {
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 13px;
-    color: var(--primary);
-    padding: var(--space-2) 0;
-    list-style: none;
-}
-
-.details-summary::-webkit-details-marker {
-    display: none;
-}
-
-.details-summary::before {
-    content: "▸ ";
-}
-
-.details-disclosure[open] .details-summary::before {
-    content: "▾ ";
-}
-
-.details-disclosure .table-wrap {
-    margin-top: var(--space-4);
 }
 
 /* Login */
@@ -1486,6 +2378,16 @@ th {
     .dashboard-stats-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    .round-preview-matches {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1200px) {
+    .round-preview-matches {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 1024px) {
@@ -1504,7 +2406,8 @@ th {
     .stats-grid,
     .dashboard-grid-4,
     .dashboard-stats-grid,
-    .meta-grid {
+    .meta-grid,
+    .round-preview-matches {
         grid-template-columns: 1fr;
     }
 
@@ -1720,6 +2623,77 @@ th {
     font-size: 13px;
     margin: 0 0 var(--space-3);
 }
+
+/* Feedback popup modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.18s ease;
+}
+
+.modal-overlay.is-open {
+    display: flex;
+}
+
+.modal-overlay.is-animated {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-box {
+    width: 100%;
+    max-width: 420px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    margin: var(--space-6);
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+    padding: var(--space-6);
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.modal-overlay.is-animated .modal-box {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-5);
+}
+
+.modal-close {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--muted);
+}
+
+.feedback-modal-success {
+    text-align: center;
+    padding: var(--space-6) 0;
+}
+
+.feedback-modal-success i {
+    font-size: 40px;
+    color: var(--success);
+}
+
+.feedback-modal-success p {
+    margin: var(--space-4) 0 var(--space-6);
+    font-size: 14px;
+}
+
 .stat-card-icon-warning { background: var(--warning-soft); color: var(--warning); }
 .stat-card-icon-danger { background: var(--danger-soft); color: var(--danger); }
 

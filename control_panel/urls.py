@@ -28,6 +28,8 @@ urlpatterns = [
     path("users/new/", views.UserCreateView.as_view(), name="user-create"),
     path("users/<int:pk>/edit/", views.UserUpdateView.as_view(), name="user-update"),
     path("users/<int:pk>/toggle-active/", views.UserToggleActiveView.as_view(), name="user-toggle-active"),
+    path("users/<int:pk>/login-as/", views.ImpersonateUserView.as_view(), name="user-login-as"),
+    path("stop-impersonating/", views.StopImpersonatingView.as_view(), name="stop-impersonating"),
 
     path("sections/", views.SectionListView.as_view(), name="section-list"),
     path("sections/new/", views.SectionCreateView.as_view(), name="section-create"),

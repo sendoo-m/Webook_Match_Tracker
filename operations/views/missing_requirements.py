@@ -9,14 +9,14 @@ from django.views.generic import TemplateView
 from checklists.models import MatchChecklistItem
 from matches.models import Club, Competition, Match
 from matches.utils import combine_match_datetime
-from operations.permissions import MatchScopedQuerysetMixin, can_view_all_matches
+from operations.permissions import ExcludeViewerAccessMixin, MatchScopedQuerysetMixin, can_view_all_matches
 
-class MissingRequirementsReportView(LoginRequiredMixin, MatchScopedQuerysetMixin, TemplateView):
+from .helpers import get_match_detail_prefetch, get_missing_requirements_pending_items, is_kv_ready
+
+class MissingRequirementsReportView(LoginRequiredMixin, ExcludeViewerAccessMixin, MatchScopedQuerysetMixin, TemplateView):
     template_name = "operations/reports/missing_requirements.html"
     partial_template_name = "operations/reports/partials/missing_requirements_results.html"
 
-    EXCLUDED_CATEGORY_NAMES = {"Post Match"}
-    EXCLUDED_ITEM_TITLES = {"Result", "Report", "Final Result", "Match Report"}
     PAGE_SIZE = 10
 
     def get_template_names(self):
@@ -30,10 +30,13 @@ class MissingRequirementsReportView(LoginRequiredMixin, MatchScopedQuerysetMixin
         selected_filter = self.request.GET.get("filter", "all")
         is_admin = can_view_all_matches(self.request.user)
 
-        selected_club = self.request.GET.get("club", "")
+        selected_home_club = self.request.GET.get("home_club", "")
+        selected_away_club = self.request.GET.get("away_club", "")
         selected_competition = self.request.GET.get("competition", "")
         selected_round = self.request.GET.get("round", "")
         selected_user = self.request.GET.get("user", "") if is_admin else ""
+        selected_spl_approval = self.request.GET.get("spl_approval", "")
+        selected_kv_status = self.request.GET.get("kv_status", "")
 
         scoped_matches = self.filter_matches_queryset(Match.objects.all())
 
@@ -58,46 +61,55 @@ class MissingRequirementsReportView(LoginRequiredMixin, MatchScopedQuerysetMixin
         matches = (
             scoped_matches.select_related("venue", "home_club", "away_club")
             .order_by("event_date", "match_start_time")
-            .prefetch_related(
-                "checklist_items__template_item__category",
-                "checklist_items__completed_by",
-            )
+            .prefetch_related(get_match_detail_prefetch())
         )
-        if selected_club:
-            matches = matches.filter(Q(home_club_id=selected_club) | Q(away_club_id=selected_club))
+        if selected_home_club:
+            matches = matches.filter(home_club_id=selected_home_club)
+        if selected_away_club:
+            matches = matches.filter(away_club_id=selected_away_club)
         if selected_competition:
             matches = matches.filter(competition_id=selected_competition)
         if selected_round:
             matches = matches.filter(round_number=selected_round)
         if selected_user:
             matches = matches.filter(home_club__owner_id=selected_user)
+        if selected_spl_approval == "approved":
+            matches = matches.filter(ticketing_plan_approved=True)
+        elif selected_spl_approval == "not_approved":
+            matches = matches.filter(ticketing_plan_approved=False)
 
         all_rows = []
         for match in matches:
             match_dt = combine_match_datetime(match)
-            pending_items_qs = (
-                match.checklist_items.select_related("template_item__category", "completed_by")
-                .filter(is_active=True)
-                .exclude(status=MatchChecklistItem.Status.DONE)
-                .exclude(template_item__category__name__in=self.EXCLUDED_CATEGORY_NAMES)
-                .exclude(template_item__title__in=self.EXCLUDED_ITEM_TITLES)
-                .order_by("template_item__category__sort_order", "template_item__sort_order", "id")
-            )
-            pending_items = list(pending_items_qs)
+            pending_items = list(get_missing_requirements_pending_items(match))
             if not pending_items:
                 continue
             has_notes = any((item.note or "").strip() for item in pending_items)
             has_delayed = any(item.status == MatchChecklistItem.Status.DELAYED for item in pending_items)
             is_upcoming = bool(match_dt and timezone.localtime(match_dt) >= now)
+
+            categories_by_id = {}
+            for item in pending_items:
+                category = item.template_item.category
+                categories_by_id.setdefault(category.id, category)
+            pending_categories = sorted(categories_by_id.values(), key=lambda c: c.sort_order)
+
             all_rows.append({
                 "match": match,
                 "event_dt": match_dt,
                 "pending_count": len(pending_items),
                 "pending_items": pending_items,
+                "pending_categories": pending_categories,
                 "has_notes": has_notes,
                 "has_delayed": has_delayed,
                 "is_upcoming": is_upcoming,
+                "kv_ready": is_kv_ready(match),
             })
+
+        if selected_kv_status == "ready":
+            all_rows = [row for row in all_rows if row["kv_ready"]]
+        elif selected_kv_status == "not_ready":
+            all_rows = [row for row in all_rows if not row["kv_ready"]]
 
         filter_counts = {
             "all": len(all_rows),
@@ -124,10 +136,13 @@ class MissingRequirementsReportView(LoginRequiredMixin, MatchScopedQuerysetMixin
             "paginator": paginator,
             "selected_filter": selected_filter,
             "filter_counts": filter_counts,
-            "selected_club": selected_club,
+            "selected_home_club": selected_home_club,
+            "selected_away_club": selected_away_club,
             "selected_competition": selected_competition,
             "selected_round": selected_round,
             "selected_user": selected_user,
+            "selected_spl_approval": selected_spl_approval,
+            "selected_kv_status": selected_kv_status,
             "report_title": "Missing Operational Requirements",
             "report_subtitle": "All matches with pending items except result and report tasks.",
         })

@@ -1,0 +1,53 @@
+<div class="team-next-matches-popup">
+    <div class="team-next-matches-head">
+        {% if club.logo %}
+            <img src="{{ club.logo.url }}" alt="{{ club.name_en }}" class="match-quick-view-logo">
+        {% endif %}
+        <div>
+            <strong>{{ club.name_ar|default:club.name_en }}</strong>
+            <p class="help-text">Next home matches</p>
+        </div>
+    </div>
+
+    <div class="popup-card-list">
+        {% for card in cards %}
+            <div
+                class="round-preview-card"
+                role="button"
+                tabindex="0"
+                data-modal-trigger
+                onclick="OperationsModal.open('match-modal-overlay')"
+                hx-get="{% url 'operations:match-quick-view' card.match.pk %}"
+                hx-target="#match-modal-body"
+                hx-swap="innerHTML"
+            >
+                <div class="round-preview-card-head">
+                    <span class="round-preview-round-tag">Round {{ card.match.round_number|default:"—" }}</span>
+                    <span class="round-preview-status">
+                        {% if card.is_live_now %}
+                            <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
+                        {% else %}
+                            <span class="badge badge-{{ card.match.cms_status|slugify }}">{{ card.match.get_cms_status_display }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="round-preview-teams">
+                    {% include "operations/partials/club_chip.html" with club=card.match.home_club role="home" %}
+                    <span class="help-text">vs</span>
+                    {% include "operations/partials/club_chip.html" with club=card.match.away_club role="away" %}
+                </div>
+                <div class="round-preview-meta">
+                    <span><i class="ti ti-calendar-event"></i> {{ card.match.event_date }}</span>
+                    {% if card.match.match_start_time %}
+                        <span><i class="ti ti-clock"></i> {{ card.match.match_start_time|time:"H:i" }}</span>
+                    {% endif %}
+                    {% if card.match.venue %}
+                        <span><i class="ti ti-map-pin"></i> {{ card.match.venue }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <p class="help-text">No upcoming home matches scheduled for this team.</p>
+        {% endfor %}
+    </div>
+</div>

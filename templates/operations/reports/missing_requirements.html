@@ -1,4 +1,5 @@
 {% extends "operations/base.html" %}
+{% load static %}
 {% load display_helpers %}
 
 {% block title %}Missing Operational Requirements{% endblock %}
@@ -6,9 +7,11 @@
 {% block page_help %}
     <p>
         This report lists every match with <strong>pending operational items</strong> — things
-        that still need to be done before the match is ready.
+        that still need to be done before the match is ready. The icon chips under each match
+        show which categories still have work outstanding. Filters apply as soon as you pick one
+        - no need to click "Apply Filters".
     </p>
-    <p>Click "Details" under a match to see exactly which items are outstanding and why.</p>
+    <p>Click the teams to see exactly which items are outstanding and why, in a quick popup.</p>
 {% endblock %}
 
 {% block content %}
@@ -22,11 +25,21 @@
         <input type="hidden" name="filter" value="{{ selected_filter }}">
 
         <div class="field-group">
-            <label>Club</label>
-            <select name="club">
+            <label>Home Team</label>
+            <select name="home_club">
                 <option value="">All</option>
                 {% for club in clubs %}
-                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club.name_ar }}</option>
+                    <option value="{{ club.id }}" {% if selected_home_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club.name_ar }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>Away Team</label>
+            <select name="away_club">
+                <option value="">All</option>
+                {% for club in clubs %}
+                    <option value="{{ club.id }}" {% if selected_away_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club.name_ar }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -64,6 +77,24 @@
         {% endif %}
 
         <div class="field-group">
+            <label>SPL Approval</label>
+            <select name="spl_approval">
+                <option value="">All</option>
+                <option value="approved" {% if selected_spl_approval == "approved" %}selected{% endif %}>Approved</option>
+                <option value="not_approved" {% if selected_spl_approval == "not_approved" %}selected{% endif %}>Not Approved</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>KVs</label>
+            <select name="kv_status">
+                <option value="">All</option>
+                <option value="ready" {% if selected_kv_status == "ready" %}selected{% endif %}>Available</option>
+                <option value="not_ready" {% if selected_kv_status == "not_ready" %}selected{% endif %}>Not Available</option>
+            </select>
+        </div>
+
+        <div class="field-group">
             <label>&nbsp;</label>
             <button type="submit">Apply Filters</button>
         </div>
@@ -73,4 +104,8 @@
 <div id="missing-requirements-results">
     {% include "operations/reports/partials/missing_requirements_results.html" %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
 {% endblock %}

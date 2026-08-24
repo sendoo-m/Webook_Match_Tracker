@@ -43,7 +43,11 @@ class SendToCMSView(LoginRequiredMixin, MatchScopedQuerysetMixin, View):
         activity_context = get_match_activity_page_context(match, page=1)
         if request.headers.get("HX-Request") == "true":
             progress_html = render_to_string("operations/partials/match_progress_summary.html", build_match_progress_context(match), request=request)
-            status_html = render_to_string("operations/partials/match_status_badge.html", {"match": match, "match_status": Match.Status}, request=request)
+            status_html = render_to_string(
+                "operations/partials/match_status_badge.html",
+                {"match": match, "match_status": Match.Status, "can_edit": True},
+                request=request,
+            )
             activity_html = render_to_string("operations/partials/activity_log_timeline.html", activity_context, request=request)
             return HttpResponse(progress_html + status_html + activity_html)
         messages.success(request, "Match sent to CMS successfully.")
@@ -86,6 +90,7 @@ class MatchCMSStatusUpdateView(LoginRequiredMixin, MatchScopedQuerysetMixin, Vie
         match.refresh_from_db()
         detail_context = build_match_detail_side_context(match)
         detail_context["match_status"] = Match.Status
+        detail_context["can_edit"] = True  # this view already required require_match_access above
         detail_context.update(get_match_activity_page_context(match, page=1))
         progress_html = render_to_string("operations/partials/match_progress_summary.html", detail_context, request=request)
         status_html = render_to_string("operations/partials/match_status_badge.html", detail_context, request=request)

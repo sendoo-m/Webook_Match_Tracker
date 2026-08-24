@@ -1,5 +1,6 @@
 {# control_panel/user_list.html #}
 {% extends "control_panel/list.html" %}
+{% load display_helpers %}
 
 {% block table_head %}
     <th>Username</th>
@@ -26,8 +27,20 @@
             </td>
             <td>
                 <div class="row-actions">
-                    <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:user-update' user.pk %}">Edit</a>
-                    {% include "control_panel/_toggle_active_button.html" with obj=user toggle_url_name="control_panel:user-toggle-active" %}
+                    {% if user.is_superuser %}
+                        <span class="help-text" title="Superuser accounts are protected and can't be edited or activated/deactivated here.">Protected</span>
+                    {% else %}
+                        <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:user-update' user.pk %}">Edit</a>
+                        {% include "control_panel/_toggle_active_button.html" with obj=user toggle_url_name="control_panel:user-toggle-active" %}
+                    {% endif %}
+                    {% if can_impersonate and user.pk != request.user.pk and not user|is_admin_account %}
+                        <form method="post" action="{% url 'control_panel:user-login-as' user.pk %}" class="logout-form">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-secondary btn-sm" title="Log in as {{ user|display_name }}">
+                                <i class="ti ti-user-check"></i> Login as
+                            </button>
+                        </form>
+                    {% endif %}
                 </div>
             </td>
         </tr>

@@ -49,6 +49,11 @@
             {% for error in form.group.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
         </div>
 
+        <p class="help-text">
+            Club Manager accounts are scoped to the clubs and sections picked below.
+            Operations Manager and Viewer accounts always see every match, regardless of what's picked here.
+        </p>
+
         <div class="form-group">
             <label>{{ form.owned_clubs.label_tag }}</label>
             <div class="checkbox-list">{{ form.owned_clubs }}</div>
@@ -56,7 +61,6 @@
 
         <div class="form-group">
             <label>{{ form.competitions.label_tag }}</label>
-            <p class="help-text">A user only sees matches for clubs they own AND sections they're granted here.</p>
             <div class="checkbox-list">{{ form.competitions }}</div>
         </div>
 

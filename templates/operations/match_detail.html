@@ -66,6 +66,16 @@
             <div class="card panel">
                 <div class="filter-bar">
                     <button
+                        class="btn {% if selected_filter == 'open' %}btn-primary{% endif %}"
+                        hx-get="{% url 'operations:match-detail' match.pk %}?filter=open"
+                        hx-target="#checklist-area"
+                        hx-select="#checklist-area"
+                        hx-swap="outerHTML"
+                    >
+                        Open Only
+                    </button>
+
+                    <button
                         class="btn {% if selected_filter == 'all' %}btn-primary{% endif %}"
                         hx-get="{% url 'operations:match-detail' match.pk %}?filter=all"
                         hx-target="#checklist-area"
@@ -113,16 +123,6 @@
                         hx-swap="outerHTML"
                     >
                         Done
-                    </button>
-
-                    <button
-                        class="btn {% if selected_filter == 'open' %}btn-primary{% endif %}"
-                        hx-get="{% url 'operations:match-detail' match.pk %}?filter=open"
-                        hx-target="#checklist-area"
-                        hx-select="#checklist-area"
-                        hx-swap="outerHTML"
-                    >
-                        Open Only
                     </button>
                 </div>
             </div>
@@ -217,6 +217,16 @@
             <div class="card panel">
                 <div class="filter-bar">
                     <button
+                        class="btn {% if selected_filter == 'open' %}btn-primary{% endif %}"
+                        hx-get="{% url 'operations:match-detail' match.pk %}?filter=open"
+                        hx-target="#checklist-area"
+                        hx-select="#checklist-area"
+                        hx-swap="outerHTML"
+                    >
+                        Open Only
+                    </button>
+
+                    <button
                         class="btn {% if selected_filter == 'all' %}btn-primary{% endif %}"
                         hx-get="{% url 'operations:match-detail' match.pk %}?filter=all"
                         hx-target="#checklist-area"
@@ -264,16 +274,6 @@
                         hx-swap="outerHTML"
                     >
                         Done
-                    </button>
-
-                    <button
-                        class="btn {% if selected_filter == 'open' %}btn-primary{% endif %}"
-                        hx-get="{% url 'operations:match-detail' match.pk %}?filter=open"
-                        hx-target="#checklist-area"
-                        hx-select="#checklist-area"
-                        hx-swap="outerHTML"
-                    >
-                        Open Only
                     </button>
                 </div>
             </div>

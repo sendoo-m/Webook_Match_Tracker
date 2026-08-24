@@ -1,12 +1,19 @@
 # control_panel/context_processors.py
 
-from operations.permissions import can_manage_control_panel
+from operations.permissions import can_manage_control_panel, is_viewer_only
 
 from .design_tokens import LIGHT_TOKENS
+from .models import ReleaseNote
 
 
 def panel_nav_flag(request):
-    return {"can_view_control_panel": can_manage_control_panel(getattr(request, "user", None))}
+    user = getattr(request, "user", None)
+    latest_release = ReleaseNote.objects.first() if getattr(user, "is_authenticated", False) else None
+    return {
+        "can_view_control_panel": can_manage_control_panel(user),
+        "is_viewer_only": is_viewer_only(user),
+        "latest_release_version": latest_release.version if latest_release else None,
+    }
 
 
 def design_tokens(request):

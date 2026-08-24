@@ -5,7 +5,9 @@
     <div class="dashboard-filter-panel-head">
         <div>
             <h2 class="panel-title">Filtered Matches</h2>
-            {% if selected_view != 'all' %}
+            {% if selected_round %}
+                <p class="help-text">Showing Round {{ selected_round }} matches</p>
+            {% elif selected_view != 'all' %}
                 <p class="help-text">Showing {{ selected_view|title }} matches</p>
             {% else %}
                 <p class="help-text">Use filters to narrow the table below</p>
@@ -110,6 +112,7 @@
             <thead>
                 <tr>
                     <th>Match</th>
+                    <th>Round</th>
                     <th>Date</th>
                     <th>Timing</th>
                     <th>Readiness</th>
@@ -130,6 +133,8 @@
                                 {% include "operations/partials/club_chip.html" with club=card.match.away_club role="away" %}
                             </a>
                         </td>
+
+                        <td>{{ card.match.round_number|default:"—" }}</td>
 
                         <td>{{ card.match.event_date }} {{ card.match.match_start_time }}</td>
 
@@ -210,7 +215,7 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="9">No matches found for this filter.</td>
+                        <td colspan="10">No matches found for this filter.</td>
                     </tr>
                 {% endfor %}
             </tbody>

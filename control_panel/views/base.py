@@ -49,8 +49,11 @@ class PanelToggleActiveView(LoginRequiredMixin, ControlPanelAccessMixin, View):
     success_url_name = None
     active_field = "is_active"
 
+    def get_object(self, pk):
+        return get_object_or_404(self.model, pk=pk)
+
     def post(self, request, pk, *args, **kwargs):
-        obj = get_object_or_404(self.model, pk=pk)
+        obj = self.get_object(pk)
         currently_active = getattr(obj, self.active_field)
         setattr(obj, self.active_field, not currently_active)
         obj.save(update_fields=[self.active_field])

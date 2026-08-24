@@ -1,4 +1,6 @@
 {% extends "operations/base.html" %}
+{% load static %}
+{% load display_helpers %}
 
 {% block title %}Match Calendar{% endblock %}
 
@@ -7,7 +9,13 @@
         This is the <strong>Match Calendar</strong> — every match plotted on the day it's
         scheduled, so you can see the whole month at a glance.
     </p>
-    <p>Use the arrows to move between months, or "Today" to jump back. Click a match to open its details.</p>
+    <p>
+        Use the arrows to move between months, or "Today" to jump back. Filter by Coordinator to
+        see only their matches. Click a match's round tag to open a quick-view popup with its
+        details - click anywhere outside it to close. Live matches are highlighted in red,
+        finished matches are faded out, and everything else shows its round number. Days with more
+        matches than fit show a "+N more" - click it to see all of that day's matches.
+    </p>
 {% endblock %}
 
 {% block content %}
@@ -19,15 +27,37 @@
         </div>
 
         <div class="filter-bar">
-            <a class="btn btn-secondary" href="?year={{ prev_year }}&month={{ prev_month }}">
+            <a class="btn btn-secondary" href="?year={{ prev_year }}&month={{ prev_month }}&coordinator={{ selected_coordinator }}">
                 <i class="ti ti-chevron-left"></i> Prev
             </a>
-            <a class="btn btn-secondary" href="?year={{ today.year }}&month={{ today.month }}">Today</a>
-            <a class="btn btn-secondary" href="?year={{ next_year }}&month={{ next_month }}">
+            <a class="btn btn-secondary" href="?year={{ today.year }}&month={{ today.month }}&coordinator={{ selected_coordinator }}">Today</a>
+            <a class="btn btn-secondary" href="?year={{ next_year }}&month={{ next_month }}&coordinator={{ selected_coordinator }}">
                 Next <i class="ti ti-chevron-right"></i>
             </a>
         </div>
     </div>
+</div>
+
+<div class="card panel">
+    <form method="get" class="filters">
+        <input type="hidden" name="year" value="{{ year }}">
+        <input type="hidden" name="month" value="{{ month }}">
+
+        <div class="field-group">
+            <label>Coordinator</label>
+            <select name="coordinator">
+                <option value="">All</option>
+                {% for coordinator in coordinators %}
+                    <option value="{{ coordinator.id }}" {% if selected_coordinator == coordinator.id|stringformat:"s" %}selected{% endif %}>{{ coordinator|display_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <button type="submit">Apply Filter</button>
+        </div>
+    </form>
 </div>
 
 <div class="card panel">
@@ -45,14 +75,41 @@
                 <div class="calendar-day{% if not day.in_month %} calendar-day-outside{% endif %}{% if day.is_today %} calendar-day-today{% endif %}">
                     <div class="calendar-day-number">{{ day.date.day }}</div>
                     <div class="calendar-day-matches">
-                        {% for match in day.matches %}
-                            <a href="{% url 'operations:match-detail' match.pk %}" class="calendar-match-chip" title="{{ match.title_en }}">
-                                {% if match.match_start_time %}<span class="calendar-match-time">{{ match.match_start_time|time:"H:i" }}</span>{% endif %}
-                                {{ match.home_club.short_name|default:match.home_club.name_ar }} vs {{ match.away_club.short_name|default:match.away_club.name_ar }}
-                            </a>
+                        {% for card in day.matches %}
+                            <button
+                                type="button"
+                                class="calendar-match-chip{% if card.is_live_now %} calendar-match-chip--live{% elif card.is_finished %} calendar-match-chip--finished{% endif %}"
+                                data-modal-trigger
+                                onclick="OperationsModal.open('match-modal-overlay')"
+                                hx-get="{% url 'operations:match-quick-view' card.match.pk %}"
+                                hx-target="#match-modal-body"
+                                hx-swap="innerHTML"
+                                title="{{ card.match.title_en }}"
+                            >
+                                {% if card.is_live_now %}
+                                    <span class="live-dot"></span>
+                                {% elif card.is_finished %}
+                                    <i class="ti ti-flag-2"></i>
+                                {% else %}
+                                    <span class="calendar-match-chip-round">R{{ card.match.round_number|default:"—" }}</span>
+                                {% endif %}
+                                <span class="calendar-match-chip-teams">
+                                    {{ card.match.home_club.short_name|default:card.match.home_club.name_ar }} vs {{ card.match.away_club.short_name|default:card.match.away_club.name_ar }}
+                                </span>
+                            </button>
                         {% endfor %}
                         {% if day.extra_count %}
-                            <div class="calendar-more">+{{ day.extra_count }} more</div>
+                            <button
+                                type="button"
+                                class="calendar-more"
+                                data-modal-trigger
+                                onclick="OperationsModal.open('match-modal-overlay')"
+                                hx-get="{% url 'operations:calendar-day-matches' day.date.year day.date.month day.date.day %}"
+                                hx-target="#match-modal-body"
+                                hx-swap="innerHTML"
+                            >
+                                +{{ day.extra_count }} more
+                            </button>
                         {% endif %}
                     </div>
                 </div>
@@ -60,4 +117,8 @@
         {% endfor %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
 {% endblock %}

@@ -1,4 +1,5 @@
 {% extends "operations/base.html" %}
+{% load static %}
 {% load display_helpers %}
 
 {% block title %}SPL Report{% endblock %}
@@ -20,7 +21,7 @@
         </div>
 
         <div class="filter-bar">
-            <a class="btn btn-primary" href="{% url 'operations:spl-report-export' %}?club={{ selected_club }}&competition={{ selected_competition }}&round={{ selected_round }}">
+            <a class="btn btn-primary" href="{% url 'operations:spl-report-export' %}?club={{ selected_club }}&round={{ selected_round }}&coordinator={{ selected_coordinator }}">
                 <i class="ti ti-file-spreadsheet"></i> Export XLSX
             </a>
         </div>
@@ -29,6 +30,11 @@
 
 <div class="card panel">
     <form method="get" class="filters">
+        <div class="field-group">
+            <label>Competition</label>
+            <div class="spl-fixed-filter">{{ roshan_competition.name_ar|default:"Roshan League" }}</div>
+        </div>
+
         <div class="field-group">
             <label>Club</label>
             <select name="club">
@@ -40,11 +46,11 @@
         </div>
 
         <div class="field-group">
-            <label>Competition</label>
-            <select name="competition">
+            <label>Coordinator</label>
+            <select name="coordinator">
                 <option value="">All</option>
-                {% for competition in competitions %}
-                    <option value="{{ competition.id }}" {% if selected_competition == competition.id|stringformat:"s" %}selected{% endif %}>{{ competition.name_ar }}</option>
+                {% for coordinator in coordinators %}
+                    <option value="{{ coordinator.id }}" {% if selected_coordinator == coordinator.id|stringformat:"s" %}selected{% endif %}>{{ coordinator|display_name }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -78,6 +84,7 @@
                     <th>Stadium</th>
                     <th>Release Date</th>
                     <th>Actual Release Date</th>
+                    <th>Match Readiness</th>
                     <th>Ticketing Plan Status</th>
                     <th>KV / Webook Images</th>
                     <th>Webook Readiness</th>
@@ -97,9 +104,23 @@
                     <td>{{ row.match.sale_starts_at|default:"—" }}</td>
                     <td>{{ row.match.actual_release_at|default:"—" }}</td>
                     <td>
+                        <div class="progress-with-label">
+                            <div class="progress">
+                                <div class="progress-bar" style="width:{{ row.readiness_percent }}%"></div>
+                            </div>
+                            <span class="progress-label">{{ row.readiness_percent }}%</span>
+                        </div>
+                    </td>
+                    <td>
                         <span class="mini-badge mini-badge-{% if row.match.ticketing_plan_approved %}success{% else %}neutral{% endif %}">
                             {% if row.match.ticketing_plan_approved %}Approved{% else %}Not Approved{% endif %}
                         </span>
+                        {% if not row.match.ticketing_plan_approved and can_confirm_spl_plan %}
+                            <form method="post" action="{% url 'operations:spl-plan-confirm' row.match.pk %}" class="logout-form spl-confirm-form">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary btn-sm">Confirm</button>
+                            </form>
+                        {% endif %}
                     </td>
                     <td>
                         <span class="mini-badge mini-badge-{% if row.kv_ready %}success{% else %}neutral{% endif %}">
@@ -115,15 +136,25 @@
                         <span class="mini-badge mini-badge-{% if row.match.spl_tickets_sent %}success{% else %}neutral{% endif %}">
                             {% if row.match.spl_tickets_sent %}Sent{% else %}Not Sent{% endif %}
                         </span>
+                        {% if not row.match.spl_tickets_sent and can_confirm_spl_tickets %}
+                            <form method="post" action="{% url 'operations:spl-tickets-confirm' row.match.pk %}" class="logout-form spl-confirm-form">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary btn-sm">Confirm</button>
+                            </form>
+                        {% endif %}
                     </td>
                     <td>{{ row.match.spl_comments|default:"—" }}</td>
                     <td>{{ row.match.home_club.owner|display_name }}</td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="13">No matches found.</td></tr>
+                <tr><td colspan="14">No matches found.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
 {% endblock %}

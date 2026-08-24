@@ -1,6 +1,7 @@
+{% load display_helpers %}
 <div id="missing-requirements-results">
     <div class="card dashboard-filterbar">
-        {% with base_qs="&club="|add:selected_club|add:"&competition="|add:selected_competition|add:"&round="|add:selected_round|add:"&user="|add:selected_user %}
+        {% with base_qs="&home_club="|add:selected_home_club|add:"&away_club="|add:selected_away_club|add:"&competition="|add:selected_competition|add:"&round="|add:selected_round|add:"&user="|add:selected_user|add:"&spl_approval="|add:selected_spl_approval|add:"&kv_status="|add:selected_kv_status %}
         <a
             href="{% url 'operations:missing-requirements-report' %}?filter=all{{ base_qs }}"
             class="filter-chip {% if selected_filter == 'all' %}is-active{% endif %}"
@@ -62,15 +63,29 @@
                 <div class="card report-match-card">
                     <div class="match-row-top">
                         <div>
-                            <h3 class="match-row-title">
-                                <a href="{% url 'operations:match-detail' row.match.pk %}">
-                                    {{ row.match.title_en }}
-                                </a>
-                            </h3>
-                            <div class="match-meta">
-                                {{ row.match.event_date }} {{ row.match.match_start_time }}
-                                {% if row.match.venue %} · {{ row.match.venue }}{% endif %}
+                            <div
+                                class="match-row-link"
+                                role="button"
+                                tabindex="0"
+                                data-modal-trigger
+                                onclick="OperationsModal.open('match-modal-overlay')"
+                                hx-get="{% url 'operations:missing-requirements-popup' row.match.pk %}"
+                                hx-target="#match-modal-body"
+                                hx-swap="innerHTML"
+                            >
+                                {% include "operations/partials/club_chip.html" with club=row.match.home_club role="home" %}
+                                <span class="help-text">vs</span>
+                                {% include "operations/partials/club_chip.html" with club=row.match.away_club role="away" %}
                             </div>
+                            {% if row.pending_categories %}
+                                <div class="missing-categories">
+                                    {% for category in row.pending_categories %}
+                                        <span class="missing-category-chip" title="{{ category.name }}">
+                                            <i class="ti {{ category.name|category_icon }}"></i> {{ category.name }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <div class="mini-badges">
@@ -83,55 +98,17 @@
                             {% if row.has_notes %}
                                 <span class="mini-badge mini-badge-info">Notes</span>
                             {% endif %}
+                            <span class="mini-badge mini-badge-{% if row.match.ticketing_plan_approved %}success{% else %}neutral{% endif %}">
+                                SPL {% if row.match.ticketing_plan_approved %}Approved{% else %}Not Approved{% endif %}
+                            </span>
+                            <span class="mini-badge mini-badge-{% if row.kv_ready %}success{% else %}neutral{% endif %}">
+                                KVs {% if row.kv_ready %}Available{% else %}Not Available{% endif %}
+                            </span>
                             <a class="btn btn-secondary" href="{% url 'operations:match-outstanding' row.match.pk %}">
                                 Outstanding Items
                             </a>
                         </div>
                     </div>
-
-                    <details class="details-disclosure">
-                        <summary class="details-summary">Details</summary>
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Category</th>
-                                        <th>Item</th>
-                                        <th>Status</th>
-                                        <th>Note</th>
-                                        <th>Delay Reason</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in row.pending_items %}
-                                        <tr>
-                                            <td>{{ item.template_item.category.name }}</td>
-                                            <td>{{ item.template_item.title }}</td>
-                                            <td>
-                                                <span class="badge badge-{{ item.status|slugify }}">
-                                                    {{ item.get_status_display }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                {% if item.note %}
-                                                    {{ item.note }}
-                                                {% else %}
-                                                    <span class="help-text">—</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                {% if item.delay_reason %}
-                                                    {{ item.delay_reason }}
-                                                {% else %}
-                                                    <span class="help-text">—</span>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </details>
                 </div>
             {% empty %}
                 <div class="card panel">
@@ -141,7 +118,7 @@
         </div>
 
         {% if page_obj.has_other_pages %}
-            {% with page_qs="&club="|add:selected_club|add:"&competition="|add:selected_competition|add:"&round="|add:selected_round|add:"&user="|add:selected_user %}
+            {% with page_qs="&home_club="|add:selected_home_club|add:"&away_club="|add:selected_away_club|add:"&competition="|add:selected_competition|add:"&round="|add:selected_round|add:"&user="|add:selected_user|add:"&spl_approval="|add:selected_spl_approval|add:"&kv_status="|add:selected_kv_status %}
             <div class="pagination-wrap">
                 <div class="pagination">
                     {% if page_obj.has_previous %}

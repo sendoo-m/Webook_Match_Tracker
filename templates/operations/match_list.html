@@ -1,4 +1,5 @@
 {% extends "operations/base.html" %}
+{% load static %}
 
 {% block title %}Matches{% endblock %}
 
@@ -8,8 +9,10 @@
         readiness progress, CMS status, venue, and any active discount at a glance.
     </p>
     <p>
-        Matches already over are hidden by default - use the "Period" filter and switch to
-        "Past Matches" to see them.
+        Click a match card to flip it and see its status, progress, venue and discount on the
+        back - "Full details" opens the match itself. Matches already over are hidden by default
+        - use the "Period" filter and switch to "Past Matches" to see them, and use the "Round"
+        filter to jump straight to a round.
     </p>
 {% endblock %}
 
@@ -32,11 +35,21 @@
         </div>
 
         <div class="field-group">
-            <label>Club</label>
-            <select name="club">
+            <label>Home Team</label>
+            <select name="home_club">
                 <option value="">All</option>
                 {% for club in clubs %}
-                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club.name_ar }}</option>
+                    <option value="{{ club.id }}" {% if selected_home_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club.name_ar }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>Away Team</label>
+            <select name="away_club">
+                <option value="">All</option>
+                {% for club in clubs %}
+                    <option value="{{ club.id }}" {% if selected_away_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club.name_ar }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -47,6 +60,16 @@
                 <option value="">All</option>
                 {% for competition in competitions %}
                     <option value="{{ competition.id }}" {% if selected_competition == competition.id|stringformat:"s" %}selected{% endif %}>{{ competition.name_ar }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>Round</label>
+            <select name="round">
+                <option value="">All</option>
+                {% for r in available_rounds %}
+                    <option value="{{ r }}" {% if selected_round == r|stringformat:"s" %}selected{% endif %}>Round {{ r }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -66,7 +89,10 @@
     </form>
 </div>
 
-<div id="delayed-details-panel-slot"></div>
+{% comment %}
+Previous table-based layout - kept here in case the flip-card view below
+doesn't work out and needs a quick revert. To bring it back: delete the
+card grid block below and un-comment this.
 
 <div class="card panel">
     <div class="table-wrap">
@@ -74,11 +100,10 @@
             <thead>
                 <tr>
                     <th>Match</th>
-                    <th>Competition</th>
+                    <th>Round</th>
                     <th>Date</th>
                     <th>Status</th>
                     <th>Progress</th>
-                    <th>Delayed</th>
                     <th>Venue</th>
                     <th>Discount</th>
                 </tr>
@@ -86,8 +111,23 @@
             <tbody>
                 {% for match in matches %}
                 <tr>
-                    <td><a href="{% url 'operations:match-detail' match.pk %}">{{ match.title_en }}</a></td>
-                    <td>{{ match.competition.name_ar }}</td>
+                    <td>
+                        <div
+                            class="match-row-link"
+                            role="button"
+                            tabindex="0"
+                            data-modal-trigger
+                            onclick="OperationsModal.open('match-modal-overlay')"
+                            hx-get="{% url 'operations:match-quick-view' match.pk %}"
+                            hx-target="#match-modal-body"
+                            hx-swap="innerHTML"
+                        >
+                            {% include "operations/partials/club_chip.html" with club=match.home_club role="home" %}
+                            <span class="help-text">vs</span>
+                            {% include "operations/partials/club_chip.html" with club=match.away_club role="away" %}
+                        </div>
+                    </td>
+                    <td>{{ match.round_number|default:"—" }}</td>
                     <td>{{ match.event_date }} {{ match.match_start_time }}</td>
                     <td>
                         <span class="badge badge-{{ match.cms_status|slugify }}">
@@ -102,21 +142,6 @@
                             <span class="progress-label">{% widthratio match.done_items match.total_items 100 %}%</span>
                         </div>
                     </td>
-                    <td>
-                        {% if match.delayed_items %}
-                            <button
-                                type="button"
-                                class="badge badge-delayed link-badge"
-                                hx-get="{% url 'operations:match-delayed-details' match.pk %}"
-                                hx-target="#delayed-details-panel-slot"
-                                hx-swap="innerHTML"
-                            >
-                                {{ match.delayed_items }}
-                            </button>
-                        {% else %}
-                            0
-                        {% endif %}
-                    </td>
                     <td>{{ match.venue }}</td>
                     <td>
                         {% if match.has_discount %}
@@ -128,11 +153,64 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8">No matches found.</td>
+                    <td colspan="7">No matches found.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+{% endcomment %}
+
+<div class="round-preview-matches match-cards-grid">
+    {% for match in matches %}
+        <div class="match-flip-card" tabindex="0" role="button" aria-expanded="false" title="{{ match.title_en }}">
+            <div class="match-flip-card-inner">
+                <div class="match-flip-card-face match-flip-card-front">
+                    <div class="match-flip-card-round">Round {{ match.round_number|default:"—" }}</div>
+                    <div class="match-flip-card-teams">
+                        {% include "operations/partials/club_chip.html" with club=match.home_club role="home" %}
+                        <span class="help-text">vs</span>
+                        {% include "operations/partials/club_chip.html" with club=match.away_club role="away" %}
+                    </div>
+                    <div class="match-flip-card-date">
+                        <i class="ti ti-calendar-event"></i> {{ match.event_date|default:"TBC" }}
+                        {% if match.match_start_time %} · {{ match.match_start_time|time:"H:i" }}{% endif %}
+                    </div>
+                </div>
+                <div class="match-flip-card-face match-flip-card-back">
+                    <span class="badge badge-{{ match.cms_status|slugify }}">
+                        {{ match.get_cms_status_display }}
+                    </span>
+                    <div class="progress-with-label">
+                        <div class="progress">
+                            <div class="progress-bar" style="width:{% widthratio match.done_items match.total_items 100 %}%"></div>
+                        </div>
+                        <span class="progress-label">{% widthratio match.done_items match.total_items 100 %}%</span>
+                    </div>
+                    {% if match.venue %}
+                        <div class="match-flip-card-line"><i class="ti ti-map-pin"></i> {{ match.venue }}</div>
+                    {% endif %}
+                    {% if match.has_discount %}
+                        <div class="match-flip-card-line"><i class="ti ti-discount-2"></i> {{ match.discount_code }}</div>
+                    {% endif %}
+                    <div class="match-flip-card-line{% if match.ticketing_plan_approved %} match-flip-card-line--positive{% endif %}">
+                        <i class="ti {% if match.ticketing_plan_approved %}ti-circle-check{% else %}ti-circle-dashed{% endif %}"></i>
+                        SPL Plan {% if match.ticketing_plan_approved %}Approved{% else %}Pending{% endif %}
+                    </div>
+                    <a href="{% url 'operations:match-detail' match.pk %}" class="match-flip-card-link">
+                        Full details <i class="ti ti-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <p class="help-text">No matches found.</p>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
+    <script src="{% static 'operations/js/match-cards-flip.js' %}"></script>
 {% endblock %}

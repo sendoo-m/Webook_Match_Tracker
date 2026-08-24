@@ -1,0 +1,48 @@
+<div class="checklist-note-modal">
+    <h3 class="checklist-note-modal-title">{{ item.template_item.title }}</h3>
+
+    <form
+        hx-post="{% url 'operations:checklist-item-update' item.id %}"
+        hx-target="#checklist-item-{{ item.id }}"
+        hx-swap="outerHTML swap:300ms"
+        hx-disabled-elt="find button"
+        hx-on::after-request="if(event.detail.successful) OperationsModal.close('match-modal-overlay')"
+    >
+        {% csrf_token %}
+        <input type="hidden" name="status" value="{{ item.status }}">
+        <input type="hidden" name="selected_filter" value="{{ selected_filter|default:'open' }}">
+
+        <div class="form-group">
+            {% if item.status == "delayed" %}
+                <label for="delay_reason-{{ item.id }}"><strong>Delay Reason</strong></label>
+                <textarea
+                    name="delay_reason"
+                    id="delay_reason-{{ item.id }}"
+                    rows="4"
+                    class="form-control"
+                    placeholder="Why is this delayed?"
+                    autofocus
+                >{{ item.delay_reason }}</textarea>
+            {% else %}
+                <label for="note-{{ item.id }}"><strong>Note</strong></label>
+                <textarea
+                    name="note"
+                    id="note-{{ item.id }}"
+                    rows="4"
+                    class="form-control"
+                    placeholder="Add note..."
+                    autofocus
+                >{{ item.note }}</textarea>
+            {% endif %}
+        </div>
+
+        <div class="checklist-note-modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="OperationsModal.close('match-modal-overlay')">
+                Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+                Save
+            </button>
+        </div>
+    </form>
+</div>

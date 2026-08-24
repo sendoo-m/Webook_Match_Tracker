@@ -13,6 +13,39 @@ LIVE_MATCH_DURATION_HOURS = 2
 PREP_WINDOW_DAYS = 20
 STARTING_SOON_HOURS = 48
 ACTIVITY_LOG_PAGE_SIZE = 8
+ROSHAN_LEAGUE_NAME_HINT = "roshan"
+
+MISSING_REQUIREMENTS_EXCLUDED_CATEGORY_NAMES = {POST_MATCH_CATEGORY_NAME}
+MISSING_REQUIREMENTS_EXCLUDED_ITEM_TITLES = {"Result", "Report", "Final Result", "Match Report"}
+
+
+def get_roshan_league_competition():
+    from matches.models import Competition
+
+    return Competition.objects.filter(is_active=True, name_en__icontains=ROSHAN_LEAGUE_NAME_HINT).first()
+
+
+def get_coordinators_for_matches(matches_queryset):
+    """Coordinators (home-club owners) among a set of matches - shared by
+    the SPL Report and Calendar coordinator filters."""
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+    coordinator_ids = matches_queryset.values_list("home_club__owner_id", flat=True).distinct()
+    return User.objects.filter(id__in=coordinator_ids).order_by("username")
+
+
+def get_missing_requirements_pending_items(match):
+    """Pending checklist items for the Missing Operational Requirements report
+    - shared by the report list and the match popup so both stay in sync."""
+    return (
+        match.checklist_items.select_related("template_item__category", "completed_by")
+        .filter(is_active=True)
+        .exclude(status=MatchChecklistItem.Status.DONE)
+        .exclude(template_item__category__name__in=MISSING_REQUIREMENTS_EXCLUDED_CATEGORY_NAMES)
+        .exclude(template_item__title__in=MISSING_REQUIREMENTS_EXCLUDED_ITEM_TITLES)
+        .order_by("template_item__category__sort_order", "template_item__sort_order", "id")
+    )
 
 
 def get_match_detail_prefetch():
@@ -126,7 +159,10 @@ def build_dashboard_match_state(match, now):
     elif needs_reports:
         alert_level = "danger"
         alert_text = "Reports Pending"
-    elif ready_for_ticket_sale and not is_past:
+    elif is_past:
+        alert_level = "neutral"
+        alert_text = "Match Finished"
+    elif ready_for_ticket_sale:
         alert_level = "success"
         alert_text = "Ready for Ticket Sale"
     elif days_to_match <= 2 and non_post_match_pending > 0:
@@ -179,23 +215,35 @@ def build_dashboard_match_state(match, now):
 KV_CATEGORY_NAME = "KVs"
 
 
+def is_kv_ready(match):
+    """True if every active "KVs" (Key Visuals) checklist item for this match
+    is Done - shared by the SPL Report readiness score and the Missing
+    Operational Requirements KV filter."""
+    kv_items = [item for item in _get_active_items(match) if item.template_item.category.name == KV_CATEGORY_NAME]
+    return bool(kv_items) and all(item.status == MatchChecklistItem.Status.DONE for item in kv_items)
+
+
 def build_spl_report_row(match):
     active_items = _get_active_items(match)
-    kv_items = [item for item in active_items if item.template_item.category.name == KV_CATEGORY_NAME]
     non_post_match_items = [
         item for item in active_items
         if item.template_item.category.name != POST_MATCH_CATEGORY_NAME
     ]
 
-    kv_ready = bool(kv_items) and all(item.status == MatchChecklistItem.Status.DONE for item in kv_items)
+    kv_ready = is_kv_ready(match)
     webook_ready = bool(non_post_match_items) and all(
         item.status == MatchChecklistItem.Status.DONE for item in non_post_match_items
     )
+
+    non_post_match_total = len(non_post_match_items)
+    non_post_match_done = sum(1 for item in non_post_match_items if item.status == MatchChecklistItem.Status.DONE)
+    readiness_percent = round((non_post_match_done / non_post_match_total) * 100) if non_post_match_total > 0 else 0
 
     return {
         "match": match,
         "kv_ready": kv_ready,
         "webook_ready": webook_ready,
+        "readiness_percent": readiness_percent,
     }
 
 
@@ -242,7 +290,25 @@ def get_match_activity_page_context(match, page=1, per_page=ACTIVITY_LOG_PAGE_SI
     }
 
 
-def build_match_detail_side_context(match, selected_filter="all"):
+def checklist_item_matches_filter(status, selected_filter):
+    """Shared by the full checklist view and the single-item update response,
+    so a card that no longer matches the active filter (e.g. marked Done
+    while viewing "Open Only") disappears immediately instead of drifting
+    out of sync with a full-page filter re-fetch."""
+    if selected_filter == "not_started":
+        return status == MatchChecklistItem.Status.NOT_STARTED
+    if selected_filter == "in_progress":
+        return status == MatchChecklistItem.Status.IN_PROGRESS
+    if selected_filter == "delayed":
+        return status == MatchChecklistItem.Status.DELAYED
+    if selected_filter == "done":
+        return status == MatchChecklistItem.Status.DONE
+    if selected_filter == "open":
+        return status != MatchChecklistItem.Status.DONE
+    return True  # "all"
+
+
+def build_match_detail_side_context(match, selected_filter="open"):
     base_items = _get_active_items(match)
     ordered_items = sorted(
         base_items,
@@ -259,18 +325,9 @@ def build_match_detail_side_context(match, selected_filter="all"):
         ),
     )
 
-    if selected_filter == "not_started":
-        checklist_items = [item for item in ordered_items if item.status == MatchChecklistItem.Status.NOT_STARTED]
-    elif selected_filter == "in_progress":
-        checklist_items = [item for item in ordered_items if item.status == MatchChecklistItem.Status.IN_PROGRESS]
-    elif selected_filter == "delayed":
-        checklist_items = [item for item in ordered_items if item.status == MatchChecklistItem.Status.DELAYED]
-    elif selected_filter == "done":
-        checklist_items = [item for item in ordered_items if item.status == MatchChecklistItem.Status.DONE]
-    elif selected_filter == "open":
-        checklist_items = [item for item in ordered_items if item.status != MatchChecklistItem.Status.DONE]
-    else:
-        checklist_items = ordered_items
+    checklist_items = [
+        item for item in ordered_items if checklist_item_matches_filter(item.status, selected_filter)
+    ]
 
     grouped = {}
     for checklist_item in checklist_items:

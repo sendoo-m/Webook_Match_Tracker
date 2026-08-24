@@ -1,0 +1,22 @@
+<form
+    hx-post="{% url 'operations:feedback-submit' %}"
+    hx-target="#feedback-modal-body"
+    hx-swap="innerHTML"
+    class="form-stack"
+>
+    {% csrf_token %}
+    {% for error in form.non_field_errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+
+    {% for field in form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}<p class="help-text">{{ field.help_text }}</p>{% endif %}
+            {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+    {% endfor %}
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>
