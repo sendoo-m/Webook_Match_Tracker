@@ -1,17 +1,18 @@
 <!-- File: templates/operations/partials/match_progress_summary.html -->
 <!-- Path: config/templates/operations/partials/match_progress_summary.html -->
+{% load i18n %}
 <div id="match-progress-summary" hx-swap-oob="true">
     <div class="card panel">
         <div class="progress-summary-head">
             <div>
-                <h2 class="panel-title" style="margin:0;">Progress Summary</h2>
+                <h2 class="panel-title" style="margin:0;">{% trans "Progress Summary" %}</h2>
                 <p class="help-text" style="margin:6px 0 0;">
-                    {{ done_items }} of {{ total_items }} items completed
+                    {% blocktrans %}{{ done_items }} of {{ total_items }} items completed{% endblocktrans %}
                 </p>
             </div>
 
             <div class="progress-summary-percent">
-                {{ progress_percent }}% Completed
+                {% blocktrans %}{{ progress_percent }}% Completed{% endblocktrans %}
             </div>
         </div>
 
@@ -21,32 +22,32 @@
 
         <div class="summary-grid">
             <div class="summary-tile">
-                <div class="help-text">Total Items</div>
+                <div class="help-text">{% trans "Total Items" %}</div>
                 <div class="summary-tile-value">{{ total_items }}</div>
             </div>
 
             <div class="summary-tile summary-tile--warning">
-                <div class="help-text">Not Started</div>
+                <div class="help-text">{% trans "Not Started" %}</div>
                 <div class="summary-tile-value">{{ not_started_count }}</div>
             </div>
 
             <div class="summary-tile summary-tile--info">
-                <div class="help-text">In Progress</div>
+                <div class="help-text">{% trans "In Progress" %}</div>
                 <div class="summary-tile-value">{{ in_progress_count }}</div>
             </div>
 
             <div class="summary-tile summary-tile--success">
-                <div class="help-text">Done</div>
+                <div class="help-text">{% trans "Done" %}</div>
                 <div class="summary-tile-value">{{ done_items }}</div>
             </div>
 
             <div class="summary-tile summary-tile--danger">
-                <div class="help-text">Delayed</div>
+                <div class="help-text">{% trans "Delayed" %}</div>
                 <div class="summary-tile-value">{{ delayed_items }}</div>
             </div>
 
             <div class="summary-tile summary-tile--primary">
-                <div class="help-text">Required Done</div>
+                <div class="help-text">{% trans "Required Done" %}</div>
                 <div class="summary-tile-value">{{ required_done }} / {{ required_total }}</div>
             </div>
         </div>

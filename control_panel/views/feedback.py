@@ -1,4 +1,5 @@
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
 from control_panel.forms import FeedbackEntryForm
 from control_panel.models import FeedbackEntry
@@ -11,9 +12,9 @@ class FeedbackEntryListView(PanelListView):
     template_name = "control_panel/feedback_list.html"
     context_object_name = "feedback_entries"
     ordering = ["-created_at"]
-    page_title = "Feedback"
+    page_title = _("Feedback")
     create_url_name = "control_panel:feedback-create"
-    create_label = "Add Feedback"
+    create_label = _("Add Feedback")
 
 
 class FeedbackEntryCreateView(PanelCreateView):
@@ -21,8 +22,8 @@ class FeedbackEntryCreateView(PanelCreateView):
     form_class = FeedbackEntryForm
     template_name = "control_panel/feedback_form.html"
     success_url = reverse_lazy("control_panel:feedback-list")
-    success_message = "Feedback entry created."
-    page_title = "Add Feedback"
+    success_message = _("Feedback entry created.")
+    page_title = _("Add Feedback")
     list_url_name = "control_panel:feedback-list"
 
 
@@ -31,6 +32,6 @@ class FeedbackEntryUpdateView(PanelUpdateView):
     form_class = FeedbackEntryForm
     template_name = "control_panel/feedback_form.html"
     success_url = reverse_lazy("control_panel:feedback-list")
-    success_message = "Feedback entry updated."
-    page_title = "Edit Feedback"
+    success_message = _("Feedback entry updated.")
+    page_title = _("Edit Feedback")
     list_url_name = "control_panel:feedback-list"

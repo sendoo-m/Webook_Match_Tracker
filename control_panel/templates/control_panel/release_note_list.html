@@ -1,16 +1,18 @@
 {# control_panel/release_note_list.html #}
 {% extends "control_panel/list.html" %}
+{% load i18n %}
 
 {% block page_subtitle %}
+    {% url 'operations:changelog' as changelog_url %}
     <p class="page-subtitle">
-        Manage entries shown on the public <a href="{% url 'operations:changelog' %}">What's New</a> page.
+        {% blocktrans %}Manage entries shown on the public <a href="{{ changelog_url }}">What's New</a> page.{% endblocktrans %}
     </p>
 {% endblock %}
 
 {% block table_head %}
-    <th>Version</th>
-    <th>Release Date</th>
-    <th>Highlights</th>
+    <th>{% trans "Version" %}</th>
+    <th>{% trans "Release Date" %}</th>
+    <th>{% trans "Highlights" %}</th>
     <th></th>
 {% endblock %}
 
@@ -19,12 +21,12 @@
         <tr>
             <td>v{{ note.version }}</td>
             <td>{{ note.release_date }}</td>
-            <td>{{ note.highlight_lines|length }} item{{ note.highlight_lines|length|pluralize }}</td>
+            <td>{% blocktrans count counter=note.highlight_lines|length %}{{ counter }} item{% plural %}{{ counter }} items{% endblocktrans %}</td>
             <td>
-                <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:release-note-update' note.pk %}">Edit</a>
+                <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:release-note-update' note.pk %}">{% trans "Edit" %}</a>
             </td>
         </tr>
     {% empty %}
-        <tr><td colspan="4">No release notes yet.</td></tr>
+        <tr><td colspan="4">{% trans "No release notes yet." %}</td></tr>
     {% endfor %}
 {% endblock %}

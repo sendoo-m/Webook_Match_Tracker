@@ -1,52 +1,53 @@
 {% extends "operations/base.html" %}
 {% load display_helpers %}
+{% load i18n %}
 
-{% block title %}Coordinator Workload{% endblock %}
+{% block title %}{% trans "Coordinator Workload" %}{% endblock %}
 
 {% block page_help %}
     <p>
-        This report shows <strong>workload by coordinator, club, and round</strong> — how many
-        matches each person still has to finish before they're published.
+        {% blocktrans %}This report shows <strong>workload by coordinator, club, and round</strong> — how many
+        matches each person still has to finish before they're published.{% endblocktrans %}
     </p>
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1 class="page-title">Coordinator Workload</h1>
-    <p class="page-subtitle">Track remaining matches by coordinator, club, or round. "Remaining" = not yet Published.</p>
+    <h1 class="page-title">{% trans "Coordinator Workload" %}</h1>
+    <p class="page-subtitle">{% blocktrans %}Track remaining matches by coordinator, club, or round. "Remaining" = not yet Published.{% endblocktrans %}</p>
     <div class="mini-badges" style="margin-top:var(--space-4);">
-        <span class="mini-badge mini-badge-neutral"><i class="ti ti-shield"></i>&nbsp;18 clubs</span>
-        <span class="mini-badge mini-badge-neutral"><i class="ti ti-calendar-event"></i>&nbsp;34 rounds</span>
-        <span class="mini-badge mini-badge-neutral"><i class="ti ti-users"></i>&nbsp;5–7 clubs / coordinator</span>
+        <span class="mini-badge mini-badge-neutral"><i class="ti ti-shield"></i>&nbsp;{% blocktrans %}18 clubs{% endblocktrans %}</span>
+        <span class="mini-badge mini-badge-neutral"><i class="ti ti-calendar-event"></i>&nbsp;{% blocktrans %}34 rounds{% endblocktrans %}</span>
+        <span class="mini-badge mini-badge-neutral"><i class="ti ti-users"></i>&nbsp;{% blocktrans %}5–7 clubs / coordinator{% endblocktrans %}</span>
     </div>
 </div>
 
 <div class="dashboard-stats-grid">
     <div class="card stat-card stat-card-neutral">
-        <div class="stat-label">Total matches (filtered)</div>
+        <div class="stat-label">{% trans "Total matches (filtered)" %}</div>
         <div class="stat-value">{{ total_count }}</div>
     </div>
     <div class="card stat-card stat-card-warning">
-        <div class="stat-label">Remaining (not published)</div>
+        <div class="stat-label">{% trans "Remaining (not published)" %}</div>
         <div class="stat-value">{{ remaining_count }}</div>
     </div>
     <div class="card stat-card stat-card-info">
-        <div class="stat-label">Coordinators</div>
+        <div class="stat-label">{% trans "Coordinators" %}</div>
         <div class="stat-value">{{ by_user|length }}</div>
     </div>
     <div class="card stat-card stat-card-info">
-        <div class="stat-label">Clubs</div>
+        <div class="stat-label">{% trans "Clubs" %}</div>
         <div class="stat-value">{{ by_club|length }}</div>
     </div>
 </div>
 
 <div class="card panel">
-    <h2 class="panel-title"><i class="ti ti-filter"></i>&nbsp; Filters</h2>
+    <h2 class="panel-title"><i class="ti ti-filter"></i>&nbsp; {% trans "Filters" %}</h2>
     <form method="get" class="filters">
         <div class="field-group">
-            <label>Coordinator</label>
+            <label>{% trans "Coordinator" %}</label>
             <select name="user">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for u in users %}
                     <option value="{{ u.id }}" {% if selected_user == u.id|stringformat:"s" %}selected{% endif %}>{{ u|display_name }}</option>
                 {% endfor %}
@@ -54,29 +55,29 @@
         </div>
 
         <div class="field-group">
-            <label>Club</label>
+            <label>{% trans "Club" %}</label>
             <select name="club">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for club in clubs %}
-                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club.name_ar }}</option>
+                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="field-group">
-            <label>Competition</label>
+            <label>{% trans "Competition" %}</label>
             <select name="competition">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for competition in competitions %}
-                    <option value="{{ competition.id }}" {% if selected_competition == competition.id|stringformat:"s" %}selected{% endif %}>{{ competition.name_ar }}</option>
+                    <option value="{{ competition.id }}" {% if selected_competition == competition.id|stringformat:"s" %}selected{% endif %}>{{ competition|localized_name }}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="field-group">
-            <label>Round</label>
+            <label>{% trans "Round" %}</label>
             <select name="round">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for r in rounds %}
                     <option value="{{ r }}" {% if selected_round == r|stringformat:"s" %}selected{% endif %}>{{ r }}</option>
                 {% endfor %}
@@ -85,23 +86,23 @@
 
         <div class="field-group">
             <label>&nbsp;</label>
-            <button type="submit">Apply filters</button>
+            <button type="submit">{% trans "Apply filters" %}</button>
         </div>
     </form>
 </div>
 
 <div class="dashboard-grid-2">
     <div class="card panel">
-        <div class="panel-title"><i class="ti ti-user"></i>&nbsp; By coordinator</div>
-        <p class="help-text" style="margin:0 0 var(--space-5);">Sorted by highest remaining backlog first.</p>
+        <div class="panel-title"><i class="ti ti-user"></i>&nbsp; {% trans "By coordinator" %}</div>
+        <p class="help-text" style="margin:0 0 var(--space-5);">{% trans "Sorted by highest remaining backlog first." %}</p>
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>Coordinator</th>
-                        <th>Total</th>
-                        <th>Remaining</th>
-                        <th>Backlog</th>
+                        <th>{% trans "Coordinator" %}</th>
+                        <th>{% trans "Total" %}</th>
+                        <th>{% trans "Remaining" %}</th>
+                        <th>{% trans "Backlog" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -127,7 +128,7 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="4">No data.</td></tr>
+                    <tr><td colspan="4">{% trans "No data." %}</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -135,16 +136,16 @@
     </div>
 
     <div class="card panel">
-        <div class="panel-title"><i class="ti ti-shield"></i>&nbsp; By club</div>
-        <p class="help-text" style="margin:0 0 var(--space-5);">Sorted by highest remaining backlog first.</p>
+        <div class="panel-title"><i class="ti ti-shield"></i>&nbsp; {% trans "By club" %}</div>
+        <p class="help-text" style="margin:0 0 var(--space-5);">{% trans "Sorted by highest remaining backlog first." %}</p>
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>Club</th>
-                        <th>Total</th>
-                        <th>Remaining</th>
-                        <th>Backlog</th>
+                        <th>{% trans "Club" %}</th>
+                        <th>{% trans "Total" %}</th>
+                        <th>{% trans "Remaining" %}</th>
+                        <th>{% trans "Backlog" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -170,7 +171,7 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="4">No data.</td></tr>
+                    <tr><td colspan="4">{% trans "No data." %}</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -179,22 +180,22 @@
 </div>
 
 <div class="card panel">
-    <div class="panel-title"><i class="ti ti-calendar-event"></i>&nbsp; By round</div>
-    <p class="help-text" style="margin:0 0 var(--space-5);">Sorted by highest remaining backlog first. 34 rounds total.</p>
+    <div class="panel-title"><i class="ti ti-calendar-event"></i>&nbsp; {% trans "By round" %}</div>
+    <p class="help-text" style="margin:0 0 var(--space-5);">{% blocktrans %}Sorted by highest remaining backlog first. 34 rounds total.{% endblocktrans %}</p>
     <div class="table-wrap">
         <table>
             <thead>
                 <tr>
-                    <th>Round</th>
-                    <th>Total</th>
-                    <th>Remaining</th>
-                    <th>Backlog</th>
+                    <th>{% trans "Round" %}</th>
+                    <th>{% trans "Total" %}</th>
+                    <th>{% trans "Remaining" %}</th>
+                    <th>{% trans "Backlog" %}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for row in by_round|dictsortreversed:"remaining" %}
                 <tr>
-                    <td>Round {{ row.round_number|default:"—" }}</td>
+                    <td>{% blocktrans with number=row.round_number|default:"—" %}Round {{ number }}{% endblocktrans %}</td>
                     <td>{{ row.total }}</td>
                     <td>
                         {% if row.remaining %}
@@ -214,7 +215,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="4">No data.</td></tr>
+                <tr><td colspan="4">{% trans "No data." %}</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -222,18 +223,18 @@
 </div>
 
 <div class="card panel">
-    <div class="panel-title"><i class="ti ti-list"></i>&nbsp; Matches</div>
+    <div class="panel-title"><i class="ti ti-list"></i>&nbsp; {% trans "Matches" %}</div>
     <div class="table-wrap">
         <table>
             <thead>
                 <tr>
-                    <th>Match</th>
-                    <th>Coordinator</th>
-                    <th>Competition</th>
-                    <th>Round</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Discount</th>
+                    <th>{% trans "Match" %}</th>
+                    <th>{% trans "Coordinator" %}</th>
+                    <th>{% trans "Competition" %}</th>
+                    <th>{% trans "Round" %}</th>
+                    <th>{% trans "Date" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Discount" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -241,7 +242,7 @@
                 <tr>
                     <td><a href="{% url 'operations:match-detail' match.pk %}">{{ match.title_en }}</a></td>
                     <td>{{ match.home_club.owner|display_name }}</td>
-                    <td>{{ match.competition.name_ar }}</td>
+                    <td>{{ match.competition|localized_name }}</td>
                     <td>{{ match.round_number|default:"—" }}</td>
                     <td>{{ match.event_date }} {{ match.match_start_time }}</td>
                     <td>
@@ -258,7 +259,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="7">No matches found.</td></tr>
+                <tr><td colspan="7">{% trans "No matches found." %}</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -268,15 +269,15 @@
         <div class="pagination-wrap">
             <div class="pagination">
                 {% if page_obj.has_previous %}
-                    <a class="pagination-link" href="?user={{ selected_user }}&club={{ selected_club }}&competition={{ selected_competition }}&round={{ selected_round }}&page=1">First</a>
-                    <a class="pagination-link" href="?user={{ selected_user }}&club={{ selected_club }}&competition={{ selected_competition }}&round={{ selected_round }}&page={{ page_obj.previous_page_number }}">Previous</a>
+                    <a class="pagination-link" href="?user={{ selected_user }}&club={{ selected_club }}&competition={{ selected_competition }}&round={{ selected_round }}&page=1">{% trans "First" %}</a>
+                    <a class="pagination-link" href="?user={{ selected_user }}&club={{ selected_club }}&competition={{ selected_competition }}&round={{ selected_round }}&page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>
                 {% endif %}
 
-                <span class="pagination-current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                <span class="pagination-current">{% blocktrans with number=page_obj.number total=page_obj.paginator.num_pages %}Page {{ number }} of {{ total }}{% endblocktrans %}</span>
 
                 {% if page_obj.has_next %}
-                    <a class="pagination-link" href="?user={{ selected_user }}&club={{ selected_club }}&competition={{ selected_competition }}&round={{ selected_round }}&page={{ page_obj.next_page_number }}">Next</a>
-                    <a class="pagination-link" href="?user={{ selected_user }}&club={{ selected_club }}&competition={{ selected_competition }}&round={{ selected_round }}&page={{ page_obj.paginator.num_pages }}">Last</a>
+                    <a class="pagination-link" href="?user={{ selected_user }}&club={{ selected_club }}&competition={{ selected_competition }}&round={{ selected_round }}&page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>
+                    <a class="pagination-link" href="?user={{ selected_user }}&club={{ selected_club }}&competition={{ selected_competition }}&round={{ selected_round }}&page={{ page_obj.paginator.num_pages }}">{% trans "Last" %}</a>
                 {% endif %}
             </div>
         </div>

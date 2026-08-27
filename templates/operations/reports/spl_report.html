@@ -1,54 +1,55 @@
 {% extends "operations/base.html" %}
 {% load static %}
 {% load display_helpers %}
+{% load i18n %}
 
-{% block title %}SPL Report{% endblock %}
+{% block title %}{% trans "SPL Report" %}{% endblock %}
 
 {% block page_help %}
     <p>
-        This is the <strong>SPL Report</strong> — ticketing and readiness details the SPL team
-        needs for every match: release dates, ticketing plan status, and complimentary tickets.
+        {% blocktrans %}This is the <strong>SPL Report</strong> — ticketing and readiness details the SPL team
+        needs for every match: release dates, ticketing plan status, and complimentary tickets.{% endblocktrans %}
     </p>
-    <p>Use "Export XLSX" to download the current filtered view as a spreadsheet.</p>
+    <p>{% blocktrans %}Use "Export XLSX" to download the current filtered view as a spreadsheet.{% endblocktrans %}</p>
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
     <div class="page-header-row">
         <div>
-            <h1 class="page-title">SPL Report</h1>
-            <p class="page-subtitle">Per-match ticketing and readiness details for the SPL team.</p>
+            <h1 class="page-title">{% trans "SPL Report" %}</h1>
+            <p class="page-subtitle">{% trans "Per-match ticketing and readiness details for the SPL team." %}</p>
         </div>
 
         <div class="filter-bar">
             <a class="btn btn-primary" href="{% url 'operations:spl-report-export' %}?club={{ selected_club }}&round={{ selected_round }}&coordinator={{ selected_coordinator }}">
-                <i class="ti ti-file-spreadsheet"></i> Export XLSX
+                <i class="ti ti-file-spreadsheet"></i> {% trans "Export XLSX" %}
             </a>
         </div>
     </div>
 </div>
 
 <div class="card panel">
-    <form method="get" class="filters">
+    <form method="get" class="filters" data-autosubmit>
         <div class="field-group">
-            <label>Competition</label>
-            <div class="spl-fixed-filter">{{ roshan_competition.name_ar|default:"Roshan League" }}</div>
+            <label>{% trans "Competition" %}</label>
+            <div class="spl-fixed-filter">{% if roshan_competition %}{{ roshan_competition|localized_name }}{% else %}{% trans "Roshan League" %}{% endif %}</div>
         </div>
 
         <div class="field-group">
-            <label>Club</label>
+            <label>{% trans "Club" %}</label>
             <select name="club">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for club in clubs %}
-                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club.name_ar }}</option>
+                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="field-group">
-            <label>Coordinator</label>
+            <label>{% trans "Coordinator" %}</label>
             <select name="coordinator">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for coordinator in coordinators %}
                     <option value="{{ coordinator.id }}" {% if selected_coordinator == coordinator.id|stringformat:"s" %}selected{% endif %}>{{ coordinator|display_name }}</option>
                 {% endfor %}
@@ -56,9 +57,9 @@
         </div>
 
         <div class="field-group">
-            <label>Round</label>
+            <label>{% trans "Round" %}</label>
             <select name="round">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for r in rounds %}
                     <option value="{{ r }}" {% if selected_round == r|stringformat:"s" %}selected{% endif %}>{{ r }}</option>
                 {% endfor %}
@@ -67,7 +68,7 @@
 
         <div class="field-group">
             <label>&nbsp;</label>
-            <button type="submit">Apply Filters</button>
+            <button type="submit">{% trans "Apply Filters" %}</button>
         </div>
     </form>
 </div>
@@ -77,27 +78,27 @@
         <table>
             <thead>
                 <tr>
-                    <th>Matchweek</th>
-                    <th>Match Date</th>
-                    <th>Home Team</th>
-                    <th>Away Team</th>
-                    <th>Stadium</th>
-                    <th>Release Date</th>
-                    <th>Actual Release Date</th>
-                    <th>Match Readiness</th>
-                    <th>Ticketing Plan Status</th>
-                    <th>KV / Webook Images</th>
-                    <th>Webook Readiness</th>
-                    <th>SPL Complimentary Tickets</th>
-                    <th>Comments</th>
-                    <th>Coordinator (Webook)</th>
+                    <th>{% trans "Matchweek" %}</th>
+                    <th>{% trans "Match Date" %}</th>
+                    <th>{% trans "Home Team" %}</th>
+                    <th>{% trans "Away Team" %}</th>
+                    <th>{% trans "Stadium" %}</th>
+                    <th>{% trans "Release Date" %}</th>
+                    <th>{% trans "Actual Release Date" %}</th>
+                    <th>{% trans "Match Readiness" %}</th>
+                    <th>{% trans "Ticketing Plan Status" %}</th>
+                    <th>{% trans "KV / Webook Images" %}</th>
+                    <th>{% trans "Webook Readiness" %}</th>
+                    <th>{% trans "SPL Complimentary Tickets" %}</th>
+                    <th>{% trans "Comments" %}</th>
+                    <th>{% trans "Coordinator (Webook)" %}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for row in rows %}
                 <tr>
                     <td>{{ row.match.round_number|default:"—" }}</td>
-                    <td><a href="{% url 'operations:match-detail' row.match.pk %}">{{ row.match.event_date|default:"TBC" }}</a></td>
+                    <td><a href="{% url 'operations:match-detail' row.match.pk %}">{% if row.match.event_date %}{{ row.match.event_date }}{% else %}{% trans "TBC" %}{% endif %}</a></td>
                     <td>{% include "operations/partials/club_chip.html" with club=row.match.home_club role="home" %}</td>
                     <td>{% include "operations/partials/club_chip.html" with club=row.match.away_club role="away" %}</td>
                     <td>{{ row.match.venue|default:"—" }}</td>
@@ -113,33 +114,33 @@
                     </td>
                     <td>
                         <span class="mini-badge mini-badge-{% if row.match.ticketing_plan_approved %}success{% else %}neutral{% endif %}">
-                            {% if row.match.ticketing_plan_approved %}Approved{% else %}Not Approved{% endif %}
+                            {% if row.match.ticketing_plan_approved %}{% trans "Approved" %}{% else %}{% trans "Not Approved" %}{% endif %}
                         </span>
                         {% if not row.match.ticketing_plan_approved and can_confirm_spl_plan %}
                             <form method="post" action="{% url 'operations:spl-plan-confirm' row.match.pk %}" class="logout-form spl-confirm-form">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-secondary btn-sm">Confirm</button>
+                                <button type="submit" class="btn btn-secondary btn-sm">{% trans "Confirm" %}</button>
                             </form>
                         {% endif %}
                     </td>
                     <td>
                         <span class="mini-badge mini-badge-{% if row.kv_ready %}success{% else %}neutral{% endif %}">
-                            {% if row.kv_ready %}Ready{% else %}Not Ready{% endif %}
+                            {% if row.kv_ready %}{% trans "Ready" %}{% else %}{% trans "Not Ready" %}{% endif %}
                         </span>
                     </td>
                     <td>
                         <span class="mini-badge mini-badge-{% if row.webook_ready %}success{% else %}neutral{% endif %}">
-                            {% if row.webook_ready %}Ready{% else %}Not Ready{% endif %}
+                            {% if row.webook_ready %}{% trans "Ready" %}{% else %}{% trans "Not Ready" %}{% endif %}
                         </span>
                     </td>
                     <td>
                         <span class="mini-badge mini-badge-{% if row.match.spl_tickets_sent %}success{% else %}neutral{% endif %}">
-                            {% if row.match.spl_tickets_sent %}Sent{% else %}Not Sent{% endif %}
+                            {% if row.match.spl_tickets_sent %}{% trans "Sent" %}{% else %}{% trans "Not Sent" %}{% endif %}
                         </span>
                         {% if not row.match.spl_tickets_sent and can_confirm_spl_tickets %}
                             <form method="post" action="{% url 'operations:spl-tickets-confirm' row.match.pk %}" class="logout-form spl-confirm-form">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-secondary btn-sm">Confirm</button>
+                                <button type="submit" class="btn btn-secondary btn-sm">{% trans "Confirm" %}</button>
                             </form>
                         {% endif %}
                     </td>
@@ -147,7 +148,7 @@
                     <td>{{ row.match.home_club.owner|display_name }}</td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="14">No matches found.</td></tr>
+                <tr><td colspan="14">{% trans "No matches found." %}</td></tr>
                 {% endfor %}
             </tbody>
         </table>

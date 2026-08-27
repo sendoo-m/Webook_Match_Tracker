@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model, login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
+from django.utils.translation import gettext as _
 from django.views import View
 
 from control_panel.permissions import SuperAdminAccessMixin
@@ -27,15 +28,15 @@ class ImpersonateUserView(LoginRequiredMixin, SuperAdminAccessMixin, View):
         target = get_object_or_404(User, pk=pk)
 
         if target.pk == request.user.pk:
-            messages.info(request, "You're already logged in as this account.")
+            messages.info(request, _("You're already logged in as this account."))
             return redirect("control_panel:user-list")
 
         if is_super_admin(target):
-            messages.error(request, "You can't log in as another admin account.")
+            messages.error(request, _("You can't log in as another admin account."))
             return redirect("control_panel:user-list")
 
         if not target.is_active:
-            messages.error(request, "You can't log in as a deactivated account.")
+            messages.error(request, _("You can't log in as a deactivated account."))
             return redirect("control_panel:user-list")
 
         original_user_id = request.user.pk
@@ -48,7 +49,7 @@ class ImpersonateUserView(LoginRequiredMixin, SuperAdminAccessMixin, View):
         request.session[IMPERSONATOR_SESSION_KEY] = original_user_id
 
         logger.info("Super Admin %s started impersonating %s", original_username, target.username)
-        messages.success(request, f"You're now logged in as {target.get_full_name() or target.username}.")
+        messages.success(request, _("You're now logged in as %(name)s.") % {"name": target.get_full_name() or target.username})
         return redirect("operations:dashboard")
 
 
@@ -68,10 +69,10 @@ class StopImpersonatingView(LoginRequiredMixin, View):
             original_user = User.objects.get(pk=original_user_id)
         except User.DoesNotExist:
             auth_logout(request)
-            messages.error(request, "Couldn't restore your original session - please log in again.")
+            messages.error(request, _("Couldn't restore your original session - please log in again."))
             return redirect("login")
 
         login(request, original_user, backend=AUTH_BACKEND)
         logger.info("%s stopped impersonating %s", original_user.username, impersonated_username)
-        messages.success(request, "You're back in your own account.")
+        messages.success(request, _("You're back in your own account."))
         return redirect("control_panel:user-list")

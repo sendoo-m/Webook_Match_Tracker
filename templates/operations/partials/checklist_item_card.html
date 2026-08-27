@@ -1,4 +1,5 @@
 {# templates/operations/partials/checklist_item_card.html #}
+{% load i18n %}
 <div
     id="checklist-item-{{ item.id }}"
     class="card checklist-card checklist-card--{{ item.status }}"
@@ -14,12 +15,12 @@
 
             <span
                 class="status-pill status-pill--{{ item.status }}"
-                title="{% if item.completed_at %}Completed {{ item.completed_at|date:'M j, Y g:i a' }}{% if item.completed_by %} by {{ item.completed_by }}{% endif %}{% elif item.status == 'not_started' %}No action taken yet{% elif item.status == 'in_progress' %}Work has started{% elif item.status == 'delayed' %}Waiting for resolution{% endif %}"
+                title="{% if item.completed_at %}{% blocktrans with completed_at=item.completed_at|date:'M j, Y g:i a' %}Completed {{ completed_at }}{% endblocktrans %}{% if item.completed_by %} {% blocktrans with completed_by=item.completed_by %}by {{ completed_by }}{% endblocktrans %}{% endif %}{% elif item.status == 'not_started' %}{% trans "No action taken yet" %}{% elif item.status == 'in_progress' %}{% trans "Work has started" %}{% elif item.status == 'delayed' %}{% trans "Waiting for resolution" %}{% endif %}"
             >
                 {{ item.get_status_display }}
             </span>
 
-            <span id="item-loading-{{ item.id }}" class="inline-indicator">Saving...</span>
+            <span id="item-loading-{{ item.id }}" class="inline-indicator">{% trans "Saving..." %}</span>
 
             {% comment %}
             This form only wraps the status buttons now - the Note button below
@@ -45,7 +46,7 @@
                     value="not_started"
                     class="status-toggle status-toggle-not_started {% if item.status == 'not_started' %}is-active{% endif %}"
                 >
-                    Reset
+                    {% trans "Reset" %}
                 </button>
 
                 <button
@@ -54,7 +55,7 @@
                     value="in_progress"
                     class="status-toggle status-toggle-in_progress {% if item.status == 'in_progress' %}is-active{% endif %}"
                 >
-                    In Progress
+                    {% trans "In Progress" %}
                 </button>
 
                 <button
@@ -63,7 +64,7 @@
                     value="delayed"
                     class="status-toggle status-toggle-delayed {% if item.status == 'delayed' %}is-active{% endif %}"
                 >
-                    Mark Delayed
+                    {% trans "Mark Delayed" %}
                 </button>
 
                 <button
@@ -72,7 +73,7 @@
                     value="done"
                     class="status-toggle status-toggle-done {% if item.status == 'done' %}is-active{% endif %}"
                 >
-                    Mark Done
+                    {% trans "Mark Done" %}
                 </button>
             </form>
 
@@ -87,7 +88,7 @@
                     hx-swap="innerHTML"
                 >
                     <i class="ti ti-note"></i>
-                    {% if item.status == "delayed" %}Delay Reason{% else %}Note{% endif %}
+                    {% if item.status == "delayed" %}{% trans "Delay Reason" %}{% else %}{% trans "Note" %}{% endif %}
                 </button>
             {% endif %}
         </div>
@@ -103,7 +104,7 @@
 
             <span
                 class="status-pill status-pill--{{ item.status }}"
-                title="{% if item.completed_at %}Completed {{ item.completed_at|date:'M j, Y g:i a' }}{% if item.completed_by %} by {{ item.completed_by }}{% endif %}{% elif item.status == 'not_started' %}No action taken yet{% elif item.status == 'in_progress' %}Work has started{% elif item.status == 'delayed' %}Waiting for resolution{% endif %}"
+                title="{% if item.completed_at %}{% blocktrans with completed_at=item.completed_at|date:'M j, Y g:i a' %}Completed {{ completed_at }}{% endblocktrans %}{% if item.completed_by %} {% blocktrans with completed_by=item.completed_by %}by {{ completed_by }}{% endblocktrans %}{% endif %}{% elif item.status == 'not_started' %}{% trans "No action taken yet" %}{% elif item.status == 'in_progress' %}{% trans "Work has started" %}{% elif item.status == 'delayed' %}{% trans "Waiting for resolution" %}{% endif %}"
             >
                 {{ item.get_status_display }}
             </span>

@@ -1,11 +1,12 @@
 <!-- File: templates/operations/partials/activity_log_item.html -->
 <!-- Path: config/templates/operations/partials/activity_log_item.html -->
+{% load i18n %}
 <div class="timeline-item">
     <div class="timeline-item-row">
         <div>
             <div class="timeline-item-desc">{{ log.description }}</div>
             <div class="help-text">
-                {% if log.user %}{{ log.user }}{% else %}System{% endif %} · {{ log.get_action_display }}
+                {% if log.user %}{{ log.user }}{% else %}{% trans "System" %}{% endif %} · {{ log.get_action_display }}
             </div>
         </div>
         <div class="help-text timeline-item-time">

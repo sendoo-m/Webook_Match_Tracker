@@ -1,13 +1,14 @@
 {# control_panel/club_list.html #}
 {% extends "control_panel/list.html" %}
+{% load i18n %}
 
 {% block table_head %}
-    <th>Logo</th>
-    <th>Name (AR)</th>
-    <th>Name (EN)</th>
-    <th>Short Name</th>
-    <th>Owner</th>
-    <th>Status</th>
+    <th>{% trans "Logo" %}</th>
+    <th>{% trans "Name (AR)" %}</th>
+    <th>{% trans "Name (EN)" %}</th>
+    <th>{% trans "Short Name" %}</th>
+    <th>{% trans "Owner" %}</th>
+    <th>{% trans "Status" %}</th>
     <th></th>
 {% endblock %}
 
@@ -27,60 +28,17 @@
             <td>{{ club.owner|default:"—" }}</td>
             <td>
                 <span class="badge {% if club.is_active %}badge-published{% else %}badge-draft{% endif %}">
-                    {% if club.is_active %}Active{% else %}Inactive{% endif %}
+                    {% if club.is_active %}{% trans "Active" %}{% else %}{% trans "Inactive" %}{% endif %}
                 </span>
             </td>
             <td>
                 <div class="row-actions">
-                    <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:team-update' club.pk %}">Edit</a>
+                    <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:team-update' club.pk %}">{% trans "Edit" %}</a>
                     {% include "control_panel/_toggle_active_button.html" with obj=club toggle_url_name="control_panel:team-toggle-active" %}
                 </div>
             </td>
         </tr>
     {% empty %}
-        <tr><td colspan="7">No teams found.</td></tr>
+        <tr><td colspan="7">{% trans "No teams found." %}</td></tr>
     {% endfor %}
 {% endblock %}
-
-{% comment %} {% extends "control_panel/list.html" %}
-
-{% block table_head %}
-    <th>Logo</th>
-    <th>Name (AR)</th>
-    <th>Name (EN)</th>
-    <th>Short Name</th>
-    <th>Owner</th>
-    <th>Status</th>
-    <th></th>
-{% endblock %}
-
-{% block table_body %}
-    {% for club in clubs %}
-        <tr>
-            <td>
-                {% if club.logo %}
-                    <img src="{{ club.logo.url }}" alt="{{ club.name_en }}" class="club-logo-thumb">
-                {% else %}
-                    <span class="help-text">—</span>
-                {% endif %}
-            </td>
-            <td>{{ club.name_ar }}</td>
-            <td>{{ club.name_en }}</td>
-            <td>{{ club.short_name|default:"—" }}</td>
-            <td>{{ club.owner|default:"—" }}</td>
-            <td>
-                <span class="badge {% if club.is_active %}badge-published{% else %}badge-draft{% endif %}">
-                    {% if club.is_active %}Active{% else %}Inactive{% endif %}
-                </span>
-            </td>
-            <td>
-                <div style="display:flex; gap:8px;">
-                    <a class="btn btn-secondary" style="padding:6px 10px; font-size:12px;" href="{% url 'control_panel:team-update' club.pk %}">Edit</a>
-                    {% include "control_panel/_toggle_active_button.html" with obj=club toggle_url_name="control_panel:team-toggle-active" %}
-                </div>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="7">No teams found.</td></tr>
-    {% endfor %}
-{% endblock %} {% endcomment %}

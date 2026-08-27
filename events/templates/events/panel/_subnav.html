@@ -1,0 +1,10 @@
+{# events/panel/_subnav.html #}
+{% load i18n %}
+<nav class="subnav">
+    <a href="{% url 'events:panel-home' %}" class="subnav-link{% if request.resolver_match.url_name == 'panel-home' %} is-active{% endif %}">{% trans "Home" %}</a>
+    <a href="{% url 'events:event-list' %}" class="subnav-link{% if 'event' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Events" %}</a>
+    <a href="{% url 'events:category-list' %}" class="subnav-link{% if 'category' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Categories" %}</a>
+    <a href="{% url 'events:access-list' %}" class="subnav-link{% if 'access' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Access" %}</a>
+    <a href="{% url 'events:checklist-category-list' %}" class="subnav-link{% if 'checklist-category' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Checklist Categories" %}</a>
+    <a href="{% url 'events:checklist-item-list' %}" class="subnav-link{% if 'checklist-item' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Checklist Items" %}</a>
+</nav>

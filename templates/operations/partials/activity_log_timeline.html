@@ -1,16 +1,17 @@
 <!-- File: templates/operations/partials/activity_log_timeline.html -->
 <!-- Path: config/templates/operations/partials/activity_log_timeline.html -->
+{% load i18n %}
 <div id="activity-log-timeline" class="card panel" hx-swap-oob="true">
     <div class="timeline-head">
-        <h2 class="panel-title" style="margin:0;">Activity Log</h2>
-        <span class="help-text">Latest updates</span>
+        <h2 class="panel-title" style="margin:0;">{% trans "Activity Log" %}</h2>
+        <span class="help-text">{% trans "Latest updates" %}</span>
     </div>
 
     <div id="activity-log-list" class="timeline-list">
         {% for log in activity_logs %}
             {% include "operations/partials/activity_log_item.html" with log=log %}
         {% empty %}
-            <p class="help-text">No activity yet.</p>
+            <p class="help-text">{% trans "No activity yet." %}</p>
         {% endfor %}
     </div>
 
@@ -22,7 +23,7 @@
                 hx-target="#activity-log-more"
                 hx-swap="outerHTML"
             >
-                Load more
+                {% trans "Load more" %}
             </button>
         {% endif %}
     </div>

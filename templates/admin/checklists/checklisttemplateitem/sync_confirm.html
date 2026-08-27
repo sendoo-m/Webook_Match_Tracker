@@ -1,24 +1,25 @@
 {% extends "admin/base_site.html" %}
+{% load i18n %}
 
 {% block content %}
 <div style="max-width: 760px;">
-    <h1>Sync checklist templates</h1>
+    <h1>{% trans "Sync checklist templates" %}</h1>
 
     <p>
-        This action will apply your latest checklist template changes to all existing matches.
+        {% trans "This action will apply your latest checklist template changes to all existing matches." %}
     </p>
 
     <ul>
-        <li>New active template items will be added to matches that do not have them.</li>
-        <li>Inactive template items will deactivate their related match checklist items.</li>
-        <li>Previously inactive match checklist items can be reactivated if the template becomes active again.</li>
+        <li>{% trans "New active template items will be added to matches that do not have them." %}</li>
+        <li>{% trans "Inactive template items will deactivate their related match checklist items." %}</li>
+        <li>{% trans "Previously inactive match checklist items can be reactivated if the template becomes active again." %}</li>
     </ul>
 
     <form method="post" style="margin-top: 20px;">
         {% csrf_token %}
-        <input type="submit" value="Run sync" class="default">
+        <input type="submit" value="{% trans 'Run sync' %}" class="default">
         <a href="{% url 'admin:checklists_checklisttemplateitem_changelist' %}" class="button" style="margin-left: 8px;">
-            Cancel
+            {% trans "Cancel" %}
         </a>
     </form>
 </div>

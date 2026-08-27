@@ -1,5 +1,6 @@
+{% load i18n %}
 <div class="card meta-box" id="match-spl-info-box">
-    <div class="meta-label">SPL Report Info</div>
+    <div class="meta-label">{% trans "SPL Report Info" %}</div>
     <form
         hx-post="{% url 'operations:match-spl-info-update' match.pk %}"
         hx-target="#match-spl-info-box"
@@ -13,8 +14,8 @@
             {{ form.actual_release_at.label_tag }}
             {{ form.actual_release_at }}
             <p class="help-text">
-                Set automatically when CMS Status changes to Published - only if it isn't already
-                set. Edit it here to correct it or to backfill matches published before this existed.
+                {% blocktrans %}Set automatically when CMS Status changes to Published - only if it isn't already
+                set. Edit it here to correct it or to backfill matches published before this existed.{% endblocktrans %}
             </p>
             {% for error in form.actual_release_at.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
         </div>
@@ -33,6 +34,6 @@
             {% for error in form.spl_comments.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
         </div>
 
-        <button type="submit" class="btn btn-primary" style="padding:6px 10px; font-size:12px; align-self:flex-start;">Save</button>
+        <button type="submit" class="btn btn-primary" style="padding:6px 10px; font-size:12px; align-self:flex-start;">{% trans "Save" %}</button>
     </form>
 </div>

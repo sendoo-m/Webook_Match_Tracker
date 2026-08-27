@@ -1,24 +1,26 @@
 {% load display_helpers %}
+{% load i18n %}
 <div class="match-quick-view">
     <div class="match-quick-view-teams">
         <div class="match-quick-view-club">
             {% if match.home_club.logo %}
                 <img src="{{ match.home_club.logo.url }}" alt="{{ match.home_club.name_en }}" class="match-quick-view-logo">
             {% endif %}
-            <span><i class="ti ti-home"></i> {{ match.home_club.name_ar|default:match.home_club.name_en }}</span>
+            <span><i class="ti ti-home"></i> {{ match.home_club|localized_name }}</span>
         </div>
         <span class="match-quick-view-vs">vs</span>
         <div class="match-quick-view-club">
             {% if match.away_club.logo %}
                 <img src="{{ match.away_club.logo.url }}" alt="{{ match.away_club.name_en }}" class="match-quick-view-logo">
             {% endif %}
-            <span><i class="ti ti-plane-departure"></i> {{ match.away_club.name_ar|default:match.away_club.name_en }}</span>
+            <span><i class="ti ti-plane-departure"></i> {{ match.away_club|localized_name }}</span>
         </div>
     </div>
 
     <div class="match-quick-view-meta">
-        <span><i class="ti ti-list-numbers"></i> Round {{ match.round_number|default:"—" }}</span>
-        <span><i class="ti ti-calendar-event"></i> {{ match.event_date|default:"TBC" }}</span>
+        <span><i class="ti ti-list-numbers"></i> {% blocktrans with number=match.round_number|default:"—" %}Round {{ number }}{% endblocktrans %}</span>
+        {% trans "TBC" as tbc_label %}
+        <span><i class="ti ti-calendar-event"></i> {{ match.event_date|default:tbc_label }}</span>
         {% if match.match_start_time %}
             <span><i class="ti ti-clock"></i> {{ match.match_start_time|time:"H:i" }}</span>
         {% endif %}
@@ -40,7 +42,7 @@
             </span>
         {% endif %}
         {% if card.delayed_items %}
-            <span class="mini-badge mini-badge-danger">{{ card.delayed_items }} delayed item{{ card.delayed_items|pluralize }}</span>
+            <span class="mini-badge mini-badge-danger">{% blocktrans count counter=card.delayed_items %}{{ counter }} delayed item{% plural %}{{ counter }} delayed items{% endblocktrans %}</span>
         {% endif %}
     </div>
 
@@ -49,7 +51,8 @@
             <div class="progress">
                 <div class="progress-bar" style="width:{% widthratio card.non_post_match_done card.non_post_match_total 100 %}%"></div>
             </div>
-            <span class="progress-label">{% widthratio card.non_post_match_done card.non_post_match_total 100 %}% ready</span>
+            {% widthratio card.non_post_match_done card.non_post_match_total 100 as ready_percent %}
+            <span class="progress-label">{% blocktrans with percent=ready_percent %}{{ percent }}% ready{% endblocktrans %}</span>
         </div>
     </div>
 
@@ -57,30 +60,30 @@
         {% comment %}The SPL team's whole "full match page" folds in here instead - one fast card, no extra navigation.{% endcomment %}
         <div class="match-quick-view-spl-grid">
             <div class="match-quick-view-spl-item">
-                <div class="meta-label">Release Date</div>
+                <div class="meta-label">{% trans "Release Date" %}</div>
                 <div class="meta-value">{{ match.sale_starts_at|default:"—" }}</div>
             </div>
             <div class="match-quick-view-spl-item">
-                <div class="meta-label">Actual Release Date</div>
+                <div class="meta-label">{% trans "Actual Release Date" %}</div>
                 <div class="meta-value">{{ match.actual_release_at|default:"—" }}</div>
             </div>
             <div class="match-quick-view-spl-item match-quick-view-spl-item--wide">
-                <div class="meta-label">Coordinator</div>
+                <div class="meta-label">{% trans "Coordinator" %}</div>
                 <div class="meta-value">{{ match.home_club.owner|display_name }}</div>
             </div>
         </div>
 
         <div class="match-quick-view-badges">
             <span class="mini-badge mini-badge-{% if match.ticketing_plan_approved %}success{% else %}neutral{% endif %}">
-                <i class="ti ti-ticket"></i> SPL Plan {% if match.ticketing_plan_approved %}Approved{% else %}Not Approved{% endif %}
+                <i class="ti ti-ticket"></i> {% if match.ticketing_plan_approved %}{% trans "SPL Plan Approved" %}{% else %}{% trans "SPL Plan Not Approved" %}{% endif %}
             </span>
             <span class="mini-badge mini-badge-{% if match.spl_tickets_sent %}success{% else %}neutral{% endif %}">
-                <i class="ti ti-send"></i> SPL Tickets {% if match.spl_tickets_sent %}Sent{% else %}Not Sent{% endif %}
+                <i class="ti ti-send"></i> {% if match.spl_tickets_sent %}{% trans "SPL Tickets Sent" %}{% else %}{% trans "SPL Tickets Not Sent" %}{% endif %}
             </span>
         </div>
     {% else %}
         <a href="{% url 'operations:match-detail' match.pk %}" class="btn btn-primary match-quick-view-link">
-            Open Full Match Page <i class="ti ti-arrow-right"></i>
+            {% trans "Open Full Match Page" %} <i class="ti ti-arrow-right"></i>
         </a>
     {% endif %}
 </div>

@@ -234,7 +234,7 @@ button:hover,
     width: var(--sidebar-width);
     flex: 0 0 var(--sidebar-width);
     background: var(--surface);
-    border-right: 1px solid var(--border);
+    border-inline-end: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     gap: var(--space-8);
@@ -533,7 +533,7 @@ button:hover,
 .page-toast-wrap {
     position: fixed;
     top: 20px;
-    right: 20px;
+    inset-inline-end: 20px;
     z-index: 9999;
     display: grid;
     gap: 10px;
@@ -930,7 +930,7 @@ button:hover,
 }
 
 .round-preview-meta i {
-    margin-right: 4px;
+    margin-inline-end: 4px;
 }
 
 .round-preview-export-link {
@@ -1063,7 +1063,7 @@ button:hover,
     padding: var(--space-6);
     border-radius: var(--radius);
     border: 1px solid var(--border);
-    border-left: 3px solid var(--border-strong);
+    border-inline-start: 3px solid var(--border-strong);
     background: var(--surface);
 }
 
@@ -1077,14 +1077,14 @@ a.stat-card:hover {
     text-decoration: none;
 }
 
-.stat-card-live { border-left-color: var(--live); }
-.stat-card-info { border-left-color: var(--info); }
-.stat-card-success { border-left-color: var(--success); }
-.stat-card-warning { border-left-color: var(--warning); }
-.stat-card-danger { border-left-color: var(--danger); }
-.stat-card-upcoming { border-left-color: var(--primary); }
-.stat-card-past { border-left-color: var(--border-strong); }
-.stat-card-neutral { border-left-color: var(--border-strong); }
+.stat-card-live { border-inline-start-color: var(--live); }
+.stat-card-info { border-inline-start-color: var(--info); }
+.stat-card-success { border-inline-start-color: var(--success); }
+.stat-card-warning { border-inline-start-color: var(--warning); }
+.stat-card-danger { border-inline-start-color: var(--danger); }
+.stat-card-upcoming { border-inline-start-color: var(--primary); }
+.stat-card-past { border-inline-start-color: var(--border-strong); }
+.stat-card-neutral { border-inline-start-color: var(--border-strong); }
 
 .stat-label {
     color: var(--muted);
@@ -1217,7 +1217,7 @@ th,
 td {
     padding: var(--space-5) var(--space-4);
     border-bottom: 1px solid var(--border);
-    text-align: left;
+    text-align: start;
     vertical-align: top;
 }
 
@@ -1378,7 +1378,7 @@ th {
     color: var(--primary);
     font-size: inherit;
     font-weight: 600;
-    text-align: left;
+    text-align: start;
 }
 
 .match-row-trigger:hover {
@@ -1611,7 +1611,7 @@ th {
 .checklist-card {
     padding: var(--space-3) var(--space-5);
     margin-bottom: var(--space-3);
-    border-left: 3px solid var(--border-strong);
+    border-inline-start: 3px solid var(--border-strong);
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
@@ -1623,10 +1623,10 @@ th {
     transform: scale(0.97) translateY(-6px);
 }
 
-.checklist-card--not_started { border-left-color: var(--warning); }
-.checklist-card--in_progress { border-left-color: var(--info); }
-.checklist-card--delayed { border-left-color: var(--danger); }
-.checklist-card--done { border-left-color: var(--success); opacity: 0.85; }
+.checklist-card--not_started { border-inline-start-color: var(--warning); }
+.checklist-card--in_progress { border-inline-start-color: var(--info); }
+.checklist-card--delayed { border-inline-start-color: var(--danger); }
+.checklist-card--done { border-inline-start-color: var(--success); opacity: 0.85; }
 
 /* Checklist item row - everything on one line (title, status, actions,
    note button) to keep the list compact; the note/delay-reason text moved
@@ -1844,12 +1844,12 @@ th {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--surface);
-    border-left: 3px solid var(--border-strong);
+    border-inline-start: 3px solid var(--border-strong);
 }
 
-.match-row-soon { border-left-color: var(--info); }
-.match-row-ready { border-left-color: var(--success); }
-.match-row-danger { border-left-color: var(--danger); }
+.match-row-soon { border-inline-start-color: var(--info); }
+.match-row-ready { border-inline-start-color: var(--success); }
+.match-row-danger { border-inline-start-color: var(--danger); }
 
 .match-row-top {
     display: flex;
@@ -1966,7 +1966,7 @@ th {
 /* Compact live cards (dashboard) */
 .match-row-compact {
     border: 1px solid var(--border);
-    border-left: 3px solid var(--live);
+    border-inline-start: 3px solid var(--live);
     border-radius: var(--radius);
     padding: var(--space-4) var(--space-5);
     background: var(--surface);
@@ -2002,13 +2002,13 @@ th {
     border-radius: var(--radius);
     border: 1px solid var(--border);
     background: var(--surface);
-    border-left: 3px solid var(--border-strong);
+    border-inline-start: 3px solid var(--border-strong);
 }
 
-.alert-info { border-left-color: var(--info); }
-.alert-warning { border-left-color: var(--warning); }
-.alert-danger { border-left-color: var(--danger); }
-.alert-success { border-left-color: var(--success); }
+.alert-info { border-inline-start-color: var(--info); }
+.alert-warning { border-inline-start-color: var(--warning); }
+.alert-danger { border-inline-start-color: var(--danger); }
+.alert-success { border-inline-start-color: var(--success); }
 
 .alert-head {
     display: flex;
@@ -2031,7 +2031,7 @@ th {
     height: 8px;
     border-radius: var(--radius-pill);
     background: var(--white);
-    margin-right: 6px;
+    margin-inline-end: 6px;
     animation: pulse-live 1.5s infinite;
 }
 
@@ -2046,7 +2046,7 @@ th {
     padding: var(--space-8);
     margin-bottom: var(--space-8);
     border: 1px solid var(--border);
-    border-left: 4px solid var(--live);
+    border-inline-start: 4px solid var(--live);
 }
 
 .live-hero-top {
@@ -2163,7 +2163,7 @@ th {
 
 .changelog-highlights {
     margin: 0;
-    padding-left: 20px;
+    padding-inline-start: 20px;
 }
 
 .changelog-highlights li {
@@ -2232,7 +2232,7 @@ th {
     align-items: center;
     gap: 5px;
     width: 100%;
-    text-align: left;
+    text-align: start;
     background: var(--info-soft);
     color: var(--info);
     border: none;
@@ -2296,7 +2296,7 @@ th {
 .calendar-more {
     display: block;
     width: 100%;
-    text-align: left;
+    text-align: start;
     font-size: 11px;
     font-weight: 700;
     color: var(--primary);
@@ -2572,13 +2572,13 @@ th {
 }
 
 .fab-feedback {
-    right: var(--space-8);
+    inset-inline-end: var(--space-8);
     background: var(--primary);
     color: var(--white);
 }
 
 .fab-training {
-    right: var(--space-8);
+    inset-inline-end: var(--space-8);
     bottom: calc(var(--space-8) + 60px);
     background: var(--surface);
     color: var(--text);
@@ -2588,7 +2588,7 @@ th {
 .training-panel {
     display: none;
     position: fixed;
-    right: var(--space-8);
+    inset-inline-end: var(--space-8);
     bottom: calc(var(--space-8) + 120px);
     width: 320px;
     max-width: calc(100vw - 2 * var(--space-8));

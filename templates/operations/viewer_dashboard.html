@@ -1,55 +1,57 @@
 {% extends "operations/base.html" %}
 {% load static %}
 {% load display_helpers %}
+{% load i18n %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}{% trans "Dashboard" %}{% endblock %}
 
 {% block page_help %}
     <p>
-        This is your <strong>Dashboard</strong> — every {{ roshan_competition.name_ar|default:"Roshan League" }}
-        match, browsable by team or by round.
+        {% trans "Roshan League" as roshan_league_label %}
+        {% blocktrans with competition_name=roshan_competition.name_ar|default:roshan_league_label %}This is your <strong>Dashboard</strong> — every {{ competition_name }}
+        match, browsable by team or by round.{% endblocktrans %}
     </p>
     <p>
-        The Upcoming &amp; Live Matches table shows everything ahead, filterable by club,
+        {% blocktrans %}The Upcoming & Live Matches table shows everything ahead, filterable by club,
         coordinator, round, SPL approval status, and Live/Upcoming. Click a team to see its next
         home matches, or a round to preview every match in it. Use the export buttons to download
-        the schedule as a spreadsheet - the whole season, one round, or a single match.
+        the schedule as a spreadsheet - the whole season, one round, or a single match.{% endblocktrans %}
     </p>
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1 class="page-title">Dashboard</h1>
-    <p class="page-subtitle">{{ roshan_competition.name_ar|default:"Roshan League" }} match schedule and readiness.</p>
+    <h1 class="page-title">{% trans "Dashboard" %}</h1>
+    <p class="page-subtitle">{% trans "Roshan League" as roshan_league_label %}{% blocktrans with competition_name=roshan_competition.name_ar|default:roshan_league_label %}{{ competition_name }} match schedule and readiness.{% endblocktrans %}</p>
 </div>
 
 <div class="quick-actions">
     <a href="{% url 'operations:calendar' %}" class="quick-action">
-        <i class="ti ti-calendar"></i><span>Calendar</span>
+        <i class="ti ti-calendar"></i><span>{% trans "Calendar" %}</span>
     </a>
     <a href="{% url 'operations:spl-report' %}" class="quick-action">
-        <i class="ti ti-report"></i><span>Report</span>
+        <i class="ti ti-report"></i><span>{% trans "Report" %}</span>
     </a>
     <a
         href="{% url 'operations:spl-report-export' %}{% if roshan_competition %}?competition={{ roshan_competition.pk }}{% endif %}"
         class="quick-action"
     >
-        <i class="ti ti-file-spreadsheet"></i><span>Export Full Schedule</span>
+        <i class="ti ti-file-spreadsheet"></i><span>{% trans "Export Full Schedule" %}</span>
     </a>
     {% if selected_round %}
         <a
             href="{% url 'operations:spl-report-export' %}?round={{ selected_round }}{% if roshan_competition %}&competition={{ roshan_competition.pk }}{% endif %}"
             class="quick-action"
         >
-            <i class="ti ti-file-spreadsheet"></i><span>Export Round {{ selected_round }}</span>
+            <i class="ti ti-file-spreadsheet"></i><span>{% blocktrans with number=selected_round %}Export Round {{ number }}{% endblocktrans %}</span>
         </a>
     {% endif %}
 </div>
 
 <div class="card panel dashboard-section">
     <div class="dashboard-section-head">
-        <h2 class="panel-title"><i class="ti ti-shirt-sport"></i> Teams</h2>
-        <span class="help-text">Click a team to preview their next home matches</span>
+        <h2 class="panel-title"><i class="ti ti-shirt-sport"></i> {% trans "Teams" %}</h2>
+        <span class="help-text">{% trans "Click a team to preview their next home matches" %}</span>
     </div>
 
     <div class="team-scroll-strip">
@@ -68,18 +70,18 @@
                 {% if club.logo %}
                     <img src="{{ club.logo.url }}" alt="{{ club.name_en }}" class="team-chip-logo">
                 {% endif %}
-                <span>{{ club.name_ar|default:club.name_en }}</span>
+                <span>{{ club|localized_name }}</span>
             </div>
         {% empty %}
-            <p class="help-text">No teams found.</p>
+            <p class="help-text">{% trans "No teams found." %}</p>
         {% endfor %}
     </div>
 </div>
 
 <div class="card panel dashboard-section">
     <div class="dashboard-section-head">
-        <h2 class="panel-title"><i class="ti ti-list-numbers"></i> Rounds</h2>
-        <span class="help-text">Click a round to preview its matches</span>
+        <h2 class="panel-title"><i class="ti ti-list-numbers"></i> {% trans "Rounds" %}</h2>
+        <span class="help-text">{% trans "Click a round to preview its matches" %}</span>
     </div>
 
     <div class="round-scroll-strip">
@@ -104,25 +106,25 @@
 
 <div class="card panel dashboard-section">
     <div class="dashboard-section-head">
-        <h2 class="panel-title"><i class="ti ti-table"></i> Upcoming & Live Matches</h2>
-        <span class="help-text">{{ table_match_count }} match{{ table_match_count|pluralize }}</span>
+        <h2 class="panel-title"><i class="ti ti-table"></i> {% trans "Upcoming & Live Matches" %}</h2>
+        <span class="help-text">{% blocktrans count counter=table_match_count %}{{ counter }} match{% plural %}{{ counter }} matches{% endblocktrans %}</span>
     </div>
 
-    <form method="get" class="filters">
+    <form method="get" class="filters" data-autosubmit>
         <div class="field-group">
-            <label>Club</label>
+            <label>{% trans "Club" %}</label>
             <select name="club">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for club in table_clubs %}
-                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club.name_ar }}</option>
+                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="field-group">
-            <label>Coordinator</label>
+            <label>{% trans "Coordinator" %}</label>
             <select name="coordinator">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for coordinator in coordinators %}
                     <option value="{{ coordinator.id }}" {% if selected_coordinator == coordinator.id|stringformat:"s" %}selected{% endif %}>{{ coordinator|display_name }}</option>
                 {% endfor %}
@@ -130,36 +132,36 @@
         </div>
 
         <div class="field-group">
-            <label>Round</label>
+            <label>{% trans "Round" %}</label>
             <select name="round">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for r in available_rounds %}
-                    <option value="{{ r }}" {% if selected_round == r|stringformat:"s" %}selected{% endif %}>Round {{ r }}</option>
+                    <option value="{{ r }}" {% if selected_round == r|stringformat:"s" %}selected{% endif %}>{% blocktrans with number=r %}Round {{ number }}{% endblocktrans %}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="field-group">
-            <label>SPL Approval</label>
+            <label>{% trans "SPL Approval" %}</label>
             <select name="spl_approval">
-                <option value="">All</option>
-                <option value="approved" {% if selected_spl_approval == "approved" %}selected{% endif %}>Approved</option>
-                <option value="not_approved" {% if selected_spl_approval == "not_approved" %}selected{% endif %}>Not Approved</option>
+                <option value="">{% trans "All" %}</option>
+                <option value="approved" {% if selected_spl_approval == "approved" %}selected{% endif %}>{% trans "Approved" %}</option>
+                <option value="not_approved" {% if selected_spl_approval == "not_approved" %}selected{% endif %}>{% trans "Not Approved" %}</option>
             </select>
         </div>
 
         <div class="field-group">
-            <label>Status</label>
+            <label>{% trans "Status" %}</label>
             <select name="status">
-                <option value="">All</option>
-                <option value="live" {% if selected_status == "live" %}selected{% endif %}>Live</option>
-                <option value="upcoming" {% if selected_status == "upcoming" %}selected{% endif %}>Upcoming</option>
+                <option value="">{% trans "All" %}</option>
+                <option value="live" {% if selected_status == "live" %}selected{% endif %}>{% trans "Live" %}</option>
+                <option value="upcoming" {% if selected_status == "upcoming" %}selected{% endif %}>{% trans "Upcoming" %}</option>
             </select>
         </div>
 
         <div class="field-group">
             <label>&nbsp;</label>
-            <button type="submit">Apply Filters</button>
+            <button type="submit">{% trans "Apply Filters" %}</button>
         </div>
     </form>
 
@@ -167,12 +169,12 @@
         <table>
             <thead>
                 <tr>
-                    <th>Round</th>
-                    <th>Match</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Days Remaining</th>
-                    <th>Status</th>
+                    <th>{% trans "Round" %}</th>
+                    <th>{% trans "Match" %}</th>
+                    <th>{% trans "Date" %}</th>
+                    <th>{% trans "Time" %}</th>
+                    <th>{% trans "Days Remaining" %}</th>
+                    <th>{% trans "Status" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -195,15 +197,15 @@
                                 {% include "operations/partials/club_chip.html" with club=card.match.away_club role="away" %}
                             </div>
                         </td>
-                        <td>{{ card.match.event_date|default:"TBC" }}</td>
+                        <td>{% trans "TBC" as tbc_label %}{{ card.match.event_date|default:tbc_label }}</td>
                         <td>{% if card.match.match_start_time %}{{ card.match.match_start_time|time:"H:i" }}{% else %}—{% endif %}</td>
                         <td>
                             {% if card.days_to_match == 0 %}
-                                Today
+                                {% trans "Today" %}
                             {% elif card.days_to_match == 1 %}
-                                Tomorrow
+                                {% trans "Tomorrow" %}
                             {% elif card.days_to_match is not None %}
-                                In {{ card.days_to_match }} day{{ card.days_to_match|pluralize }}
+                                {% blocktrans count counter=card.days_to_match %}In {{ counter }} day{% plural %}In {{ counter }} days{% endblocktrans %}
                             {% else %}
                                 —
                             {% endif %}
@@ -217,7 +219,7 @@
                         </td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="6">No upcoming or live matches found for this filter.</td></tr>
+                    <tr><td colspan="6">{% trans "No upcoming or live matches found for this filter." %}</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -228,17 +230,17 @@
         <div class="pagination-wrap">
             <div class="pagination">
                 {% if table_page_obj.has_previous %}
-                    <a class="pagination-link" href="?page=1{{ qs }}">First</a>
-                    <a class="pagination-link" href="?page={{ table_page_obj.previous_page_number }}{{ qs }}">Previous</a>
+                    <a class="pagination-link" href="?page=1{{ qs }}">{% trans "First" %}</a>
+                    <a class="pagination-link" href="?page={{ table_page_obj.previous_page_number }}{{ qs }}">{% trans "Previous" %}</a>
                 {% endif %}
 
                 <span class="pagination-current">
-                    Page {{ table_page_obj.number }} of {{ table_page_obj.paginator.num_pages }}
+                    {% blocktrans with number=table_page_obj.number total=table_page_obj.paginator.num_pages %}Page {{ number }} of {{ total }}{% endblocktrans %}
                 </span>
 
                 {% if table_page_obj.has_next %}
-                    <a class="pagination-link" href="?page={{ table_page_obj.next_page_number }}{{ qs }}">Next</a>
-                    <a class="pagination-link" href="?page={{ table_page_obj.paginator.num_pages }}{{ qs }}">Last</a>
+                    <a class="pagination-link" href="?page={{ table_page_obj.next_page_number }}{{ qs }}">{% trans "Next" %}</a>
+                    <a class="pagination-link" href="?page={{ table_page_obj.paginator.num_pages }}{{ qs }}">{% trans "Last" %}</a>
                 {% endif %}
             </div>
         </div>

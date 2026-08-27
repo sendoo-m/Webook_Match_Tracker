@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
 from django.urls import reverse_lazy
+from django.utils.translation import gettext as _eager
+from django.utils.translation import gettext_lazy as _
 
 from control_panel.forms import UserForm
 from operations.permissions import is_super_admin
@@ -15,9 +17,9 @@ class UserListView(PanelListView):
     template_name = "control_panel/user_list.html"
     context_object_name = "users"
     ordering = ["username"]
-    page_title = "Users"
+    page_title = _("Users")
     create_url_name = "control_panel:user-create"
-    create_label = "Add User"
+    create_label = _("Add User")
 
     def get_queryset(self):
         return super().get_queryset().prefetch_related("groups", "owned_clubs")
@@ -33,8 +35,8 @@ class UserCreateView(PanelCreateView):
     form_class = UserForm
     template_name = "control_panel/user_form.html"
     success_url = reverse_lazy("control_panel:user-list")
-    success_message = "User created."
-    page_title = "Add User"
+    success_message = _("User created.")
+    page_title = _("Add User")
     list_url_name = "control_panel:user-list"
 
 
@@ -43,14 +45,14 @@ class UserUpdateView(PanelUpdateView):
     form_class = UserForm
     template_name = "control_panel/user_form.html"
     success_url = reverse_lazy("control_panel:user-list")
-    success_message = "User updated."
-    page_title = "Edit User"
+    success_message = _("User updated.")
+    page_title = _("Edit User")
     list_url_name = "control_panel:user-list"
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
         if obj.is_superuser:
-            raise PermissionDenied("Superuser accounts are protected and can't be edited here.")
+            raise PermissionDenied(_eager("Superuser accounts are protected and can't be edited here."))
         return obj
 
 
@@ -61,5 +63,5 @@ class UserToggleActiveView(PanelToggleActiveView):
     def get_object(self, pk):
         obj = super().get_object(pk)
         if obj.is_superuser:
-            raise PermissionDenied("Superuser accounts are protected and can't be activated or deactivated here.")
+            raise PermissionDenied(_eager("Superuser accounts are protected and can't be activated or deactivated here."))
         return obj

@@ -1,11 +1,13 @@
+{% load i18n %}
+{% load display_helpers %}
 <div class="team-next-matches-popup">
     <div class="team-next-matches-head">
         {% if club.logo %}
             <img src="{{ club.logo.url }}" alt="{{ club.name_en }}" class="match-quick-view-logo">
         {% endif %}
         <div>
-            <strong>{{ club.name_ar|default:club.name_en }}</strong>
-            <p class="help-text">Next home matches</p>
+            <strong>{{ club|localized_name }}</strong>
+            <p class="help-text">{% trans "Next home matches" %}</p>
         </div>
     </div>
 
@@ -22,7 +24,7 @@
                 hx-swap="innerHTML"
             >
                 <div class="round-preview-card-head">
-                    <span class="round-preview-round-tag">Round {{ card.match.round_number|default:"—" }}</span>
+                    <span class="round-preview-round-tag">{% blocktrans with number=card.match.round_number|default:"—" %}Round {{ number }}{% endblocktrans %}</span>
                     <span class="round-preview-status">
                         {% if card.is_live_now %}
                             <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
@@ -47,7 +49,7 @@
                 </div>
             </div>
         {% empty %}
-            <p class="help-text">No upcoming home matches scheduled for this team.</p>
+            <p class="help-text">{% trans "No upcoming home matches scheduled for this team." %}</p>
         {% endfor %}
     </div>
 </div>

@@ -1,0 +1,35 @@
+{% extends "events/panel/list.html" %}
+{% load display_helpers %}
+{% load i18n %}
+
+{% block page_subtitle %}
+    <p class="page-subtitle">{% trans "Who can coordinate or administer each category." %}</p>
+{% endblock %}
+
+{% block table_head %}
+    <th>{% trans "User" %}</th>
+    <th>{% trans "Category" %}</th>
+    <th>{% trans "Group" %}</th>
+    <th>{% trans "Role" %}</th>
+    <th></th>
+{% endblock %}
+
+{% block table_body %}
+    {% for grant in grants %}
+        <tr>
+            <td>{{ grant.user|display_name }}</td>
+            <td>{{ grant.category|localized_name }}</td>
+            <td>{{ grant.category.group|localized_name }}</td>
+            <td>
+                <span class="badge {% if grant.role == 'admin' %}badge-published{% else %}badge-draft{% endif %}">
+                    {{ grant.get_role_display }}
+                </span>
+            </td>
+            <td>
+                <a class="btn btn-secondary btn-sm" href="{% url 'events:access-update' grant.pk %}">{% trans "Edit" %}</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5">{% trans "No access grants found." %}</td></tr>
+    {% endfor %}
+{% endblock %}

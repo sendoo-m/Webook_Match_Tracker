@@ -1,0 +1,132 @@
+{# events/event_detail.html #}
+{% extends "operations/base.html" %}
+{% load display_helpers %}
+{% load i18n %}
+
+{% block title %}{{ event.title_en }}{% endblock %}
+
+{% block page_help %}
+    <p>
+        {% blocktrans %}This is a single <strong>event's detail page</strong> — its checklist, CMS status,
+        and activity history all in one place.{% endblocktrans %}
+    </p>
+    <p>{% trans "If you manage this event, you can update checklist items and its CMS status directly here." %}</p>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">
+                {{ event.title_en }}
+                {% if not can_edit %}
+                    <span class="mini-badge mini-badge-neutral">{% trans "Read only" %}</span>
+                {% endif %}
+            </h1>
+            <p class="page-subtitle">{{ event.title_ar }}</p>
+        </div>
+        <div class="filter-bar">
+            <a class="btn btn-secondary" href="{% url 'events:dashboard' %}">{% trans "Back to Events Hub" %}</a>
+        </div>
+    </div>
+</div>
+
+<div class="meta-grid">
+    <div class="card meta-box">
+        <div class="meta-label">{% trans "Category" %}</div>
+        <div class="meta-value">{{ event.category|localized_name }} <span class="help-text">({{ event.category.group|localized_name }})</span></div>
+    </div>
+
+    <div class="card meta-box">
+        <div class="meta-label">{% trans "Event Date" %}</div>
+        <div class="meta-value">{{ event.event_date|default:"TBC" }} {{ event.start_time }}</div>
+    </div>
+
+    <div class="card meta-box">
+        <div class="meta-label">{% trans "Venue" %}</div>
+        <div class="meta-value">{{ event.venue|default:"—" }}</div>
+    </div>
+
+    <div class="card meta-box">
+        <div class="meta-label">{% trans "CMS Status" %}</div>
+        <div class="meta-value">
+            <span class="badge badge-{{ event.cms_status|slugify }}">{{ event.get_cms_status_display }}</span>
+        </div>
+
+        {% if can_edit %}
+            {% if event.cms_status == event_status.READY_FOR_CMS %}
+                <form method="post" action="{% url 'events:event-send-to-cms' event.pk %}" style="margin-top:8px;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-sm">{% trans "Send to CMS" %}</button>
+                </form>
+            {% endif %}
+            <form method="post" action="{% url 'events:event-cms-status-update' event.pk %}" class="filters" style="margin-top:8px;">
+                {% csrf_token %}
+                <select name="cms_status">
+                    {% for value, label in event_status.choices %}
+                        <option value="{{ value }}" {% if event.cms_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-secondary btn-sm">{% trans "Update Status" %}</button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="detail-layout">
+    <div>
+        <div class="card panel">
+            <h2 class="panel-title">{% trans "Checklist" %}</h2>
+            {% regroup checklist_items by template_item.category as grouped_checklist %}
+            {% for category in grouped_checklist %}
+                <div class="checklist-group">
+                    <h3>{{ category.grouper.name }}</h3>
+                    {% for item in category.list %}
+                        <div class="card checklist-item-card" style="margin-bottom:8px;">
+                            <div class="checklist-item-card-head">
+                                <strong>{{ item.template_item.title }}</strong>
+                                {% if item.template_item.is_required %}<span class="mini-badge mini-badge-neutral">{% trans "Required" %}</span>{% endif %}
+                            </div>
+                            {% if item.template_item.description %}
+                                <p class="help-text">{{ item.template_item.description }}</p>
+                            {% endif %}
+                            {% if can_edit %}
+                                <form method="post" action="{% url 'events:event-checklist-item-update' item.pk %}" class="filters">
+                                    {% csrf_token %}
+                                    <select name="status">
+                                        {% for value, label in item.Status.choices %}
+                                            <option value="{{ value }}" {% if item.status == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <input type="text" name="note" value="{{ item.note }}" placeholder="{% trans 'Note (optional)' %}">
+                                    <button type="submit" class="btn btn-secondary btn-sm">{% trans "Save" %}</button>
+                                </form>
+                            {% else %}
+                                <span class="badge badge-{{ item.status|slugify }}">{{ item.get_status_display }}</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% empty %}
+                <p class="help-text">{% trans "No checklist items yet." %}</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div>
+        <div class="card panel">
+            <h2 class="panel-title">{% trans "Activity Log" %}</h2>
+            <div class="activity-log-timeline">
+                {% for entry in activity_log %}
+                    <div class="activity-log-entry">
+                        <div class="help-text">{{ entry.created_at }} — {{ entry.user|display_name|default:"System" }}</div>
+                        <div>{{ entry.description }}</div>
+                    </div>
+                {% empty %}
+                    <p class="help-text">{% trans "No activity yet." %}</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

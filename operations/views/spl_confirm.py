@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect
+from django.utils.translation import gettext as _
 from django.views import View
 
 from matches.models import Match
@@ -35,7 +36,7 @@ class SPLPlanConfirmView(LoginRequiredMixin, MatchScopedQuerysetMixin, View):
                 user=request.user,
             )
 
-        messages.success(request, "SPL ticketing plan confirmed.")
+        messages.success(request, _("SPL ticketing plan confirmed."))
         referer = request.META.get("HTTP_REFERER")
         return redirect(referer or "operations:spl-report")
 
@@ -61,6 +62,6 @@ class SPLTicketsConfirmView(LoginRequiredMixin, MatchScopedQuerysetMixin, View):
                 user=request.user,
             )
 
-        messages.success(request, "SPL complimentary tickets confirmed.")
+        messages.success(request, _("SPL complimentary tickets confirmed."))
         referer = request.META.get("HTTP_REFERER")
         return redirect(referer or "operations:spl-report")

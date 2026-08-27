@@ -1,18 +1,19 @@
 {% extends "operations/base.html" %}
+{% load i18n %}
 
-{% block title %}Outstanding · {{ match.title_en }}{% endblock %}
+{% block title %}{% blocktrans with title=match.title_en %}Outstanding · {{ title }}{% endblocktrans %}{% endblock %}
 
 {% block content %}
 <div class="page-header">
     <div class="page-header-row">
         <div>
             <h1 class="page-title">{{ match.title_en }}</h1>
-            <p class="page-subtitle">{{ outstanding_count }} outstanding item{{ outstanding_count|pluralize }}</p>
+            <p class="page-subtitle">{% blocktrans count counter=outstanding_count %}{{ counter }} outstanding item{% plural %}{{ counter }} outstanding items{% endblocktrans %}</p>
         </div>
 
         <div class="filter-bar">
-            <a class="btn btn-secondary" href="{% url 'operations:match-detail' match.pk %}">Full Checklist</a>
-            <a class="btn btn-secondary" href="{% url 'operations:match-live' match.pk %}">Live View</a>
+            <a class="btn btn-secondary" href="{% url 'operations:match-detail' match.pk %}">{% trans "Full Checklist" %}</a>
+            <a class="btn btn-secondary" href="{% url 'operations:match-live' match.pk %}">{% trans "Live View" %}</a>
         </div>
     </div>
 </div>
@@ -20,7 +21,7 @@
 {% if delayed_items_list %}
     <div class="card panel">
         <div class="dashboard-section-head">
-            <h2 class="panel-title">Delayed</h2>
+            <h2 class="panel-title">{% trans "Delayed" %}</h2>
             <span class="mini-badge mini-badge-danger">{{ delayed_items_list|length }}</span>
         </div>
 
@@ -49,7 +50,7 @@
         </div>
     {% empty %}
         <div class="card panel">
-            <div class="empty-state">Nothing outstanding — all caught up.</div>
+            <div class="empty-state">{% trans "Nothing outstanding — all caught up." %}</div>
         </div>
     {% endfor %}
 </div>

@@ -1,0 +1,2047 @@
+# Arabic translations for the Webook Event/Match Tracker.
+# This file is distributed under the same license as the PACKAGE package.
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-25 17:54+0300\n"
+"PO-Revision-Date: 2026-08-25 17:16+0300\n"
+"Last-Translator: Webook\n"
+"Language-Team: Arabic\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+
+msgid "Overview"
+msgstr "نظرة عامة"
+
+msgid "Events"
+msgstr "الأحداث"
+
+msgid "Teams"
+msgstr "الفرق"
+
+msgid "Venues"
+msgstr "الملاعب"
+
+msgid "Sections"
+msgstr "الأقسام"
+
+msgid "Categories"
+msgstr "التصنيفات"
+
+msgid "Checklist Items"
+msgstr "عناصر قائمة التحقق"
+
+msgid "Users"
+msgstr "المستخدمون"
+
+msgid "Feedback"
+msgstr "الملاحظات"
+
+msgid "What's New"
+msgstr "ما الجديد"
+
+msgid "Deactivate"
+msgstr "إلغاء التفعيل"
+
+msgid "Activate"
+msgstr "تفعيل"
+
+msgid ""
+"Categories group checklist items on the match checklist (e.g. Tickets, Gates "
+"& Admins)."
+msgstr ""
+"تُستخدم التصنيفات لتجميع عناصر قائمة التحقق في قائمة تحقق المباراة (مثل: "
+"التذاكر، البوابات والمشرفين)."
+
+msgid "Name"
+msgstr "الاسم"
+
+msgid "Order"
+msgstr "الترتيب"
+
+msgid "Edit"
+msgstr "تعديل"
+
+msgid "No checklist categories found."
+msgstr "لم يتم العثور على تصنيفات قائمة تحقق."
+
+msgid "The criteria that appear on every match's checklist."
+msgstr "المعايير التي تظهر في قائمة التحقق الخاصة بكل مباراة."
+
+msgid "Category"
+msgstr "تصنيف"
+
+msgid "Title"
+msgstr "العنوان"
+
+msgid "Required"
+msgstr "مطلوب"
+
+msgid "Status"
+msgstr "الحالة"
+
+msgid "Yes"
+msgstr "نعم"
+
+msgid "No"
+msgstr "لا"
+
+msgid "Active"
+msgstr "نشط"
+
+msgid "Inactive"
+msgstr "غير نشط"
+
+msgid "No checklist items found."
+msgstr "لم يتم العثور على عناصر قائمة تحقق."
+
+msgid "Logo"
+msgstr "الشعار"
+
+msgid "Name (AR)"
+msgstr "الاسم (عربي)"
+
+msgid "Name (EN)"
+msgstr "الاسم (إنجليزي)"
+
+msgid "Short Name"
+msgstr "الاسم المختصر"
+
+msgid "Owner"
+msgstr "المسؤول"
+
+msgid "No teams found."
+msgstr "لم يتم العثور على فرق."
+
+msgid "No sections found."
+msgstr "لم يتم العثور على أقسام."
+
+#, python-format
+msgid ""
+"Manage entries shown on the public Feedback page. <a "
+"href=\"%(feedback_url)s\">View the public page</a>."
+msgstr ""
+"إدارة العناصر المعروضة في صفحة الملاحظات العامة. <a "
+"href=\"%(feedback_url)s\">عرض الصفحة العامة</a>."
+
+msgid "Submitted By"
+msgstr "مُقدَّم من"
+
+msgid "Updated"
+msgstr "آخر تحديث"
+
+msgid "No feedback entries yet."
+msgstr "لا توجد ملاحظات حتى الآن."
+
+msgid "Control Panel"
+msgstr "لوحة التحكم"
+
+#, python-format
+msgid ""
+"You're managing <strong>%(page_title)s</strong> here — fill in the fields "
+"and save when you're done."
+msgstr ""
+"أنت تدير <strong>%(page_title)s</strong> هنا — املأ الحقول واحفظ عند "
+"الانتهاء."
+
+msgid "Cancel"
+msgstr "إلغاء"
+
+msgid "Save"
+msgstr "حفظ"
+
+msgid ""
+"This is the <strong>Control Panel</strong> — manage matches, teams, "
+"stadiums, sections,\n"
+"        checklist templates, users, feedback, and release notes from here."
+msgstr ""
+"هذه هي <strong>لوحة التحكم</strong> — يمكنك من هنا إدارة المباريات والفرق "
+"والملاعب والأقسام،\n"
+"        وقوالب قائمة التحقق والمستخدمين والملاحظات وملاحظات الإصدار."
+
+msgid "Manage teams, stadiums, users, sections, and checklist criteria."
+msgstr "إدارة الفرق والملاعب والمستخدمين والأقسام ومعايير قائمة التحقق."
+
+msgid "Add and edit match fixtures"
+msgstr "إضافة مباريات وتعديلها"
+
+msgid "Clubs competing across sections"
+msgstr "الأندية المتنافسة عبر الأقسام"
+
+msgid "Venues used for Events"
+msgstr "الملاعب المستخدمة في الفعاليات"
+
+msgid "Accounts, roles, club ownership, section access"
+msgstr "الحسابات والأدوار وملكية الأندية والوصول إلى الأقسام"
+
+msgid "Roshan League, King's Cup, AFC Cup, ..."
+msgstr "دوري روشن، كأس الملك، كأس الاتحاد الآسيوي، ..."
+
+msgid "Checklist Categories"
+msgstr "تصنيفات قائمة التحقق"
+
+msgid "Groups on the match checklist"
+msgstr "مجموعات في قائمة تحقق المباراة"
+
+msgid "The criteria each match must meet"
+msgstr "المعايير التي يجب أن تستوفيها كل مباراة"
+
+#, python-format
+msgid ""
+"You're managing <strong>%(page_title)s</strong> here — add, edit, or review "
+"entries as needed."
+msgstr ""
+"أنت تدير <strong>%(page_title)s</strong> هنا — أضِف أو عدّل أو راجع العناصر "
+"حسب الحاجة."
+
+msgid "Previous"
+msgstr "السابق"
+
+#, python-format
+msgid "Page %(number)s of %(total)s"
+msgstr "صفحة %(number)s من %(total)s"
+
+msgid "Next"
+msgstr "التالي"
+
+msgid "Import Matches"
+msgstr "استيراد المباريات"
+
+#, python-format
+msgid ""
+"Upload a CSV or Excel file keyed by slug (existing slugs are updated, new "
+"ones are created).\n"
+"                <a href=\"%(template_url)s\">Download a blank template</a> "
+"or\n"
+"                <a href=\"%(export_url)s\">export the current matches</a> to "
+"see the expected columns."
+msgstr ""
+"قم برفع ملف CSV أو Excel يعتمد على الاسم المختصر (slug) كمفتاح أساسي (يتم "
+"تحديث الأسماء المختصرة الموجودة وإنشاء أسماء جديدة).\n"
+"                <a href=\"%(template_url)s\">تنزيل قالب فارغ</a> أو\n"
+"                <a href=\"%(export_url)s\">تصدير المباريات الحالية</a> "
+"للاطلاع على الأعمدة المطلوبة."
+
+msgid "Back to Matches"
+msgstr "العودة إلى المباريات"
+
+msgid "Import"
+msgstr "استيراد"
+
+msgid "Import Results"
+msgstr "نتائج الاستيراد"
+
+#, python-format
+msgid ""
+"Created: %(created)s · Updated: %(updated)s ·\n"
+"        Skipped (filtered out): %(skipped)s · Errors: %(errors)s"
+msgstr ""
+"تم الإنشاء: %(created)s · تم التحديث: %(updated)s ·\n"
+"        تم التخطي (مستبعد بالفلتر): %(skipped)s · الأخطاء: %(errors)s"
+
+msgid "Errors"
+msgstr "الأخطاء"
+
+msgid "Row"
+msgstr "الصف"
+
+msgid "Problem"
+msgstr "المشكلة"
+
+msgid "Skipped (outside selected section filter)"
+msgstr "تم التخطي (خارج فلتر القسم المحدد)"
+
+msgid "Reason"
+msgstr "سبب"
+
+msgid "Round"
+msgstr "الجولة"
+
+msgid "All"
+msgstr "الكل"
+
+msgid "Club"
+msgstr "النادي"
+
+msgid "City"
+msgstr "المدينة"
+
+msgid "Apply Filters"
+msgstr "تطبيق الفلاتر"
+
+msgid "Export"
+msgstr "تصدير"
+
+msgid "Download Template"
+msgstr "تنزيل النموذج"
+
+msgid "Match"
+msgstr "مباراة"
+
+msgid "Competition"
+msgstr "البطولة"
+
+msgid "Date"
+msgstr "التاريخ"
+
+msgid "Discount"
+msgstr "الخصم"
+
+msgid "No matches found."
+msgstr "لم يتم العثور على مباريات."
+
+#, python-format
+msgid ""
+"Manage entries shown on the public <a href=\"%(changelog_url)s\">What's New</"
+"a> page."
+msgstr ""
+"إدارة العناصر المعروضة في صفحة <a href=\"%(changelog_url)s\">ما الجديد</a> "
+"العامة."
+
+msgid "Version"
+msgstr "الإصدار"
+
+msgid "Release Date"
+msgstr "تاريخ الإصدار"
+
+msgid "Highlights"
+msgstr "أبرز التحديثات"
+
+#, python-format
+msgid "%(counter)s item"
+msgid_plural "%(counter)s items"
+msgstr[0] "لا عناصر"
+msgstr[1] "عنصر واحد"
+msgstr[2] "عنصران"
+msgstr[3] "%(counter)s عناصر"
+msgstr[4] "%(counter)s عنصرًا"
+msgstr[5] "%(counter)s عنصر"
+
+msgid "No release notes yet."
+msgstr "لا توجد ملاحظات إصدار حتى الآن."
+
+msgid ""
+"Club Manager accounts are scoped to the clubs and sections picked below.\n"
+"            Operations Manager and Viewer accounts always see every match, "
+"regardless of what's picked here."
+msgstr ""
+"تقتصر حسابات مدير النادي على الأندية والأقسام المحددة أدناه.\n"
+"            أما حسابات مدير العمليات والمشاهد فتشاهد جميع المباريات دائمًا، "
+"بغض النظر عمّا يُحدَّد هنا."
+
+msgid "Username"
+msgstr "اسم المستخدم"
+
+msgid "Role"
+msgstr "الدور"
+
+msgid "Owned Clubs"
+msgstr "الأندية المملوكة"
+
+msgid "Superuser"
+msgstr "مستخدم متميز"
+
+msgid ""
+"Superuser accounts are protected and can't be edited or activated/"
+"deactivated here."
+msgstr ""
+"حسابات المستخدمين المتميزين محمية ولا يمكن تعديلها أو تفعيلها/إلغاء تفعيلها "
+"من هنا."
+
+msgid "Protected"
+msgstr "محمي"
+
+#, python-format
+msgid "Log in as %(name)s"
+msgstr "تسجيل الدخول باسم %(name)s"
+
+msgid "Login as"
+msgstr "تسجيل الدخول كـ"
+
+msgid "No users found."
+msgstr "لم يتم العثور على مستخدمين."
+
+msgid "No stadiums found."
+msgstr "لم يتم العثور على ملاعب."
+
+#, python-format
+msgid "%(obj)s %(state)s."
+msgstr "%(obj)s %(state)s."
+
+msgid "deactivated"
+msgstr "معطّل"
+
+msgid "activated"
+msgstr "مفعّل"
+
+msgid "Add Category"
+msgstr "إضافة تصنيف"
+
+msgid "Checklist category created."
+msgstr "تم إنشاء تصنيف قائمة التحقق."
+
+msgid "Add Checklist Category"
+msgstr "إضافة تصنيف قائمة تحقق"
+
+msgid "Checklist category updated."
+msgstr "تم تحديث تصنيف قائمة التحقق."
+
+msgid "Edit Checklist Category"
+msgstr "تعديل تصنيف قائمة التحقق"
+
+msgid "Add Item"
+msgstr "إضافة عنصر"
+
+msgid "Checklist item created."
+msgstr "تم إنشاء عنصر قائمة التحقق."
+
+msgid "Add Checklist Item"
+msgstr "إضافة عنصر قائمة تحقق"
+
+msgid "Checklist item updated."
+msgstr "تم تحديث عنصر قائمة التحقق."
+
+msgid "Edit Checklist Item"
+msgstr "تعديل عنصر قائمة التحقق"
+
+msgid "Add Team"
+msgstr "إضافة فريق"
+
+msgid "Team created."
+msgstr "تم إنشاء الفريق."
+
+msgid "Team updated."
+msgstr "تم تحديث الفريق."
+
+msgid "Edit Team"
+msgstr "تعديل الفريق"
+
+msgid "Add Section"
+msgstr "إضافة قسم"
+
+msgid "Section created."
+msgstr "تم إنشاء القسم."
+
+msgid "Section updated."
+msgstr "تم تحديث القسم."
+
+msgid "Edit Section"
+msgstr "تعديل القسم"
+
+msgid "Add Feedback"
+msgstr "إضافة ملاحظة"
+
+msgid "Feedback entry created."
+msgstr "تم إنشاء ملاحظة."
+
+msgid "Feedback entry updated."
+msgstr "تم تحديث الملاحظة."
+
+msgid "Edit Feedback"
+msgstr "تعديل الملاحظة"
+
+msgid "You're already logged in as this account."
+msgstr "أنت مسجّل الدخول بالفعل بهذا الحساب."
+
+msgid "You can't log in as another admin account."
+msgstr "لا يمكنك تسجيل الدخول بحساب مدير آخر."
+
+msgid "You can't log in as a deactivated account."
+msgstr "لا يمكنك تسجيل الدخول بحساب مُلغى التفعيل."
+
+#, python-format
+msgid "You're now logged in as %(name)s."
+msgstr "تم تسجيل دخولك الآن باسم %(name)s."
+
+msgid "Couldn't restore your original session - please log in again."
+msgstr "تعذّرت استعادة جلستك الأصلية - يُرجى تسجيل الدخول مجددًا."
+
+msgid "You're back in your own account."
+msgstr "لقد عدت إلى حسابك الخاص."
+
+msgid "Matches"
+msgstr "المباريات"
+
+msgid "Add Match"
+msgstr "إضافة مباراة"
+
+msgid "Match created."
+msgstr "تم إنشاء المباراة."
+
+msgid "Match updated."
+msgstr "تم تحديث المباراة."
+
+msgid "Edit Match"
+msgstr "تعديل المباراة"
+
+msgid "Add Release"
+msgstr "إضافة إصدار"
+
+msgid "Release note created."
+msgstr "تم إنشاء ملاحظة الإصدار."
+
+msgid "Release note updated."
+msgstr "تم تحديث ملاحظة الإصدار."
+
+msgid "Edit Release"
+msgstr "تعديل الإصدار"
+
+msgid "Add User"
+msgstr "إضافة مستخدم"
+
+msgid "User created."
+msgstr "تم إنشاء المستخدم."
+
+msgid "User updated."
+msgstr "تم تحديث المستخدم."
+
+msgid "Edit User"
+msgstr "تعديل المستخدم"
+
+msgid "Stadiums"
+msgstr "الملاعب"
+
+msgid "Add Stadium"
+msgstr "إضافة ملعب"
+
+msgid "Stadium created."
+msgstr "تم إنشاء الملعب."
+
+msgid "Stadium updated."
+msgstr "تم تحديث الملعب."
+
+msgid "Edit Stadium"
+msgstr "تعديل الملعب"
+
+msgid "Events Hub"
+msgstr "مركز الفعاليات"
+
+msgid ""
+"This is your <strong>Events Hub</strong> — every non-football event "
+"(Concerts, Seasons,\n"
+"        Experiences, Dining, and more) you have access to, grouped by "
+"category."
+msgstr ""
+"هذا هو <strong>مركز الفعاليات</strong> الخاص بك — كل فعالية غير كروية "
+"(حفلات، مواسم، تجارب، مطاعم، وغيرها) لديك صلاحية الوصول إليها، مجمّعة حسب "
+"التصنيف."
+
+#, python-format
+msgid "%(counter)s upcoming event"
+msgid_plural "%(counter)s upcoming events"
+msgstr[0] "لا توجد أحداث قادمة"
+msgstr[1] "حدث قادم واحد"
+msgstr[2] "حدثان قادمان"
+msgstr[3] "%(counter)s أحداث قادمة"
+msgstr[4] "%(counter)s حدثًا قادمًا"
+msgstr[5] "%(counter)s حدث قادم"
+
+#, python-format
+msgid "%(counter)s live now"
+msgid_plural "%(counter)s live now"
+msgstr[0] "لا توجد فعاليات مباشرة الآن"
+msgstr[1] "فعالية واحدة مباشرة الآن"
+msgstr[2] "فعاليتان مباشرتان الآن"
+msgstr[3] "%(counter)s فعاليات مباشرة الآن"
+msgstr[4] "%(counter)s فعالية مباشرة الآن"
+msgstr[5] "%(counter)s فعالية مباشرة الآن"
+
+#, python-format
+msgid "%(counter)s event"
+msgid_plural "%(counter)s events"
+msgstr[0] "لا توجد فعاليات"
+msgstr[1] "فعالية واحدة"
+msgstr[2] "فعاليتان"
+msgstr[3] "%(counter)s فعاليات"
+msgstr[4] "%(counter)s فعالية"
+msgstr[5] "%(counter)s فعالية"
+
+msgid ""
+"No upcoming events found. Check back later or ask an admin to grant you "
+"category access."
+msgstr ""
+"لا توجد فعاليات قادمة. تحقق لاحقًا أو اطلب من المسؤول منحك صلاحية الوصول لهذا "
+"التصنيف."
+
+msgid ""
+"This is a single <strong>event's detail page</strong> — its checklist, CMS "
+"status,\n"
+"        and activity history all in one place."
+msgstr ""
+"هذه صفحة تفاصيل <strong>فعالية واحدة</strong> — تجمع قائمة التحقق الخاصة بها "
+"وحالة نظام إدارة المحتوى وسجل النشاط في مكان واحد."
+
+msgid ""
+"If you manage this event, you can update checklist items and its CMS status "
+"directly here."
+msgstr ""
+"إذا كنت تدير هذه الفعالية، يمكنك تحديث عناصر قائمة التحقق وحالة نظام إدارة "
+"المحتوى مباشرة من هنا."
+
+msgid "Read only"
+msgstr "للقراءة فقط"
+
+msgid "Back to Events Hub"
+msgstr "العودة إلى مركز الفعاليات"
+
+msgid "Event Date"
+msgstr "تاريخ الفعالية"
+
+msgid "Venue"
+msgstr "المكان"
+
+msgid "CMS Status"
+msgstr "حالة نظام إدارة المحتوى"
+
+msgid "Send to CMS"
+msgstr "إرسال إلى نظام إدارة المحتوى"
+
+msgid "Update Status"
+msgstr "تحديث الحالة"
+
+msgid "Checklist"
+msgstr "قائمة التحقق"
+
+msgid "Note (optional)"
+msgstr "ملاحظة (اختياري)"
+
+msgid "No checklist items yet."
+msgstr "لا توجد عناصر في قائمة التحقق بعد."
+
+msgid "Activity Log"
+msgstr "سجل النشاط"
+
+msgid "No activity yet."
+msgstr "لا يوجد نشاط بعد."
+
+msgid "Home"
+msgstr "الرئيسية"
+
+msgid "Access"
+msgstr "الصلاحيات"
+
+msgid "Who can coordinate or administer each category."
+msgstr "من يمكنه تنسيق أو إدارة كل تصنيف."
+
+msgid "User"
+msgstr "المستخدم"
+
+msgid "Group"
+msgstr "مجموعة"
+
+msgid "No access grants found."
+msgstr "لم يتم العثور على صلاحيات ممنوحة."
+
+msgid "Categories under Events, Seasons, Experiences, and Dining."
+msgstr "التصنيفات ضمن الفعاليات والمواسم والتجارب والمطاعم."
+
+msgid "No categories found."
+msgstr "لم يتم العثور على تصنيفات."
+
+msgid ""
+"Categories group checklist items on the event checklist (e.g. Tickets, KVs)."
+msgstr ""
+"تجمّع التصنيفات عناصر قائمة التحقق ضمن قائمة تحقق الفعالية (مثل التذاكر وKVs)."
+
+msgid "The criteria each event must meet before it can be sent to CMS."
+msgstr ""
+"المعايير التي يجب أن تستوفيها كل فعالية قبل إرسالها إلى نظام إدارة المحتوى."
+
+msgid "Import Events"
+msgstr "استيراد الفعاليات"
+
+msgid "Events Panel"
+msgstr "لوحة تحكم الفعاليات"
+
+msgid ""
+"Upload a CSV or Excel file keyed by slug (existing slugs are updated, new "
+"ones are created)."
+msgstr ""
+"ارفع ملف CSV أو Excel مرتبطًا بالمعرّف النصي (slug) — يتم تحديث المعرّفات "
+"الموجودة وإنشاء الجديدة منها."
+
+msgid "Download a blank template"
+msgstr "تنزيل نموذج فارغ"
+
+msgid "or"
+msgstr "أو"
+
+msgid "export the current events"
+msgstr "تصدير الفعاليات الحالية"
+
+msgid "to see the expected columns."
+msgstr "للاطلاع على الأعمدة المتوقعة."
+
+msgid "Back to Events"
+msgstr "العودة إلى الفعاليات"
+
+msgid "Skipped (outside selected category filter)"
+msgstr "تم التخطي (خارج نطاق تصنيف التصفية المحدد)"
+
+msgid "Event"
+msgstr "فعالية"
+
+msgid "TBC"
+msgstr "سيُحدد لاحقًا"
+
+msgid "No events found."
+msgstr "لم يتم العثور على فعاليات."
+
+msgid ""
+"This is the <strong>Events Panel</strong> — manage non-football events: "
+"categories\n"
+"        (Events, Seasons, Experiences, Dining), who has access to which "
+"category, checklist\n"
+"        templates, and the events themselves."
+msgstr "هذا هو <strong>لوحة تحكم الفعاليات</strong> — لإدارة الأحداث غير الكروية: التصنيفات (الأحداث، المواسم، التجارب، المطاعم)، وتحديد من له صلاحية الوصول لكل تصنيف، وقوالب قائمة التحقق، والفعاليات نفسها."
+
+msgid "Manage categories, category access, checklist templates, and events."
+msgstr ""
+"إدارة التصنيفات، وصلاحيات الوصول إليها، وقوالب قائمة التحقق، والفعاليات."
+
+msgid "Add and edit events"
+msgstr "إضافة الفعاليات وتعديلها"
+
+msgid "Events, Seasons, Experiences, Dining"
+msgstr "الفعاليات، والمواسم، والتجارب، والمطاعم"
+
+msgid "Coordinators and Admins per category"
+msgstr "المنسقون والمدراء لكل تصنيف"
+
+msgid "Groups on the event checklist"
+msgstr "المجموعات في قائمة تحقق الفعالية"
+
+msgid "The criteria each event must meet"
+msgstr "المعايير التي يجب أن تستوفيها كل فعالية"
+
+msgid "Event is not ready for CMS."
+msgstr "الفعالية غير جاهزة لإرسالها إلى نظام إدارة المحتوى."
+
+msgid "Event sent to CMS."
+msgstr "تم إرسال الفعالية إلى نظام إدارة المحتوى."
+
+#, python-format
+msgid "Event status changed: %(old)s → %(new)s"
+msgstr "تم تغيير حالة الفعالية: %(old)s → %(new)s"
+
+msgid "Event sent to CMS successfully."
+msgstr "تم إرسال الفعالية إلى نظام إدارة المحتوى بنجاح."
+
+msgid "Invalid CMS status."
+msgstr "حالة نظام إدارة المحتوى غير صالحة."
+
+#, python-format
+msgid "CMS status changed: %(old)s → %(new)s"
+msgstr "تم تغيير حالة نظام إدارة المحتوى: %(old)s → %(new)s"
+
+msgid "CMS status updated successfully."
+msgstr "تم تحديث حالة نظام إدارة المحتوى بنجاح."
+
+#, python-format
+msgid "%(title)s updated to %(status)s."
+msgstr "تم تحديث %(title)s إلى %(status)s."
+
+msgid "Add Event"
+msgstr "إضافة فعالية"
+
+msgid "Event created."
+msgstr "تم إنشاء الفعالية."
+
+msgid "Event updated."
+msgstr "تم تحديث الفعالية."
+
+msgid "Edit Event"
+msgstr "تعديل الفعالية"
+
+msgid "Category created."
+msgstr "تم إنشاء التصنيف."
+
+msgid "Category updated."
+msgstr "تم تحديث التصنيف."
+
+msgid "Edit Category"
+msgstr "تعديل التصنيف"
+
+msgid "Category Access"
+msgstr "صلاحية التصنيف"
+
+msgid "Grant Access"
+msgstr "منح صلاحية"
+
+msgid "Access granted."
+msgstr "تم منح الصلاحية."
+
+msgid "Grant Category Access"
+msgstr "منح صلاحية الوصول إلى التصنيف"
+
+msgid "Access updated."
+msgstr "تم تحديث الصلاحية."
+
+msgid "Edit Category Access"
+msgstr "تعديل صلاحية التصنيف"
+
+msgid "Invalid date."
+msgstr "تاريخ غير صالح."
+
+msgid "Match is not ready for CMS."
+msgstr "المباراة غير جاهزة لإرسالها إلى نظام إدارة المحتوى."
+
+msgid "Match sent to CMS successfully."
+msgstr "تم إرسال المباراة إلى نظام إدارة المحتوى بنجاح."
+
+msgid "Thanks! Your feedback was submitted for review."
+msgstr "شكرًا لك! تم إرسال ملاحظاتك للمراجعة."
+
+msgid "SPL ticketing plan confirmed."
+msgstr "تم تأكيد خطة تذاكر SPL."
+
+msgid "SPL complimentary tickets confirmed."
+msgstr "تم تأكيد التذاكر المجانية لـ SPL."
+
+msgid "Sync checklist templates"
+msgstr "مزامنة قوالب قائمة التحقق"
+
+msgid ""
+"This action will apply your latest checklist template changes to all "
+"existing matches."
+msgstr ""
+"سيؤدي هذا الإجراء إلى تطبيق آخر تغييرات قالب قائمة التحقق على جميع المباريات "
+"الحالية."
+
+msgid ""
+"New active template items will be added to matches that do not have them."
+msgstr ""
+"سيتم إضافة عناصر القالب النشطة الجديدة إلى المباريات التي لا تحتوي عليها."
+
+msgid ""
+"Inactive template items will deactivate their related match checklist items."
+msgstr ""
+"ستؤدي عناصر القالب غير النشطة إلى إلغاء تفعيل عناصر قائمة التحقق المرتبطة "
+"بها في المباريات."
+
+msgid ""
+"Previously inactive match checklist items can be reactivated if the template "
+"becomes active again."
+msgstr ""
+"يمكن إعادة تفعيل عناصر قائمة تحقق المباريات التي كانت غير نشطة سابقًا إذا "
+"أصبح القالب نشطًا مرة أخرى."
+
+msgid "Run sync"
+msgstr "تشغيل المزامنة"
+
+msgid "Sync event checklist templates"
+msgstr "مزامنة قوالب قائمة التحقق للفعاليات"
+
+msgid ""
+"This action will apply your latest checklist template changes to all "
+"existing events."
+msgstr ""
+"سيؤدي هذا الإجراء إلى تطبيق آخر تغييرات قالب قائمة التحقق على جميع الفعاليات "
+"الحالية."
+
+msgid ""
+"New active template items will be added to events that do not have them."
+msgstr ""
+"سيتم إضافة عناصر القالب النشطة الجديدة إلى الفعاليات التي لا تحتوي عليها."
+
+msgid ""
+"Inactive template items will deactivate their related event checklist items."
+msgstr ""
+"ستؤدي عناصر القالب غير النشطة إلى إلغاء تفعيل عناصر قائمة التحقق المرتبطة "
+"بها في الفعاليات."
+
+msgid ""
+"Previously inactive event checklist items can be reactivated if the template "
+"becomes active again."
+msgstr ""
+"يمكن إعادة تفعيل عناصر قائمة تحقق الفعاليات التي كانت غير نشطة سابقًا إذا "
+"أصبح القالب نشطًا مرة أخرى."
+
+msgid "Operations Dashboard"
+msgstr "لوحة تحكم العمليات"
+
+msgid "Export All (Excel)"
+msgstr "تصدير الكل (Excel)"
+
+msgid "Export All (CSV)"
+msgstr "تصدير الكل (CSV)"
+
+msgid "Download Import Template"
+msgstr "تنزيل قالب الاستيراد"
+
+msgid "Import matches"
+msgstr "استيراد المباريات"
+
+msgid ""
+"Upload a CSV or Excel file keyed by <code>slug</code>: existing slugs are "
+"updated, new ones are created.\n"
+"        Columns: slug, competition, home_club, away_club, venue, "
+"round_number, title_ar, title_en,\n"
+"        description_ar, description_en, event_date, match_start_time, "
+"match_end_time, gates_open_time,\n"
+"        sale_starts_at. <code>cms_status</code> is ignored on import "
+"(workflow-managed)."
+msgstr ""
+"قم برفع ملف CSV أو Excel يُعتمد فيه <code>slug</code> كمفتاح: يتم تحديث القيم "
+"الموجودة، وإنشاء قيم جديدة لغير الموجودة.\n"
+"        الأعمدة: slug, competition, home_club, away_club, venue, "
+"round_number, title_ar, title_en,\n"
+"        description_ar, description_en, event_date, match_start_time, "
+"match_end_time, gates_open_time,\n"
+"        sale_starts_at. يتم تجاهل <code>cms_status</code> عند الاستيراد "
+"(يُدار عبر سير العمل)."
+
+msgid "export all matches"
+msgstr "تصدير كل المباريات"
+
+msgid "to see the expected format."
+msgstr "لمعرفة الصيغة المتوقعة."
+
+msgid "File (.csv or .xlsx):"
+msgstr "الملف (.csv أو .xlsx):"
+
+msgid "Only import this section (optional):"
+msgstr "استيراد هذا القسم فقط (اختياري):"
+
+msgid "All sections"
+msgstr "كل الأقسام"
+
+msgid "Total Matches"
+msgstr "إجمالي المباريات"
+
+msgid "Draft"
+msgstr "مسودة"
+
+msgid "In Progress"
+msgstr "قيد التنفيذ"
+
+msgid "Ready for CMS"
+msgstr "جاهز لنظام إدارة المحتوى"
+
+msgid "Sent to CMS"
+msgstr "أُرسل إلى نظام إدارة المحتوى"
+
+msgid "Published"
+msgstr "منشور"
+
+msgid "Delayed Matches"
+msgstr "المباريات المتأخرة"
+
+msgid "Upcoming Matches"
+msgstr "المباريات القادمة"
+
+msgid "Done"
+msgstr "مكتمل"
+
+msgid "Delayed"
+msgstr "متأخر"
+
+msgid "Collapse sidebar"
+msgstr "طي الشريط الجانبي"
+
+msgid "Event Tracker"
+msgstr "متتبع الفعاليات"
+
+msgid "Main navigation"
+msgstr "التنقل الرئيسي"
+
+msgid "Dashboard"
+msgstr "لوحة القيادة"
+
+msgid "Calendar"
+msgstr "التقويم"
+
+msgid "SPL Report"
+msgstr "تقرير SPL"
+
+msgid "Missing items"
+msgstr "العناصر الناقصة"
+
+msgid "Workload"
+msgstr "عبء العمل"
+
+msgid "Control panel"
+msgstr "لوحة التحكم"
+
+msgid "Switch color theme"
+msgstr "تبديل نمط الألوان"
+
+msgid "Dark mode"
+msgstr "الوضع الداكن"
+
+msgid "Switch to English"
+msgstr "التبديل إلى الإنجليزية"
+
+msgid "Switch to Arabic"
+msgstr "التبديل إلى العربية"
+
+msgid "Logout"
+msgstr "تسجيل الخروج"
+
+#, python-format
+msgid "You're logged in as <strong>%(name)s</strong> for support purposes."
+msgstr "أنت مسجّل الدخول باسم <strong>%(name)s</strong> لأغراض الدعم الفني."
+
+msgid "Return to my account"
+msgstr "العودة إلى حسابي"
+
+msgid "Operations"
+msgstr "العمليات"
+
+msgid "Created & implemented"
+msgstr "الإنشاء والتنفيذ"
+
+msgid "Team lead"
+msgstr "قائد الفريق"
+
+msgid "Development"
+msgstr "التطوير"
+
+msgid "Department head"
+msgstr "رئيس القسم"
+
+msgid "Made with love in KSA"
+msgstr "صُنع بحب في المملكة العربية السعودية"
+
+msgid "Quick tour"
+msgstr "جولة سريعة"
+
+msgid "Submit feedback & suggestions"
+msgstr "إرسال ملاحظات واقتراحات"
+
+msgid "Close quick tour"
+msgstr "إغلاق الجولة السريعة"
+
+msgid "This system tracks every match from setup to kickoff in one place."
+msgstr "يتتبع هذا النظام كل مباراة من الإعداد وحتى الانطلاق في مكان واحد."
+
+msgid "Why it helps:"
+msgstr "لماذا يساعد هذا:"
+
+msgid "see what is done, overdue, and who owns it at a glance."
+msgstr "اعرف ما تم إنجازه، وما تأخر، ومن المسؤول عنه بنظرة واحدة."
+
+msgid "Submit Feedback"
+msgstr "إرسال ملاحظات"
+
+msgid "Close"
+msgstr "إغلاق"
+
+msgid "Loading…"
+msgstr "جارٍ التحميل…"
+
+msgid "Match Quick View"
+msgstr "عرض سريع للمباراة"
+
+msgid "Match Calendar"
+msgstr "تقويم المباريات"
+
+msgid ""
+"This is the <strong>Match Calendar</strong> — every match plotted on the day "
+"it's\n"
+"        scheduled, so you can see the whole month at a glance."
+msgstr ""
+"هذا هو <strong>تقويم المباريات</strong> — كل مباراة موضوعة في اليوم المحدد "
+"لها،\n"
+"        بحيث يمكنك رؤية الشهر كاملاً بنظرة واحدة."
+
+msgid ""
+"Use the arrows to move between months, or \"Today\" to jump back. Filter by "
+"Coordinator to\n"
+"        see only their matches. Click a match's round tag to open a quick-"
+"view popup with its\n"
+"        details - click anywhere outside it to close. Live matches are "
+"highlighted in red,\n"
+"        finished matches are faded out, and everything else shows its round "
+"number. Days with more\n"
+"        matches than fit show a \"+N more\" - click it to see all of that "
+"day's matches."
+msgstr ""
+"استخدم الأسهم للتنقل بين الأشهر، أو \"اليوم\" للعودة إلى الشهر الحالي. صفِّ "
+"حسب المنسق\n"
+"        لرؤية مبارياته فقط. اضغط على وسم الجولة الخاص بأي مباراة لفتح نافذة "
+"سريعة تعرض\n"
+"        تفاصيلها - اضغط في أي مكان خارجها لإغلاقها. تُبرز المباريات المباشرة "
+"باللون الأحمر،\n"
+"        وتظهر المباريات المنتهية باهتة، بينما يعرض كل ما عداها رقم الجولة. "
+"الأيام التي تحتوي على\n"
+"        مباريات أكثر من المساحة المتاحة تظهر عبارة \"+N أخرى\" - اضغط عليها "
+"لرؤية كل مباريات ذلك اليوم."
+
+msgid "Prev"
+msgstr "السابق"
+
+msgid "Today"
+msgstr "اليوم"
+
+msgid "Coordinator"
+msgstr "المنسق"
+
+msgid "Apply Filter"
+msgstr "تطبيق الفلتر"
+
+msgid "Sun"
+msgstr "الأحد"
+
+msgid "Mon"
+msgstr "الاثنين"
+
+msgid "Tue"
+msgstr "الثلاثاء"
+
+msgid "Wed"
+msgstr "الأربعاء"
+
+msgid "Thu"
+msgstr "الخميس"
+
+msgid "Fri"
+msgstr "الجمعة"
+
+msgid "Sat"
+msgstr "السبت"
+
+#, python-format
+msgid "+%(count)s more"
+msgstr "+%(count)s أخرى"
+
+msgid ""
+"This is the <strong>What's New</strong> page — a version-by-version log of "
+"everything\n"
+"        that's changed in the system, newest first."
+msgstr ""
+"هذه صفحة <strong>ما الجديد</strong> — سجل بكل إصدار وما تغيّر فيه من النظام،\n"
+"        بدءًا بالأحدث."
+
+msgid "A running log of every release and what changed in it."
+msgstr "سجل مستمر لكل إصدار وما تغيّر فيه."
+
+msgid "No releases logged yet."
+msgstr "لا توجد إصدارات مسجلة بعد."
+
+msgid ""
+"This is the <strong>Operations Dashboard</strong> — a live snapshot of every "
+"match: what's\n"
+"        live right now and what needs attention (Alerts & Deadlines)."
+msgstr ""
+"هذه <strong>لوحة تحكم العمليات</strong> — لمحة مباشرة عن كل مباراة: ما يُبث "
+"الآن، وما يحتاج إلى اهتمام (التنبيهات والمواعيد النهائية)."
+
+msgid ""
+"Use the round strip and filter chips in the \"Filtered Matches\" table to "
+"narrow down to exactly the matches you care about - including Ready for Sale "
+"and Needs Reports. The page refreshes itself automatically every few minutes."
+msgstr ""
+"استخدم شريط الجولات وأزرار الفلترة في جدول \"المباريات المفلترة\" لتضييق "
+"النتائج على المباريات التي تهمك بالضبط - بما في ذلك الجاهزة للبيع والمحتاجة "
+"لتقارير. الصفحة تُحدَّث تلقائيًا كل بضع دقائق."
+
+msgid ""
+"Readiness, live visibility, ticket-sale readiness, alerts, and post-match "
+"follow-up."
+msgstr ""
+"الجاهزية، والرؤية المباشرة، وجاهزية بيع التذاكر، والتنبيهات، ومتابعة ما بعد "
+"المباراة."
+
+msgid "Auto-refreshes every 3 minutes."
+msgstr "يُحدَّث تلقائيًا كل 3 دقائق."
+
+msgid "Missing Items"
+msgstr "العناصر الناقصة"
+
+msgid "Live Now"
+msgstr "مباشر الآن"
+
+msgid "Starting in 48h"
+msgstr "تبدأ خلال 48 ساعة"
+
+msgid "Ready for Ticket Sale"
+msgstr "جاهزة لبيع التذاكر"
+
+msgid "Prep Alerts"
+msgstr "تنبيهات التجهيز"
+
+msgid "Needs Reports"
+msgstr "تحتاج تقارير"
+
+msgid "Upcoming"
+msgstr "القادمة"
+
+msgid "Past Matches"
+msgstr "المباريات السابقة"
+
+msgid "Click a team to preview their next home matches"
+msgstr "اضغط على فريق لمعاينة مبارياته القادمة كمضيف"
+
+msgid "Rounds"
+msgstr "الجولات"
+
+msgid "Click a round to preview its matches"
+msgstr "اضغط على جولة لمعاينة مبارياتها"
+
+msgid "Live Matches"
+msgstr "المباريات المباشرة"
+
+#, python-format
+msgid "Round %(number)s"
+msgstr "الجولة %(number)s"
+
+msgid "No live matches right now."
+msgstr "لا توجد مباريات مباشرة الآن."
+
+msgid "Alerts & Deadlines"
+msgstr "التنبيهات والمواعيد النهائية"
+
+#, python-format
+msgid "%(counter)s alert"
+msgid_plural "%(counter)s alerts"
+msgstr[0] "لا توجد تنبيهات"
+msgstr[1] "تنبيه واحد"
+msgstr[2] "تنبيهان"
+msgstr[3] "%(counter)s تنبيهات"
+msgstr[4] "%(counter)s تنبيهًا"
+msgstr[5] "%(counter)s تنبيه"
+
+#, python-format
+msgid "%(counter)s day"
+msgid_plural "%(counter)s days"
+msgstr[0] "لا أيام"
+msgstr[1] "يوم واحد"
+msgstr[2] "يومان"
+msgstr[3] "%(counter)s أيام"
+msgstr[4] "%(counter)s يومًا"
+msgstr[5] "%(counter)s يوم"
+
+msgid "No prep alerts right now."
+msgstr "لا توجد تنبيهات تجهيز الآن."
+
+msgid ""
+"This page lists <strong>feedback and suggestions</strong> from the team — "
+"what was\n"
+"        suggested, what changed, and whether it was accepted, rejected, or "
+"implemented."
+msgstr ""
+"تعرض هذه الصفحة <strong>ملاحظات ومقترحات</strong> الفريق — ما تم اقتراحه،\n"
+"        وما تغيّر بسببه، وما إذا تم قبوله أو رفضه أو تنفيذه."
+
+msgid ""
+"Use the \"Submit Feedback\" button (or the feedback icon) to send in a new "
+"idea."
+msgstr "استخدم زر \"إرسال ملاحظة\" (أو أيقونة الملاحظات) لإرسال فكرة جديدة."
+
+msgid ""
+"Feedback – Recommendations and Suggestions – Software Improvements – Design "
+"Improvements – Infrastructure Improvements"
+msgstr ""
+"الملاحظات – التوصيات والمقترحات – تحسينات البرمجيات – تحسينات التصميم – "
+"تحسينات البنية التحتية"
+
+msgid ""
+"A running record of ideas suggested by the team, what changed because of "
+"them, and why each one was accepted, rejected, or implemented."
+msgstr ""
+"سجل مستمر للأفكار التي اقترحها الفريق، وما تغيّر بسببها، وسبب قبول أو رفض أو "
+"تنفيذ كل فكرة."
+
+#, python-format
+msgid "Suggested by %(submitter)s"
+msgstr "اقترحها %(submitter)s"
+
+msgid "Before"
+msgstr "قبل"
+
+msgid "Suggestion"
+msgstr "الاقتراح"
+
+msgid "After"
+msgstr "بعد"
+
+msgid "Why"
+msgstr "السبب"
+
+msgid "No entries in this category yet."
+msgstr "لا توجد إدخالات في هذا التصنيف بعد."
+
+msgid ""
+"Use this form to <strong>submit a new suggestion</strong> — a bug, an idea, "
+"or anything\n"
+"        that could work better. It goes straight to the team for review."
+msgstr ""
+"استخدم هذا النموذج <strong>لإرسال مقترح جديد</strong> — خلل، فكرة، أو أي "
+"شيء\n"
+"        يمكن تحسينه. يصل مباشرة إلى الفريق للمراجعة."
+
+#, python-format
+msgid ""
+"Got an idea, a bug, or something that could be better? Send it here — it "
+"goes straight\n"
+"        to the team for review. See <a href=\"%(feedback_url)s\">past "
+"feedback and decisions</a>."
+msgstr ""
+"لديك فكرة أو وجدت خللاً أو شيئًا يمكن تحسينه؟ أرسله هنا — يصل مباشرة\n"
+"        إلى الفريق للمراجعة. طالع <a href=\"%(feedback_url)s\">الملاحظات "
+"والقرارات السابقة</a>."
+
+msgid "Submit"
+msgstr "إرسال"
+
+msgid ""
+"This is a single <strong>match's detail page</strong> — its checklist, "
+"discount code,\n"
+"        SPL report info, CMS status, and activity history all in one place."
+msgstr ""
+"هذه هي <strong>صفحة تفاصيل المباراة</strong> — قائمة التحقق الخاصة بها، وكود "
+"الخصم،\n"
+"        ومعلومات تقرير SPL، وحالة نظام إدارة المحتوى، وسجل النشاط، كل ذلك في "
+"مكان واحد."
+
+msgid ""
+"If you manage this match, you can update checklist items and settings "
+"directly here."
+msgstr ""
+"إذا كنت مسؤولاً عن هذه المباراة، يمكنك تحديث عناصر قائمة التحقق والإعدادات "
+"مباشرة من هنا."
+
+msgid "Live View"
+msgstr "العرض المباشر"
+
+msgid "Outstanding Items"
+msgstr "العناصر المعلّقة"
+
+msgid "Home / Away"
+msgstr "المضيف / الضيف"
+
+msgid "vs"
+msgstr "ضد"
+
+msgid "Open Only"
+msgstr "المفتوحة فقط"
+
+msgid "Not Started"
+msgstr "لم يبدأ"
+
+msgid "No checklist items found for this match."
+msgstr "لا توجد عناصر في قائمة التحقق لهذه المباراة."
+
+msgid ""
+"This is the <strong>Matches</strong> list — every match you have access to, "
+"with its\n"
+"        readiness progress, CMS status, venue, and any active discount at a "
+"glance."
+msgstr ""
+"هذه هي قائمة <strong>المباريات</strong> — جميع المباريات التي لديك صلاحية "
+"الوصول إليها، مع\n"
+"        نسبة الجاهزية، وحالة نظام إدارة المحتوى، والملعب، وأي خصم نشط، في "
+"لمحة سريعة."
+
+msgid ""
+"Click a match card to flip it and see its status, progress, venue and "
+"discount on the back - \"Full details\" opens the match itself. Matches "
+"already over are hidden by default - use the \"Period\" filter and switch to "
+"\"Past Matches\" to see them, and use the \"Round\" filter to jump straight "
+"to a round."
+msgstr ""
+"انقر على بطاقة المباراة لتقليبها ورؤية حالتها وتقدمها وملعبها وخصمها على "
+"الوجه الخلفي - يفتح \"التفاصيل الكاملة\" صفحة المباراة نفسها. المباريات "
+"المنتهية مخفية افتراضيًا - استخدم فلتر \"الفترة\" وبدّل إلى \"المباريات "
+"السابقة\" لعرضها، واستخدم فلتر \"الجولة\" للانتقال مباشرة إلى جولة معينة."
+
+msgid ""
+"Browse, filter, and open each match checklist. Past matches are hidden by "
+"default."
+msgstr ""
+"تصفح قوائم التحقق لكل مباراة، وصفّها، وافتحها. المباريات السابقة مخفية "
+"افتراضيًا."
+
+msgid "Home Team"
+msgstr "الفريق المضيف"
+
+msgid "Away Team"
+msgstr "الفريق الضيف"
+
+msgid "Period"
+msgstr "الفترة"
+
+msgid "SPL Plan Approved"
+msgstr "خطة SPL معتمدة"
+
+msgid "SPL Plan Pending"
+msgstr "خطة SPL قيد الانتظار"
+
+msgid "Full details"
+msgstr "التفاصيل الكاملة"
+
+#, python-format
+msgid "Live · %(title)s"
+msgstr "مباشر · %(title)s"
+
+msgid "Full Checklist"
+msgstr "قائمة التحقق الكاملة"
+
+msgid "Not Live Yet"
+msgstr "لم يبدأ البث المباشر بعد"
+
+msgid "Kickoff"
+msgstr "انطلاق المباراة"
+
+msgid "Gates Open"
+msgstr "فتح الأبواب"
+
+msgid "Source"
+msgstr "المصدر"
+
+msgid "Published on CMS"
+msgstr "منشور على نظام إدارة المحتوى"
+
+msgid "Auto-live (20-day window)"
+msgstr "مباشر تلقائيًا (نافذة 20 يومًا)"
+
+msgid "Needs Attention"
+msgstr "يحتاج إلى انتباه"
+
+msgid "Needs Attention While Live"
+msgstr "يحتاج إلى انتباه أثناء البث المباشر"
+
+msgid "Delayed items and post-match tasks"
+msgstr "العناصر المتأخرة ومهام ما بعد المباراة"
+
+msgid "Nothing needs attention right now."
+msgstr "لا شيء يحتاج إلى اهتمام الآن."
+
+#, python-format
+msgid "Outstanding · %(title)s"
+msgstr "المعلق · %(title)s"
+
+#, python-format
+msgid "%(counter)s outstanding item"
+msgid_plural "%(counter)s outstanding items"
+msgstr[0] "لا عناصر معلّقة"
+msgstr[1] "عنصر معلّق واحد"
+msgstr[2] "عنصران معلّقان"
+msgstr[3] "%(counter)s عناصر معلّقة"
+msgstr[4] "%(counter)s عنصرًا معلّقًا"
+msgstr[5] "%(counter)s عنصر معلّق"
+
+msgid "Nothing outstanding — all caught up."
+msgstr "لا توجد مهام معلقة — كل شيء تم إنجازه."
+
+msgid "System"
+msgstr "النظام"
+
+msgid "Load more"
+msgstr "تحميل المزيد"
+
+msgid "Latest updates"
+msgstr "آخر التحديثات"
+
+msgid "Finished"
+msgstr "منتهية"
+
+msgid "No matches found for this day."
+msgstr "لا توجد مباريات لهذا اليوم."
+
+#, python-format
+msgid "Completed %(completed_at)s"
+msgstr "اكتمل في %(completed_at)s"
+
+#, python-format
+msgid "by %(completed_by)s"
+msgstr "بواسطة %(completed_by)s"
+
+msgid "No action taken yet"
+msgstr "لم يتم اتخاذ أي إجراء بعد"
+
+msgid "Work has started"
+msgstr "بدأ العمل"
+
+msgid "Waiting for resolution"
+msgstr "بانتظار الحل"
+
+msgid "Saving..."
+msgstr "جارٍ الحفظ..."
+
+msgid "Reset"
+msgstr "إعادة تعيين"
+
+msgid "Mark Delayed"
+msgstr "تحديد كمتأخر"
+
+msgid "Mark Done"
+msgstr "وضع علامة مكتمل"
+
+msgid "Delay Reason"
+msgstr "سبب التأخير"
+
+msgid "Note"
+msgstr "ملاحظة"
+
+msgid "Why is this delayed?"
+msgstr "لماذا هذا متأخر؟"
+
+msgid "Add note..."
+msgstr "إضافة ملاحظة..."
+
+msgid "Delayed items"
+msgstr "العناصر المتأخرة"
+
+msgid "Item"
+msgstr "عنصر"
+
+msgid "No delayed items for this match."
+msgstr "لا توجد عناصر متأخرة لهذه المباراة."
+
+msgid "Filtered Matches"
+msgstr "المباريات المفلترة"
+
+#, python-format
+msgid "Showing Round %(round_number)s matches"
+msgstr "عرض مباريات الجولة %(round_number)s"
+
+#, python-format
+msgid "Showing %(view_name)s matches"
+msgstr "عرض مباريات %(view_name)s"
+
+msgid "Use filters to narrow the table below"
+msgstr "استخدم عوامل التصفية لتضييق الجدول أدناه"
+
+msgid "Live"
+msgstr "مباشر"
+
+msgid "Starting Soon"
+msgstr "تبدأ قريبًا"
+
+msgid "Ready"
+msgstr "جاهز"
+
+msgid "Alerts"
+msgstr "التنبيهات"
+
+msgid "Reports"
+msgstr "التقارير"
+
+msgid "Past"
+msgstr "السابقة"
+
+msgid "Timing"
+msgstr "التوقيت"
+
+msgid "Readiness"
+msgstr "الجاهزية"
+
+msgid "Pre-match"
+msgstr "ما قبل المباراة"
+
+#, python-format
+msgid "in %(hours)sh"
+msgstr "خلال %(hours)s ساعة"
+
+#, python-format
+msgid "in %(counter)s day"
+msgid_plural "in %(counter)s days"
+msgstr[0] "خلال أقل من يوم"
+msgstr[1] "خلال يوم واحد"
+msgstr[2] "خلال يومين"
+msgstr[3] "خلال %(counter)s أيام"
+msgstr[4] "خلال %(counter)s يومًا"
+msgstr[5] "خلال %(counter)s يوم"
+
+msgid "Ready for Sale"
+msgstr "جاهزة للبيع"
+
+msgid "Reports Pending"
+msgstr "التقارير المعلقة"
+
+msgid "No matches found for this filter."
+msgstr "لا توجد مباريات مطابقة لهذا الفلتر."
+
+msgid "Export this match"
+msgstr "تصدير هذه المباراة"
+
+#, python-format
+msgid "No matches found for Round %(number)s."
+msgstr "لا توجد مباريات للجولة %(number)s."
+
+msgid "Pick a round above to preview its matches."
+msgstr "اختر جولة أعلاه لمعاينة مبارياتها."
+
+msgid "Discount Code"
+msgstr "رمز الخصم"
+
+#, python-format
+msgid "%(counter)s ticket"
+msgid_plural "%(counter)s tickets"
+msgstr[0] "لا تذاكر"
+msgstr[1] "تذكرة واحدة"
+msgstr[2] "تذكرتان"
+msgstr[3] "%(counter)s تذاكر"
+msgstr[4] "%(counter)s تذكرة"
+msgstr[5] "%(counter)s تذكرة"
+
+msgid "No discount code set."
+msgstr "لم يتم تعيين رمز خصم."
+
+msgid "Add"
+msgstr "إضافة"
+
+msgid "Progress Summary"
+msgstr "ملخص التقدم"
+
+#, python-format
+msgid "%(done_items)s of %(total_items)s items completed"
+msgstr "%(done_items)s من %(total_items)s عناصر مكتملة"
+
+#, python-format
+msgid "%(progress_percent)s%% Completed"
+msgstr "%(progress_percent)s%% مكتمل"
+
+msgid "Total Items"
+msgstr "إجمالي العناصر"
+
+msgid "Required Done"
+msgstr "المطلوب المكتمل"
+
+#, python-format
+msgid "%(counter)s delayed item"
+msgid_plural "%(counter)s delayed items"
+msgstr[0] "لا عناصر متأخرة"
+msgstr[1] "عنصر متأخر واحد"
+msgstr[2] "عنصران متأخران"
+msgstr[3] "%(counter)s عناصر متأخرة"
+msgstr[4] "%(counter)s عنصرًا متأخرًا"
+msgstr[5] "%(counter)s عنصر متأخر"
+
+#, python-format
+msgid "%(percent)s%% ready"
+msgstr "%(percent)s%% جاهز"
+
+msgid "Actual Release Date"
+msgstr "تاريخ الإصدار الفعلي"
+
+msgid "SPL Plan Not Approved"
+msgstr "خطة SPL غير معتمدة"
+
+msgid "SPL Tickets Sent"
+msgstr "تذاكر SPL مُرسلة"
+
+msgid "SPL Tickets Not Sent"
+msgstr "تذاكر SPL غير مُرسلة"
+
+msgid "Open Full Match Page"
+msgstr "فتح صفحة المباراة الكاملة"
+
+msgid "Slug"
+msgstr "المعرف المختصر (Slug)"
+
+msgid "SPL Report Info"
+msgstr "معلومات تقرير SPL"
+
+msgid "Ticketing Plan"
+msgstr "خطة التذاكر"
+
+msgid "Approved"
+msgstr "معتمد"
+
+msgid "Not Approved"
+msgstr "غير معتمد"
+
+msgid "SPL Tickets"
+msgstr "تذاكر SPL"
+
+msgid "Sent"
+msgstr "مُرسل"
+
+msgid "Not Sent"
+msgstr "غير مُرسل"
+
+msgid "KV / Webook Images"
+msgstr "KV / صور Webook"
+
+msgid "Not Ready"
+msgstr "غير جاهز"
+
+msgid "Webook Readiness"
+msgstr "جاهزية Webook"
+
+msgid "Not set"
+msgstr "غير محدد"
+
+msgid "Actual release"
+msgstr "الإصدار الفعلي"
+
+msgid "Comments"
+msgstr "التعليقات"
+
+msgid ""
+"Set automatically when CMS Status changes to Published - only if it isn't "
+"already\n"
+"                set. Edit it here to correct it or to backfill matches "
+"published before this existed."
+msgstr ""
+"يتم ضبطه تلقائيًا عند تغيّر حالة نظام إدارة المحتوى إلى \"منشور\" - فقط إذا لم "
+"يكن\n"
+"                محددًا بالفعل. يمكنك تعديله هنا لتصحيحه أو لتعبئته بأثر رجعي "
+"للمباريات التي نُشرت قبل توفر هذه الميزة."
+
+msgid "Match Status"
+msgstr "حالة المباراة"
+
+msgid ""
+"Status is updated automatically based on active required checklist items."
+msgstr ""
+"يتم تحديث الحالة تلقائيًا استنادًا إلى عناصر قائمة التحقق المطلوبة النشطة."
+
+msgid "Published matches are shown as live on the dashboard."
+msgstr "تظهر المباريات المنشورة كمباشرة على لوحة القيادة."
+
+msgid "Sending..."
+msgstr "جارٍ الإرسال..."
+
+#, python-format
+msgid "at %(sent_at)s"
+msgstr "في %(sent_at)s"
+
+#, python-format
+msgid "by %(sent_by)s"
+msgstr "بواسطة %(sent_by)s"
+
+msgid "CMS Status Control"
+msgstr "التحكم في حالة نظام إدارة المحتوى"
+
+msgid ""
+"Choosing <strong>Published</strong> here will make the match appear live on "
+"the dashboard immediately."
+msgstr ""
+"اختيار <strong>منشور</strong> هنا سيجعل المباراة تظهر مباشرة على لوحة "
+"القيادة فورًا."
+
+msgid "Update CMS Status"
+msgstr "تحديث حالة نظام إدارة المحتوى"
+
+msgid "No pending items for this match."
+msgstr "لا توجد عناصر معلقة لهذه المباراة."
+
+msgid "Open Outstanding Items"
+msgstr "فتح العناصر المتبقية"
+
+msgid "No delayed items."
+msgstr "لا توجد عناصر متأخرة."
+
+msgid "No items currently in progress."
+msgstr "لا توجد عناصر قيد التنفيذ حاليًا."
+
+msgid "Needs First Action"
+msgstr "بحاجة إلى إجراء أولي"
+
+msgid "Great — no untouched items left."
+msgstr "رائع — لم تتبقَّ أي عناصر لم يبدأ العمل عليها."
+
+msgid "Next home matches"
+msgstr "المباريات القادمة على أرضه"
+
+msgid "No upcoming home matches scheduled for this team."
+msgstr "لا توجد مباريات قادمة على أرض هذا الفريق."
+
+msgid "Missing Operational Requirements"
+msgstr "المتطلبات التشغيلية الناقصة"
+
+msgid ""
+"This report lists every match with <strong>pending operational items</"
+"strong> — things\n"
+"        that still need to be done before the match is ready. The icon chips "
+"under each match\n"
+"        show which categories still have work outstanding. Filters apply as "
+"soon as you pick one\n"
+"        - no need to click \"Apply Filters\"."
+msgstr ""
+"يسرد هذا التقرير كل مباراة تحتوي على <strong>عناصر تشغيلية معلّقة</strong> — "
+"أي الأمور التي ما زالت بحاجة إلى إنجاز قبل أن تصبح المباراة جاهزة. تُظهر "
+"الأيقونات أسفل كل مباراة التصنيفات التي لا يزال بها عمل متبقٍ. تُطبَّق الفلاتر "
+"بمجرد اختيارها - دون الحاجة إلى النقر على \"تطبيق الفلاتر\"."
+
+msgid ""
+"Click the teams to see exactly which items are outstanding and why, in a "
+"quick popup."
+msgstr "انقر على الفرق لعرض العناصر المتبقية وسبب ذلك في نافذة منبثقة سريعة."
+
+msgid "SPL Approval"
+msgstr "موافقة SPL"
+
+msgid "KVs"
+msgstr "الصور الرئيسية (KVs)"
+
+msgid "Available"
+msgstr "متاح"
+
+msgid "Not Available"
+msgstr "غير متاح"
+
+#, python-format
+msgid "All (%(count)s)"
+msgstr "الكل (%(count)s)"
+
+#, python-format
+msgid "Upcoming (%(count)s)"
+msgstr "القادمة (%(count)s)"
+
+#, python-format
+msgid "Delayed (%(count)s)"
+msgstr "المتأخرة (%(count)s)"
+
+#, python-format
+msgid "Has Notes (%(count)s)"
+msgstr "بها ملاحظات (%(count)s)"
+
+msgid "Matches Needing Action"
+msgstr "المباريات التي تحتاج إلى إجراء"
+
+#, python-format
+msgid "%(count)s matches · page %(number)s of %(total)s"
+msgstr "%(count)s مباراة · صفحة %(number)s من %(total)s"
+
+#, python-format
+msgid "%(counter)s pending"
+msgid_plural "%(counter)s pending"
+msgstr[0] "لا شيء معلّق"
+msgstr[1] "عنصر واحد معلّق"
+msgstr[2] "عنصران معلّقان"
+msgstr[3] "%(counter)s معلّقة"
+msgstr[4] "%(counter)s معلّقًا"
+msgstr[5] "%(counter)s معلّق"
+
+msgid "Notes"
+msgstr "ملاحظات"
+
+msgid "SPL Approved"
+msgstr "معتمد من SPL"
+
+msgid "SPL Not Approved"
+msgstr "غير معتمد من SPL"
+
+msgid "KVs Available"
+msgstr "الصور الرئيسية متاحة"
+
+msgid "KVs Not Available"
+msgstr "الصور الرئيسية غير متاحة"
+
+msgid "No pending operational items found for this filter."
+msgstr "لا توجد عناصر تشغيلية معلّقة لهذا الفلتر."
+
+msgid "First"
+msgstr "الأولى"
+
+msgid "Last"
+msgstr "الأخيرة"
+
+msgid ""
+"This is the <strong>SPL Report</strong> — ticketing and readiness details "
+"the SPL team\n"
+"        needs for every match: release dates, ticketing plan status, and "
+"complimentary tickets."
+msgstr ""
+"هذا هو <strong>تقرير SPL</strong> — تفاصيل التذاكر والجاهزية التي يحتاجها "
+"فريق SPL لكل مباراة: تواريخ الطرح، وحالة خطة التذاكر، والتذاكر المجانية."
+
+msgid ""
+"Use \"Export XLSX\" to download the current filtered view as a spreadsheet."
+msgstr "استخدم \"تصدير XLSX\" لتنزيل العرض الحالي المُصفّى كملف جدول بيانات."
+
+msgid "Per-match ticketing and readiness details for the SPL team."
+msgstr "تفاصيل التذاكر والجاهزية لكل مباراة لفريق SPL."
+
+msgid "Export XLSX"
+msgstr "تصدير XLSX"
+
+msgid "Roshan League"
+msgstr "دوري روشن"
+
+msgid "Matchweek"
+msgstr "الجولة"
+
+msgid "Match Date"
+msgstr "تاريخ المباراة"
+
+msgid "Stadium"
+msgstr "الملعب"
+
+msgid "Match Readiness"
+msgstr "جاهزية المباراة"
+
+msgid "Ticketing Plan Status"
+msgstr "حالة خطة التذاكر"
+
+msgid "SPL Complimentary Tickets"
+msgstr "التذاكر المجانية لـ SPL"
+
+msgid "Coordinator (Webook)"
+msgstr "المنسق (Webook)"
+
+msgid "Confirm"
+msgstr "تأكيد"
+
+msgid "Coordinator Workload"
+msgstr "عبء عمل المنسقين"
+
+msgid ""
+"This report shows <strong>workload by coordinator, club, and round</strong> "
+"— how many\n"
+"        matches each person still has to finish before they're published."
+msgstr ""
+"يعرض هذا التقرير <strong>عبء العمل حسب المنسق والنادي والجولة</strong> — أي "
+"عدد المباريات التي ما زال على كل شخص إنهاؤها قبل نشرها."
+
+msgid ""
+"Track remaining matches by coordinator, club, or round. \"Remaining\" = not "
+"yet Published."
+msgstr ""
+"تتبّع المباريات المتبقية حسب المنسق أو النادي أو الجولة. \"المتبقي\" يعني غير "
+"المنشور بعد."
+
+msgid "18 clubs"
+msgstr "18 ناديًا"
+
+msgid "34 rounds"
+msgstr "34 جولة"
+
+msgid "5–7 clubs / coordinator"
+msgstr "5–7 أندية / منسق"
+
+msgid "Total matches (filtered)"
+msgstr "إجمالي المباريات (مفلترة)"
+
+msgid "Remaining (not published)"
+msgstr "المتبقي (غير منشور)"
+
+msgid "Coordinators"
+msgstr "المنسقون"
+
+msgid "Clubs"
+msgstr "الأندية"
+
+msgid "Filters"
+msgstr "الفلاتر"
+
+msgid "Apply filters"
+msgstr "تطبيق الفلاتر"
+
+msgid "By coordinator"
+msgstr "حسب المنسق"
+
+msgid "Sorted by highest remaining backlog first."
+msgstr "مرتبة حسب أعلى تراكم متبقٍ أولاً."
+
+msgid "Total"
+msgstr "الإجمالي"
+
+msgid "Remaining"
+msgstr "المتبقي"
+
+msgid "Backlog"
+msgstr "الأعمال المتراكمة"
+
+msgid "No data."
+msgstr "لا توجد بيانات."
+
+msgid "By club"
+msgstr "حسب النادي"
+
+msgid "By round"
+msgstr "حسب الجولة"
+
+msgid "Sorted by highest remaining backlog first. 34 rounds total."
+msgstr "مرتبة حسب أعلى تراكم متبقٍ أولاً. الإجمالي 34 جولة."
+
+#, python-format
+msgid ""
+"This is your <strong>Dashboard</strong> — every %(competition_name)s\n"
+"        match, browsable by team or by round."
+msgstr ""
+"هذه هي <strong>لوحة القيادة</strong> الخاصة بك — تصفّح كل مباريات "
+"%(competition_name)s حسب الفريق أو الجولة."
+
+msgid ""
+"The Upcoming & Live Matches table shows everything ahead, filterable by "
+"club,\n"
+"        coordinator, round, SPL approval status, and Live/Upcoming. Click a "
+"team to see its next\n"
+"        home matches, or a round to preview every match in it. Use the "
+"export buttons to download\n"
+"        the schedule as a spreadsheet - the whole season, one round, or a "
+"single match."
+msgstr ""
+"يعرض جدول المباريات القادمة والمباشرة كل ما هو قادم، ويمكن تصفيته حسب النادي "
+"والمنسق والجولة وحالة اعتماد SPL وكونها مباشرة أو قادمة. انقر على فريق لعرض "
+"مبارياته المقبلة كمضيف، أو على جولة لمعاينة جميع مبارياتها. استخدم أزرار "
+"التصدير لتنزيل الجدول كملف إكسل - الموسم كاملاً، أو جولة واحدة، أو مباراة "
+"واحدة."
+
+#, python-format
+msgid "%(competition_name)s match schedule and readiness."
+msgstr "جدول مباريات %(competition_name)s وحالة الجاهزية."
+
+msgid "Report"
+msgstr "تقرير"
+
+msgid "Export Full Schedule"
+msgstr "تصدير الجدول الكامل"
+
+#, python-format
+msgid "Export Round %(number)s"
+msgstr "تصدير الجولة %(number)s"
+
+msgid "Upcoming & Live Matches"
+msgstr "المباريات القادمة والمباشرة"
+
+#, python-format
+msgid "%(counter)s match"
+msgid_plural "%(counter)s matches"
+msgstr[0] "لا مباريات"
+msgstr[1] "مباراة واحدة"
+msgstr[2] "مباراتان"
+msgstr[3] "%(counter)s مباريات"
+msgstr[4] "%(counter)s مباراة"
+msgstr[5] "%(counter)s مباراة"
+
+msgid "Time"
+msgstr "الوقت"
+
+msgid "Days Remaining"
+msgstr "الأيام المتبقية"
+
+msgid "Tomorrow"
+msgstr "غدًا"
+
+#, python-format
+msgid "In %(counter)s day"
+msgid_plural "In %(counter)s days"
+msgstr[0] "خلال أقل من يوم"
+msgstr[1] "خلال يوم واحد"
+msgstr[2] "خلال يومين"
+msgstr[3] "خلال %(counter)s أيام"
+msgstr[4] "خلال %(counter)s يومًا"
+msgstr[5] "خلال %(counter)s يوم"
+
+msgid "No upcoming or live matches found for this filter."
+msgstr "لا توجد مباريات قادمة أو مباشرة مطابقة لهذا الفلتر."
+
+msgid "Login"
+msgstr "تسجيل الدخول"
+
+msgid "Webook Event Tracker"
+msgstr "متتبع فعاليات Webook"
+
+msgid "Sign in to manage match preparation."
+msgstr "سجّل الدخول لإدارة تجهيزات المباريات."
+
+msgid "Login failed"
+msgstr "فشل تسجيل الدخول"
+
+msgid "Check your username and password and try again."
+msgstr "تحقق من اسم المستخدم وكلمة المرور وحاول مرة أخرى."
+
+msgid "Password"
+msgstr "كلمة المرور"

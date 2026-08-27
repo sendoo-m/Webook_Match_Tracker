@@ -1,3 +1,4 @@
+{% load i18n %}
 <div class="calendar-day-popup">
     <p class="help-text calendar-day-popup-date">{{ target_date|date:"l, F j, Y" }}</p>
 
@@ -14,12 +15,12 @@
                 hx-swap="innerHTML"
             >
                 <div class="round-preview-card-head">
-                    <span class="round-preview-round-tag">Round {{ card.match.round_number|default:"—" }}</span>
+                    <span class="round-preview-round-tag">{% blocktrans with number=card.match.round_number|default:"—" %}Round {{ number }}{% endblocktrans %}</span>
                     <span class="round-preview-status">
                         {% if card.is_live_now %}
                             <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
                         {% elif card.match_finished %}
-                            <span class="mini-badge mini-badge-neutral"><i class="ti ti-flag-2"></i> Finished</span>
+                            <span class="mini-badge mini-badge-neutral"><i class="ti ti-flag-2"></i> {% trans "Finished" %}</span>
                         {% else %}
                             <span class="badge badge-{{ card.match.cms_status|slugify }}">{{ card.match.get_cms_status_display }}</span>
                         {% endif %}
@@ -40,7 +41,7 @@
                 </div>
             </div>
         {% empty %}
-            <p class="help-text">No matches found for this day.</p>
+            <p class="help-text">{% trans "No matches found for this day." %}</p>
         {% endfor %}
     </div>
 </div>

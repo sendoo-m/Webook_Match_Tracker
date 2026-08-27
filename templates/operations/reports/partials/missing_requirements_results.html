@@ -1,4 +1,5 @@
 {% load display_helpers %}
+{% load i18n %}
 <div id="missing-requirements-results">
     <div class="card dashboard-filterbar">
         {% with base_qs="&home_club="|add:selected_home_club|add:"&away_club="|add:selected_away_club|add:"&competition="|add:selected_competition|add:"&round="|add:selected_round|add:"&user="|add:selected_user|add:"&spl_approval="|add:selected_spl_approval|add:"&kv_status="|add:selected_kv_status %}
@@ -10,7 +11,7 @@
             hx-swap="outerHTML"
             hx-push-url="true"
         >
-            All ({{ filter_counts.all }})
+            {% blocktrans with count=filter_counts.all %}All ({{ count }}){% endblocktrans %}
         </a>
 
         <a
@@ -21,7 +22,7 @@
             hx-swap="outerHTML"
             hx-push-url="true"
         >
-            Upcoming ({{ filter_counts.upcoming }})
+            {% blocktrans with count=filter_counts.upcoming %}Upcoming ({{ count }}){% endblocktrans %}
         </a>
 
         <a
@@ -32,7 +33,7 @@
             hx-swap="outerHTML"
             hx-push-url="true"
         >
-            Delayed ({{ filter_counts.delayed }})
+            {% blocktrans with count=filter_counts.delayed %}Delayed ({{ count }}){% endblocktrans %}
         </a>
 
         <a
@@ -43,7 +44,7 @@
             hx-swap="outerHTML"
             hx-push-url="true"
         >
-            Has Notes ({{ filter_counts.has_notes }})
+            {% blocktrans with count=filter_counts.has_notes %}Has Notes ({{ count }}){% endblocktrans %}
         </a>
         {% endwith %}
     </div>
@@ -51,9 +52,9 @@
     <div class="card panel dashboard-section">
         <div class="dashboard-section-head">
             <div>
-                <h2 class="panel-title">Matches Needing Action</h2>
+                <h2 class="panel-title">{% trans "Matches Needing Action" %}</h2>
                 <p class="help-text">
-                    {{ page_obj.paginator.count }} matches · page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    {% blocktrans with count=page_obj.paginator.count number=page_obj.number total=page_obj.paginator.num_pages %}{{ count }} matches · page {{ number }} of {{ total }}{% endblocktrans %}
                 </p>
             </div>
         </div>
@@ -74,7 +75,7 @@
                                 hx-swap="innerHTML"
                             >
                                 {% include "operations/partials/club_chip.html" with club=row.match.home_club role="home" %}
-                                <span class="help-text">vs</span>
+                                <span class="help-text">{% trans "vs" %}</span>
                                 {% include "operations/partials/club_chip.html" with club=row.match.away_club role="away" %}
                             </div>
                             {% if row.pending_categories %}
@@ -90,29 +91,29 @@
 
                         <div class="mini-badges">
                             <span class="mini-badge mini-badge-warning">
-                                {{ row.pending_count }} pending
+                                {% blocktrans count counter=row.pending_count %}{{ counter }} pending{% plural %}{{ counter }} pending{% endblocktrans %}
                             </span>
                             {% if row.has_delayed %}
-                                <span class="mini-badge mini-badge-danger">Delayed</span>
+                                <span class="mini-badge mini-badge-danger">{% trans "Delayed" %}</span>
                             {% endif %}
                             {% if row.has_notes %}
-                                <span class="mini-badge mini-badge-info">Notes</span>
+                                <span class="mini-badge mini-badge-info">{% trans "Notes" %}</span>
                             {% endif %}
                             <span class="mini-badge mini-badge-{% if row.match.ticketing_plan_approved %}success{% else %}neutral{% endif %}">
-                                SPL {% if row.match.ticketing_plan_approved %}Approved{% else %}Not Approved{% endif %}
+                                {% if row.match.ticketing_plan_approved %}{% trans "SPL Approved" %}{% else %}{% trans "SPL Not Approved" %}{% endif %}
                             </span>
                             <span class="mini-badge mini-badge-{% if row.kv_ready %}success{% else %}neutral{% endif %}">
-                                KVs {% if row.kv_ready %}Available{% else %}Not Available{% endif %}
+                                {% if row.kv_ready %}{% trans "KVs Available" %}{% else %}{% trans "KVs Not Available" %}{% endif %}
                             </span>
                             <a class="btn btn-secondary" href="{% url 'operations:match-outstanding' row.match.pk %}">
-                                Outstanding Items
+                                {% trans "Outstanding Items" %}
                             </a>
                         </div>
                     </div>
                 </div>
             {% empty %}
                 <div class="card panel">
-                    <p class="help-text">No pending operational items found for this filter.</p>
+                    <p class="help-text">{% trans "No pending operational items found for this filter." %}</p>
                 </div>
             {% endfor %}
         </div>
@@ -130,7 +131,7 @@
                             hx-swap="outerHTML"
                             hx-push-url="true"
                         >
-                            First
+                            {% trans "First" %}
                         </a>
                         <a
                             class="pagination-link"
@@ -140,12 +141,12 @@
                             hx-swap="outerHTML"
                             hx-push-url="true"
                         >
-                            Previous
+                            {% trans "Previous" %}
                         </a>
                     {% endif %}
 
                     <span class="pagination-current">
-                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        {% blocktrans with number=page_obj.number total=page_obj.paginator.num_pages %}Page {{ number }} of {{ total }}{% endblocktrans %}
                     </span>
 
                     {% if page_obj.has_next %}
@@ -157,7 +158,7 @@
                             hx-swap="outerHTML"
                             hx-push-url="true"
                         >
-                            Next
+                            {% trans "Next" %}
                         </a>
                         <a
                             class="pagination-link"
@@ -167,7 +168,7 @@
                             hx-swap="outerHTML"
                             hx-push-url="true"
                         >
-                            Last
+                            {% trans "Last" %}
                         </a>
                     {% endif %}
                 </div>

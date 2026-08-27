@@ -3,6 +3,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 from django.views import View
 from django.views.generic import CreateView, ListView, UpdateView
 
@@ -13,7 +15,7 @@ class PanelListView(LoginRequiredMixin, ControlPanelAccessMixin, ListView):
     paginate_by = 25
     page_title = ""
     create_url_name = None
-    create_label = "Add New"
+    create_label = _lazy("Add New")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -21,6 +23,9 @@ class PanelListView(LoginRequiredMixin, ControlPanelAccessMixin, ListView):
         context["create_label"] = self.create_label
         if self.create_url_name:
             context["create_url"] = reverse(self.create_url_name)
+        querystring = self.request.GET.copy()
+        querystring.pop("page", None)
+        context["querystring"] = querystring.urlencode()
         return context
 
 
@@ -59,6 +64,9 @@ class PanelToggleActiveView(LoginRequiredMixin, ControlPanelAccessMixin, View):
         obj.save(update_fields=[self.active_field])
         messages.success(
             request,
-            f"{obj} {'deactivated' if currently_active else 'activated'}.",
+            _("%(obj)s %(state)s.") % {
+                "obj": obj,
+                "state": _("deactivated") if currently_active else _("activated"),
+            },
         )
         return redirect(self.success_url_name)

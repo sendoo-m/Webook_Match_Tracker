@@ -1,3 +1,4 @@
+{% load i18n %}
 <form
     hx-post="{% url 'operations:feedback-submit' %}"
     hx-target="#feedback-modal-body"
@@ -17,6 +18,6 @@
     {% endfor %}
 
     <div class="form-actions">
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary">{% trans "Submit" %}</button>
     </div>
 </form>

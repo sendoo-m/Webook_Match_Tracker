@@ -1,7 +1,8 @@
 <!-- File: templates/operations/partials/sidebar_not_started.html -->
 <!-- Path: config/templates/operations/partials/sidebar_not_started.html -->
+{% load i18n %}
 <div id="sidebar-not-started" class="card panel" hx-swap-oob="true">
-    <h2 class="panel-title">Needs First Action</h2>
+    <h2 class="panel-title">{% trans "Needs First Action" %}</h2>
 
     {% if not_started_items %}
         <div class="sidebar-list">
@@ -13,6 +14,6 @@
             {% endfor %}
         </div>
     {% else %}
-        <p class="help-text">Great — no untouched items left.</p>
+        <p class="help-text">{% trans "Great — no untouched items left." %}</p>
     {% endif %}
 </div>

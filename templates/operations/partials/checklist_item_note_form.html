@@ -1,3 +1,4 @@
+{% load i18n %}
 <div class="checklist-note-modal">
     <h3 class="checklist-note-modal-title">{{ item.template_item.title }}</h3>
 
@@ -14,23 +15,23 @@
 
         <div class="form-group">
             {% if item.status == "delayed" %}
-                <label for="delay_reason-{{ item.id }}"><strong>Delay Reason</strong></label>
+                <label for="delay_reason-{{ item.id }}"><strong>{% trans "Delay Reason" %}</strong></label>
                 <textarea
                     name="delay_reason"
                     id="delay_reason-{{ item.id }}"
                     rows="4"
                     class="form-control"
-                    placeholder="Why is this delayed?"
+                    placeholder="{% trans "Why is this delayed?" %}"
                     autofocus
                 >{{ item.delay_reason }}</textarea>
             {% else %}
-                <label for="note-{{ item.id }}"><strong>Note</strong></label>
+                <label for="note-{{ item.id }}"><strong>{% trans "Note" %}</strong></label>
                 <textarea
                     name="note"
                     id="note-{{ item.id }}"
                     rows="4"
                     class="form-control"
-                    placeholder="Add note..."
+                    placeholder="{% trans "Add note..." %}"
                     autofocus
                 >{{ item.note }}</textarea>
             {% endif %}
@@ -38,10 +39,10 @@
 
         <div class="checklist-note-modal-actions">
             <button type="button" class="btn btn-secondary" onclick="OperationsModal.close('match-modal-overlay')">
-                Cancel
+                {% trans "Cancel" %}
             </button>
             <button type="submit" class="btn btn-primary">
-                Save
+                {% trans "Save" %}
             </button>
         </div>
     </form>

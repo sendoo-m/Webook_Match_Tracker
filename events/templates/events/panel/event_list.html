@@ -1,0 +1,84 @@
+{# events/panel/event_list.html #}
+{% extends "events/panel/list.html" %}
+{% load static %}
+{% load display_helpers %}
+{% load i18n %}
+
+{% block extra_content %}
+<div class="card panel">
+    <form method="get" class="filters" data-autosubmit>
+        <div class="field-group">
+            <label>{% trans "Category" %}</label>
+            <select name="category">
+                <option value="">{% trans "All" %}</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>{{ category|localized_name }} ({{ category.group|localized_name }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <button type="submit">{% trans "Apply Filters" %}</button>
+        </div>
+    </form>
+</div>
+
+<div class="card panel">
+    <form method="get" action="{% url 'events:event-export' %}" class="filters">
+        <div class="field-group">
+            <label>{{ export_form.category.label }}</label>
+            {{ export_form.category }}
+        </div>
+        <div class="field-group">
+            <label>{{ export_form.format.label }}</label>
+            {{ export_form.format }}
+        </div>
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <button type="submit"><i class="ti ti-download"></i> {% trans "Export" %}</button>
+        </div>
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <a class="btn btn-secondary" href="{% url 'events:event-import' %}"><i class="ti ti-upload"></i> {% trans "Import" %}</a>
+        </div>
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <a class="btn btn-secondary" href="{% url 'events:event-template' %}"><i class="ti ti-file-download"></i> {% trans "Download Template" %}</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
+{% endblock %}
+
+{% block table_head %}
+    <th>{% trans "Event" %}</th>
+    <th>{% trans "Category" %}</th>
+    <th>{% trans "Venue" %}</th>
+    <th>{% trans "Date" %}</th>
+    <th>{% trans "Status" %}</th>
+    <th></th>
+{% endblock %}
+
+{% block table_body %}
+    {% for event in events %}
+        <tr>
+            <td><a href="{% url 'events:event-detail' event.pk %}">{{ event.title_en }}</a></td>
+            <td>{{ event.category|localized_name }} <span class="help-text">({{ event.category.group|localized_name }})</span></td>
+            <td>{{ event.venue|localized_name|default:"—" }}</td>
+            <td>{% if event.event_date %}{{ event.event_date }}{% else %}{% trans "TBC" %}{% endif %} {{ event.start_time }}</td>
+            <td>
+                <span class="badge badge-{{ event.cms_status|slugify }}">
+                    {{ event.get_cms_status_display }}
+                </span>
+            </td>
+            <td>
+                <a class="btn btn-secondary btn-sm" href="{% url 'events:event-update' event.pk %}">{% trans "Edit" %}</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="6">{% trans "No events found." %}</td></tr>
+    {% endfor %}
+{% endblock %}

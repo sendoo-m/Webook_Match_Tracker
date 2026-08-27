@@ -1,27 +1,28 @@
 {% extends "operations/base.html" %}
+{% load i18n %}
 
-{% block title %}Feedback{% endblock %}
+{% block title %}{% trans "Feedback" %}{% endblock %}
 
 {% block page_help %}
     <p>
-        This page lists <strong>feedback and suggestions</strong> from the team — what was
-        suggested, what changed, and whether it was accepted, rejected, or implemented.
+        {% blocktrans %}This page lists <strong>feedback and suggestions</strong> from the team — what was
+        suggested, what changed, and whether it was accepted, rejected, or implemented.{% endblocktrans %}
     </p>
-    <p>Use the "Submit Feedback" button (or the feedback icon) to send in a new idea.</p>
+    <p>{% blocktrans %}Use the "Submit Feedback" button (or the feedback icon) to send in a new idea.{% endblocktrans %}</p>
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
     <div class="page-header-row">
         <div>
-            <h1 class="page-title">Feedback – Recommendations and Suggestions – Software Improvements – Design Improvements – Infrastructure Improvements</h1>
+            <h1 class="page-title">{% trans "Feedback – Recommendations and Suggestions – Software Improvements – Design Improvements – Infrastructure Improvements" %}</h1>
             <p class="page-subtitle">
-                A running record of ideas suggested by the team, what changed because of them, and why each one was accepted, rejected, or implemented.
+                {% trans "A running record of ideas suggested by the team, what changed because of them, and why each one was accepted, rejected, or implemented." %}
             </p>
         </div>
 
         <div class="filter-bar">
-            <a class="btn btn-primary" href="{% url 'operations:feedback-submit' %}"><i class="ti ti-plus"></i> Submit Feedback</a>
+            <a class="btn btn-primary" href="{% url 'operations:feedback-submit' %}"><i class="ti ti-plus"></i> {% trans "Submit Feedback" %}</a>
         </div>
     </div>
 </div>
@@ -36,7 +37,7 @@
                     <div class="match-row-top">
                         <div>
                             <h3 class="match-row-title">{{ entry.title }}</h3>
-                            <div class="help-text">Suggested by {{ entry.submitted_by }}</div>
+                            <div class="help-text">{% blocktrans with submitter=entry.submitted_by %}Suggested by {{ submitter }}{% endblocktrans %}</div>
                         </div>
                         <span class="badge badge-{{ entry.status|slugify }}">
                             {{ entry.get_status_display }}
@@ -45,32 +46,32 @@
 
                     <div class="feedback-entry-body">
                         <div>
-                            <div class="meta-label">Before</div>
+                            <div class="meta-label">{% trans "Before" %}</div>
                             <p>{{ entry.situation_before|linebreaksbr }}</p>
                         </div>
 
                         <div>
-                            <div class="meta-label">Suggestion</div>
+                            <div class="meta-label">{% trans "Suggestion" %}</div>
                             <p>{{ entry.suggestion|linebreaksbr }}</p>
                         </div>
 
                         {% if entry.situation_after %}
                             <div>
-                                <div class="meta-label">After</div>
+                                <div class="meta-label">{% trans "After" %}</div>
                                 <p>{{ entry.situation_after|linebreaksbr }}</p>
                             </div>
                         {% endif %}
 
                         {% if entry.decision_reason %}
                             <div>
-                                <div class="meta-label">Why</div>
+                                <div class="meta-label">{% trans "Why" %}</div>
                                 <p>{{ entry.decision_reason|linebreaksbr }}</p>
                             </div>
                         {% endif %}
                     </div>
                 </div>
             {% empty %}
-                <p class="help-text">No entries in this category yet.</p>
+                <p class="help-text">{% trans "No entries in this category yet." %}</p>
             {% endfor %}
         </div>
     </div>

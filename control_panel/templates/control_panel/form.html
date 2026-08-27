@@ -1,10 +1,11 @@
 {# control_panel/form.html #}
 {% extends "operations/base.html" %}
+{% load i18n %}
 
-{% block title %}{{ page_title }} · Control Panel{% endblock %}
+{% block title %}{{ page_title }} · {% trans "Control Panel" %}{% endblock %}
 
 {% block page_help %}
-    <p>You're managing <strong>{{ page_title }}</strong> here — fill in the fields and save when you're done.</p>
+    <p>{% blocktrans %}You're managing <strong>{{ page_title }}</strong> here — fill in the fields and save when you're done.{% endblocktrans %}</p>
 {% endblock %}
 
 {% block content %}
@@ -28,39 +29,9 @@
         {% endfor %}
 
         <div class="form-actions">
-            <a class="btn btn-secondary" href="{{ list_url }}">Cancel</a>
-            <button type="submit" class="btn btn-primary">Save</button>
+            <a class="btn btn-secondary" href="{{ list_url }}">{% trans "Cancel" %}</a>
+            <button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
         </div>
     </form>
 </div>
 {% endblock %}
-
-{% comment %} {% extends "operations/base.html" %}
-
-{% block title %}{{ page_title }} · Control Panel{% endblock %}
-
-{% block content %}
-<div class="page-header">
-    <h1 class="page-title">{{ page_title }}</h1>
-</div>
-
-<div class="card panel" style="max-width:640px;">
-    <form method="post" class="form-stack" enctype="multipart/form-data">
-        {% csrf_token %}
-
-        {% for field in form %}
-            <div class="form-group">
-                {{ field.label_tag }}
-                {{ field }}
-                {% if field.help_text %}<p class="help-text">{{ field.help_text }}</p>{% endif %}
-                {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-            </div>
-        {% endfor %}
-
-        <div class="form-actions">
-            <a class="btn btn-secondary" href="{{ list_url }}">Cancel</a>
-            <button type="submit" class="btn btn-primary">Save</button>
-        </div>
-    </form>
-</div>
-{% endblock %} {% endcomment %}

@@ -1,15 +1,23 @@
 {% load static %}
 {% load display_helpers %}
+{% load i18n %}<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Webook Event Tracker{% endblock %}</title>
 
-<script src="{% static 'operations/js/theme-init.js' %}"></script>
-<script src="{% static 'operations/js/sidebar-init.js' %}"></script>
+    <script src="{% static 'operations/js/theme-init.js' %}"></script>
+    <script src="{% static 'operations/js/sidebar-init.js' %}"></script>
 
-<link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-<link rel="stylesheet" href="{% static 'design_tokens.css' %}">
-<link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=39">
+    <link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+    <link rel="stylesheet" href="{% static 'design_tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=41">
 
-<meta name="htmx-config" content='{"includeIndicatorStyles": true}'>
-<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <meta name="htmx-config" content='{"includeIndicatorStyles": true}'>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+</head>
+<body>
 
 {% url 'operations:dashboard' as dashboard_url %}
 {% url 'operations:match-list' as match_list_url %}
@@ -20,6 +28,8 @@
 {% url 'operations:changelog' as changelog_url %}
 {% url 'operations:workload-report' as workload_url %}
 {% url 'control_panel:home' as control_panel_url %}
+{% url 'events:dashboard' as events_hub_url %}
+{% url 'events:panel-home' as events_panel_url %}
 
 <div class="app-shell">
     {% if request.user.is_authenticated %}
@@ -28,7 +38,7 @@
                 type="button"
                 class="sidebar-toggle"
                 id="sidebar-toggle"
-                aria-label="Collapse sidebar"
+                aria-label="{% trans 'Collapse sidebar' %}"
                 aria-expanded="true"
                 aria-controls="sidebar-nav"
             >
@@ -41,37 +51,47 @@
             </a>
             <a class="sidebar-logo sidebar-logo-secondary" href="{{ dashboard_url }}">
 
-                <span class="sidebar-logo-text" style="font-weight: bold;">Event Tracker</span>
+                <span class="sidebar-logo-text" style="font-weight: bold;">{% trans "Event Tracker" %}</span>
             </a>
 
-            <nav class="sidebar-nav" id="sidebar-nav" aria-label="Main navigation">
-                <a href="{{ dashboard_url }}" title="Dashboard" class="sidebar-link{% if request.path == dashboard_url %} is-active{% endif %}">
-                    <i class="ti ti-layout-dashboard"></i><span>Dashboard</span>
+            <nav class="sidebar-nav" id="sidebar-nav" aria-label="{% trans 'Main navigation' %}">
+                <a href="{{ dashboard_url }}" title="{% trans 'Dashboard' %}" class="sidebar-link{% if request.path == dashboard_url %} is-active{% endif %}">
+                    <i class="ti ti-layout-dashboard"></i><span>{% trans "Dashboard" %}</span>
                 </a>
                 {% if not is_viewer_only %}
-                <a href="{{ match_list_url }}" title="Events" class="sidebar-link{% if request.path == match_list_url %} is-active{% endif %}">
-                    <i class="ti ti-calendar-event"></i><span>Events</span>
+                <a href="{{ match_list_url }}" title="{% trans 'Events' %}" class="sidebar-link{% if request.path == match_list_url %} is-active{% endif %}">
+                    <i class="ti ti-calendar-event"></i><span>{% trans "Events" %}</span>
                 </a>
                 {% endif %}
-                <a href="{{ calendar_url }}" title="Calendar" class="sidebar-link{% if request.path == calendar_url %} is-active{% endif %}">
-                    <i class="ti ti-calendar"></i><span>Calendar</span>
+                <a href="{{ calendar_url }}" title="{% trans 'Calendar' %}" class="sidebar-link{% if request.path == calendar_url %} is-active{% endif %}">
+                    <i class="ti ti-calendar"></i><span>{% trans "Calendar" %}</span>
                 </a>
                 {% if is_viewer_only %}
-                <a href="{{ spl_report_url }}" title="SPL Report" class="sidebar-link{% if request.path == spl_report_url %} is-active{% endif %}">
-                    <i class="ti ti-report"></i><span>SPL Report</span>
+                <a href="{{ spl_report_url }}" title="{% trans 'SPL Report' %}" class="sidebar-link{% if request.path == spl_report_url %} is-active{% endif %}">
+                    <i class="ti ti-report"></i><span>{% trans "SPL Report" %}</span>
                 </a>
                 {% endif %}
                 {% if not is_viewer_only %}
-                <a href="{{ missing_url }}" title="Missing items" class="sidebar-link{% if request.path == missing_url %} is-active{% endif %}">
-                    <i class="ti ti-alert-triangle"></i><span>Missing items</span>
+                <a href="{{ missing_url }}" title="{% trans 'Missing items' %}" class="sidebar-link{% if request.path == missing_url %} is-active{% endif %}">
+                    <i class="ti ti-alert-triangle"></i><span>{% trans "Missing items" %}</span>
                 </a>
                 {% endif %}
                 {% if can_view_control_panel %}
-                <a href="{{ workload_url }}" title="Workload" class="sidebar-link{% if request.path == workload_url %} is-active{% endif %}">
-                    <i class="ti ti-chart-bar"></i><span>Workload</span>
+                <a href="{{ workload_url }}" title="{% trans 'Workload' %}" class="sidebar-link{% if request.path == workload_url %} is-active{% endif %}">
+                    <i class="ti ti-chart-bar"></i><span>{% trans "Workload" %}</span>
                 </a>
-                <a href="{{ control_panel_url }}" title="Control panel" class="sidebar-link{% if request.path == control_panel_url %} is-active{% endif %}">
-                    <i class="ti ti-settings"></i><span>Control panel</span>
+                <a href="{{ control_panel_url }}" title="{% trans 'Control panel' %}" class="sidebar-link{% if request.path == control_panel_url %} is-active{% endif %}">
+                    <i class="ti ti-settings"></i><span>{% trans "Control panel" %}</span>
+                </a>
+                {% endif %}
+                {% if can_view_events_hub %}
+                <a href="{{ events_hub_url }}" title="{% trans 'Events Hub' %}" class="sidebar-link{% if request.path == events_hub_url %} is-active{% endif %}">
+                    <i class="ti ti-confetti"></i><span>{% trans "Events Hub" %}</span>
+                </a>
+                {% endif %}
+                {% if can_manage_events_panel %}
+                <a href="{{ events_panel_url }}" title="{% trans 'Events Panel' %}" class="sidebar-link{% if request.path == events_panel_url %} is-active{% endif %}">
+                    <i class="ti ti-adjustments"></i><span>{% trans "Events Panel" %}</span>
                 </a>
                 {% endif %}
                 {% comment %} <a href="/admin/" target="_blank" rel="noopener noreferrer" class="sidebar-link">
@@ -83,10 +103,10 @@
                 {% if not is_viewer_only %}
                 <a
                     href="{{ changelog_url }}"
-                    title="What's New{% if latest_release_version %} - v{{ latest_release_version }}{% endif %}"
+                    title="{% trans "What's New" %}{% if latest_release_version %} - v{{ latest_release_version }}{% endif %}"
                     class="sidebar-whats-new{% if request.path == changelog_url %} is-active{% endif %}"
                 >
-                    <i class="ti ti-versions"></i><span>What's New</span>
+                    <i class="ti ti-versions"></i><span>{% trans "What's New" %}</span>
                     {% if latest_release_version %}<span class="sidebar-whats-new-version">v{{ latest_release_version }}</span>{% endif %}
                 </a>
                 {% endif %}
@@ -94,15 +114,33 @@
                     <i class="ti ti-user-circle"></i><span>{{ request.user|display_name }}</span>
                 </span>
 
-                <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch color theme" title="Switch color theme">
+                <button type="button" class="theme-toggle" id="theme-toggle" aria-label="{% trans 'Switch color theme' %}" title="{% trans 'Switch color theme' %}">
                     <i class="ti ti-moon" aria-hidden="true"></i>
-                    <span>Dark mode</span>
+                    <span>{% trans "Dark mode" %}</span>
                 </button>
+
+                <form method="post" action="{% url 'set_language' %}" class="logout-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    {% if LANGUAGE_CODE == "ar" %}
+                        <input type="hidden" name="language" value="en">
+                        <button type="submit" class="theme-toggle" title="{% trans 'Switch to English' %}">
+                            <i class="ti ti-language" aria-hidden="true"></i>
+                            <span>English</span>
+                        </button>
+                    {% else %}
+                        <input type="hidden" name="language" value="ar">
+                        <button type="submit" class="theme-toggle" title="{% trans 'Switch to Arabic' %}">
+                            <i class="ti ti-language" aria-hidden="true"></i>
+                            <span>العربية</span>
+                        </button>
+                    {% endif %}
+                </form>
 
                 <form method="post" action="{% url 'logout' %}" class="logout-form">
                     {% csrf_token %}
-                    <button type="submit" class="logout-btn btn-block" title="Logout">
-                        <i class="ti ti-logout" aria-hidden="true"></i><span>Logout</span>
+                    <button type="submit" class="logout-btn btn-block" title="{% trans 'Logout' %}">
+                        <i class="ti ti-logout" aria-hidden="true"></i><span>{% trans "Logout" %}</span>
                     </button>
                 </form>
             </div>
@@ -112,10 +150,10 @@
     <main class="app-main">
         {% if request.session.impersonator_id %}
             <div class="impersonation-banner">
-                <span><i class="ti ti-user-shield"></i> You're logged in as <strong>{{ request.user|display_name }}</strong> for support purposes.</span>
+                <span><i class="ti ti-user-shield"></i> {% blocktrans with name=request.user|display_name %}You're logged in as <strong>{{ name }}</strong> for support purposes.{% endblocktrans %}</span>
                 <form method="post" action="{% url 'control_panel:stop-impersonating' %}">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-secondary btn-sm">Return to my account</button>
+                    <button type="submit" class="btn btn-secondary btn-sm">{% trans "Return to my account" %}</button>
                 </form>
             </div>
         {% endif %}
@@ -134,18 +172,18 @@
 
         <footer class="system-footer">
             <div class="system-footer-inner">
-                <div class="system-footer-title">Operations · Webook</div>
+                <div class="system-footer-title">{% trans "Operations" %} · Webook</div>
 
                 <div class="system-footer-credits">
-                    <span>Created &amp; implemented: Mohamed Gamal</span>
-                    <span>Team lead: Mohamed Akram</span>
-                    <span>Development: Ayman Al-Basha</span>
-                    <span>Department head: Ahmed Othman</span>
+                    <span>{% trans "Created & implemented" %}: Mohamed Gamal</span>
+                    <span>{% trans "Team lead" %}: Mohamed Akram</span>
+                    <span>{% trans "Development" %}: Ayman Al-Basha</span>
+                    <span>{% trans "Department head" %}: Ahmed Othman</span>
                 </div>
 
                 <div class="system-footer-brand">
                     <img src="{% static 'images/Webook_logo.png' %}" alt="Webook" class="system-footer-logo">
-                    <span>Made with love in KSA · <strong>Webook.com</strong></span>
+                    <span>{% trans "Made with love in KSA" %} · <strong>Webook.com</strong></span>
                 </div>
             </div>
         </footer>
@@ -153,14 +191,14 @@
 </div>
 
 {% if request.user.is_authenticated %}
-    <button type="button" class="fab fab-training" title="Quick tour" aria-controls="training-panel" aria-expanded="false">
+    <button type="button" class="fab fab-training" title="{% trans 'Quick tour' %}" aria-controls="training-panel" aria-expanded="false">
         <i class="ti ti-help"></i>
     </button>
 
     <button
         type="button"
         class="fab fab-feedback"
-        title="Submit feedback &amp; suggestions"
+        title="{% trans 'Submit feedback & suggestions' %}"
         aria-controls="feedback-modal-overlay"
         aria-expanded="false"
         hx-get="{{ feedback_submit_url }}"
@@ -172,27 +210,27 @@
 
     <div id="training-panel" class="training-panel">
         <div class="training-panel-head">
-            <strong>Quick tour</strong>
-            <button type="button" class="training-panel-close" aria-label="Close quick tour">
+            <strong>{% trans "Quick tour" %}</strong>
+            <button type="button" class="training-panel-close" aria-label="{% trans 'Close quick tour' %}">
                 <i class="ti ti-x"></i>
             </button>
         </div>
         {% block page_help %}
-            <p>This system tracks every match from setup to kickoff in one place.</p>
-            <p><strong>Why it helps:</strong> see what is done, overdue, and who owns it at a glance.</p>
+            <p>{% trans "This system tracks every match from setup to kickoff in one place." %}</p>
+            <p><strong>{% trans "Why it helps:" %}</strong> {% trans "see what is done, overdue, and who owns it at a glance." %}</p>
         {% endblock %}
     </div>
 
     <div id="feedback-modal-overlay" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-head">
-                <strong>Submit Feedback</strong>
-                <button type="button" class="modal-close" id="feedback-modal-close" aria-label="Close">
+                <strong>{% trans "Submit Feedback" %}</strong>
+                <button type="button" class="modal-close" id="feedback-modal-close" aria-label="{% trans 'Close' %}">
                     <i class="ti ti-x"></i>
                 </button>
             </div>
             <div id="feedback-modal-body">
-                <p class="help-text">Loading…</p>
+                <p class="help-text">{% trans "Loading…" %}</p>
             </div>
         </div>
     </div>
@@ -200,13 +238,13 @@
     <div id="match-modal-overlay" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-head">
-                <strong>Match Quick View</strong>
-                <button type="button" class="modal-close" id="match-modal-close" aria-label="Close">
+                <strong>{% trans "Match Quick View" %}</strong>
+                <button type="button" class="modal-close" id="match-modal-close" aria-label="{% trans 'Close' %}">
                     <i class="ti ti-x"></i>
                 </button>
             </div>
             <div id="match-modal-body">
-                <p class="help-text">Loading…</p>
+                <p class="help-text">{% trans "Loading…" %}</p>
             </div>
         </div>
     </div>
@@ -219,165 +257,5 @@
 <script src="{% static 'operations/js/feedback-modal.js' %}"></script>
 <script src="{% static 'operations/js/match-modal.js' %}"></script>
 {% block extra_js %}{% endblock %}
-{% comment %} {% load static %}
-{% load display_helpers %}
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="light dark">
-    <title>{% block title %}Webook Event Tracker{% endblock %}</title>
-
-    <link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-    <link rel="stylesheet" href="{% static 'design_tokens.css' %}">
-    <link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=7">
-
-    <meta name="htmx-config" content='{"includeIndicatorStyles": true}'>
-    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
-</head>
-<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-
-    {% url 'operations:dashboard' as dashboard_url %}
-    {% url 'operations:match-list' as match_list_url %}
-    {% url 'operations:missing-requirements-report' as missing_url %}
-    {% url 'operations:spl-report' as spl_report_url %}
-    {% url 'operations:feedback' as feedback_url %}
-    {% url 'operations:feedback-submit' as feedback_submit_url %}
-    {% url 'operations:changelog' as changelog_url %}
-    {% url 'operations:workload-report' as workload_url %}
-    {% url 'control_panel:home' as control_panel_url %}
-
-    <div class="app-shell">
-        {% if request.user.is_authenticated %}
-            <aside class="sidebar">
-                <a class="sidebar-logo" href="{{ dashboard_url }}">
-                    <img src="{% static 'images/Webook_logo.png' %}" alt="Webook" class="sidebar-logo-img">
-                    <span class="sidebar-logo-text">Event Tracker</span>
-                </a>
-
-                <nav class="sidebar-nav">
-                    <a href="{{ dashboard_url }}" class="sidebar-link{% if request.path == dashboard_url %} is-active{% endif %}">
-                        <i class="ti ti-layout-dashboard"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="{{ match_list_url }}" class="sidebar-link{% if request.path == match_list_url %} is-active{% endif %}">
-                        <i class="ti ti-calendar-event"></i>
-                        <span>Matches</span>
-                    </a>
-                    <a href="{{ missing_url }}" class="sidebar-link{% if request.path == missing_url %} is-active{% endif %}">
-                        <i class="ti ti-alert-triangle"></i>
-                        <span>Missing items</span>
-                    </a>
-                    <a href="{{ spl_report_url }}" class="sidebar-link{% if request.path == spl_report_url %} is-active{% endif %}">
-                        <i class="ti ti-report"></i>
-                        <span>SPL Report</span>
-                    </a>
-                    <a href="{{ feedback_url }}" class="sidebar-link{% if request.path == feedback_url %} is-active{% endif %}">
-                        <i class="ti ti-message-2-star"></i>
-                        <span>Feedback</span>
-                    </a>
-                    <a href="{{ changelog_url }}" class="sidebar-link{% if request.path == changelog_url %} is-active{% endif %}">
-                        <i class="ti ti-versions"></i>
-                        <span>What's New</span>
-                    </a>
-                    {% if can_view_control_panel %}
-                        <a href="{{ workload_url }}" class="sidebar-link{% if request.path == workload_url %} is-active{% endif %}">
-                            <i class="ti ti-chart-bar"></i>
-                            <span>Workload</span>
-                        </a>
-                        <a href="{{ control_panel_url }}" class="sidebar-link{% if request.path == control_panel_url %} is-active{% endif %}">
-                            <i class="ti ti-settings"></i>
-                            <span>Control panel</span>
-                        </a>
-                    {% endif %}
-                    <a href="/admin/" target="_blank" rel="noopener noreferrer" class="sidebar-link">
-                        <i class="ti ti-external-link"></i>
-                        <span>Admin</span>
-                    </a>
-                </nav>
-
-                <div class="sidebar-footer">
-                    <span class="user-chip">{{ request.user|display_name }}</span>
-                    <form method="post" action="{% url 'logout' %}" class="logout-form">
-                        {% csrf_token %}
-                        <button type="submit" class="logout-btn btn-block">Logout</button>
-                    </form>
-                </div>
-            </aside>
-        {% endif %}
-
-        <div class="app-main">
-            <div id="toast-container" class="page-toast-wrap">
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="page-toast page-toast-{{ message.tags|default:'info' }}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            </div>
-
-            <div class="container">
-                {% block content %}{% endblock %}
-            </div>
-        </div>
-    </div>
-
-     <footer class="system-footer">
-        <div class="system-footer-inner">
-            <div class="system-footer-title">Operations Section · Webook</div>
-            <div class="system-footer-credits">
-                <span>Created with love, concept and implementation: Mohamed Gamal</span>
-                <span>Team leader and follow-up: Mohamed Akram</span>
-                <span>Discussion and development: Ayman Al-Basha</span>
-                <span>Department head: Ahmed Othman</span>
-            </div>
-            <div class="system-footer-brand">
-                <img src="{% static 'images/Webook_logo.png' %}" alt="Webook" class="system-footer-logo">
-                <span>Made with love, KSA · powered by <strong>Webook.com</strong></span>
-            </div>
-        </div>
-    </footer> 
-
-
-    {% if request.user.is_authenticated %}
-        <button
-            type="button"
-            class="fab fab-training"
-            title="Quick tour"
-            onclick="document.getElementById('training-panel').classList.toggle('is-open')"
-        >
-            <i class="ti ti-help"></i>
-        </button>
-
-        <a href="{{ feedback_submit_url }}" class="fab fab-feedback" title="Submit feedback &amp; suggestions">
-            <i class="ti ti-message-2-star"></i>
-        </a>
-
-        <div id="training-panel" class="training-panel">
-            <div class="training-panel-head">
-                <strong>Quick tour</strong>
-                <button
-                    type="button"
-                    class="training-panel-close"
-                    onclick="document.getElementById('training-panel').classList.remove('is-open')"
-                >
-                    <i class="ti ti-x"></i>
-                </button>
-            </div>
-            {% block page_help %}
-                <p>
-                    This system tracks every match from setup to kickoff in one place: checklists,
-                    ticket readiness, discounts, SPL reporting, and CMS status.
-                </p>
-                <p>
-                    <strong>Why it helps:</strong> see what's done, what's overdue, and who owns it
-                    at a glance — no spreadsheets, no guessing, no training needed to get started.
-                </p>
-            {% endblock %}
-        </div>
-    {% endif %}
-
 </body>
-</html> {% endcomment %}
+</html>

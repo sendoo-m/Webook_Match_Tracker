@@ -5,6 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
+from django.utils.translation import gettext as _
 from django.views.generic import CreateView, TemplateView
 
 from control_panel.models import FeedbackEntry
@@ -53,7 +54,7 @@ class FeedbackSubmitView(LoginRequiredMixin, CreateView):
         response = super().form_valid(form)
         if self.request.headers.get("HX-Request") == "true":
             return HttpResponse(render_to_string("operations/partials/feedback_modal_success.html", {}, request=self.request))
-        messages.success(self.request, "Thanks! Your feedback was submitted for review.")
+        messages.success(self.request, _("Thanks! Your feedback was submitted for review."))
         return response
 
     def form_invalid(self, form):

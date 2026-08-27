@@ -1,4 +1,5 @@
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
 from control_panel.forms import VenueForm
 from matches.models import Venue
@@ -11,9 +12,9 @@ class StadiumListView(PanelListView):
     template_name = "control_panel/venue_list.html"
     context_object_name = "venues"
     ordering = ["name_ar"]
-    page_title = "Stadiums"
+    page_title = _("Stadiums")
     create_url_name = "control_panel:stadium-create"
-    create_label = "Add Stadium"
+    create_label = _("Add Stadium")
 
 
 class StadiumCreateView(PanelCreateView):
@@ -21,8 +22,8 @@ class StadiumCreateView(PanelCreateView):
     form_class = VenueForm
     template_name = "control_panel/venue_form.html"
     success_url = reverse_lazy("control_panel:stadium-list")
-    success_message = "Stadium created."
-    page_title = "Add Stadium"
+    success_message = _("Stadium created.")
+    page_title = _("Add Stadium")
     list_url_name = "control_panel:stadium-list"
 
 
@@ -31,8 +32,8 @@ class StadiumUpdateView(PanelUpdateView):
     form_class = VenueForm
     template_name = "control_panel/venue_form.html"
     success_url = reverse_lazy("control_panel:stadium-list")
-    success_message = "Stadium updated."
-    page_title = "Edit Stadium"
+    success_message = _("Stadium updated.")
+    page_title = _("Edit Stadium")
     list_url_name = "control_panel:stadium-list"
 
 

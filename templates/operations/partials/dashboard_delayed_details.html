@@ -1,8 +1,9 @@
+{% load i18n %}
 <div class="card panel delayed-details-panel" id="delayed-details-panel">
     <div class="dashboard-section-head">
         <div>
             <h3 class="panel-title" style="margin:0;">
-                Delayed items - <a href="{% url 'operations:match-detail' match.pk %}">{{ match.title_en }}</a>
+                {% trans "Delayed items" %} - <a href="{% url 'operations:match-detail' match.pk %}">{{ match.title_en }}</a>
             </h3>
         </div>
         <button
@@ -11,7 +12,7 @@
             style="padding:4px 8px; font-size:12px;"
             onclick="document.getElementById('delayed-details-panel').remove()"
         >
-            Close
+            {% trans "Close" %}
         </button>
     </div>
 
@@ -19,9 +20,9 @@
         <table>
             <thead>
                 <tr>
-                    <th>Category</th>
-                    <th>Item</th>
-                    <th>Delay Reason</th>
+                    <th>{% trans "Category" %}</th>
+                    <th>{% trans "Item" %}</th>
+                    <th>{% trans "Delay Reason" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,7 +39,7 @@
                         </td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="3">No delayed items for this match.</td></tr>
+                    <tr><td colspan="3">{% trans "No delayed items for this match." %}</td></tr>
                 {% endfor %}
             </tbody>
         </table>

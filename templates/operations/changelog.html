@@ -1,18 +1,19 @@
 {% extends "operations/base.html" %}
+{% load i18n %}
 
-{% block title %}What's New{% endblock %}
+{% block title %}{% trans "What's New" %}{% endblock %}
 
 {% block page_help %}
     <p>
-        This is the <strong>What's New</strong> page — a version-by-version log of everything
-        that's changed in the system, newest first.
+        {% blocktrans %}This is the <strong>What's New</strong> page — a version-by-version log of everything
+        that's changed in the system, newest first.{% endblocktrans %}
     </p>
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1 class="page-title">What's New</h1>
-    <p class="page-subtitle">A running log of every release and what changed in it.</p>
+    <h1 class="page-title">{% trans "What's New" %}</h1>
+    <p class="page-subtitle">{% trans "A running log of every release and what changed in it." %}</p>
 </div>
 
 <div class="dashboard-list">
@@ -29,7 +30,7 @@
             </ul>
         </div>
     {% empty %}
-        <p class="help-text">No releases logged yet.</p>
+        <p class="help-text">{% trans "No releases logged yet." %}</p>
     {% endfor %}
 </div>
 {% endblock %}

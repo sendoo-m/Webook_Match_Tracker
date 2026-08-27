@@ -1,7 +1,8 @@
 {% extends "operations/base.html" %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Login{% endblock %}
+{% block title %}{% trans "Login" %}{% endblock %}
 
 {% block content %}
 <div class="login-wrap">
@@ -14,13 +15,13 @@
             >
         </div>
 
-        <h1 class="page-title">Webook Event Tracker</h1>
-        <p class="page-subtitle" style="margin-bottom:var(--space-8);">Sign in to manage match preparation.</p>
+        <h1 class="page-title">{% trans "Webook Event Tracker" %}</h1>
+        <p class="page-subtitle" style="margin-bottom:var(--space-8);">{% trans "Sign in to manage match preparation." %}</p>
 
         {% if form.errors %}
             <div class="alert-card alert-danger" style="margin-bottom:var(--space-6);">
-                <div class="alert-title">Login failed</div>
-                <p class="help-text" style="margin:0;">Check your username and password and try again.</p>
+                <div class="alert-title">{% trans "Login failed" %}</div>
+                <p class="help-text" style="margin:0;">{% trans "Check your username and password and try again." %}</p>
             </div>
         {% endif %}
 
@@ -28,7 +29,7 @@
             {% csrf_token %}
 
             <div class="form-group">
-                <label for="id_username">Username</label>
+                <label for="id_username">{% trans "Username" %}</label>
                 <input
                     type="text"
                     name="username"
@@ -41,7 +42,7 @@
             </div>
 
             <div class="form-group">
-                <label for="id_password">Password</label>
+                <label for="id_password">{% trans "Password" %}</label>
                 <input
                     type="password"
                     name="password"
@@ -56,7 +57,7 @@
                 <input type="hidden" name="next" value="{{ next }}">
             {% endif %}
 
-            <button type="submit" class="btn btn-block">Login</button>
+            <button type="submit" class="btn btn-block">{% trans "Login" %}</button>
         </form>
     </div>
 </div>

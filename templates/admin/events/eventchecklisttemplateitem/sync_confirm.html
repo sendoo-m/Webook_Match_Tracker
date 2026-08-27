@@ -1,0 +1,26 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div style="max-width: 760px;">
+    <h1>{% trans "Sync event checklist templates" %}</h1>
+
+    <p>
+        {% trans "This action will apply your latest checklist template changes to all existing events." %}
+    </p>
+
+    <ul>
+        <li>{% trans "New active template items will be added to events that do not have them." %}</li>
+        <li>{% trans "Inactive template items will deactivate their related event checklist items." %}</li>
+        <li>{% trans "Previously inactive event checklist items can be reactivated if the template becomes active again." %}</li>
+    </ul>
+
+    <form method="post" style="margin-top: 20px;">
+        {% csrf_token %}
+        <input type="submit" value="{% trans 'Run sync' %}" class="default">
+        <a href="{% url 'admin:events_eventchecklisttemplateitem_changelist' %}" class="button" style="margin-left: 8px;">
+            {% trans "Cancel" %}
+        </a>
+    </form>
+</div>
+{% endblock %}

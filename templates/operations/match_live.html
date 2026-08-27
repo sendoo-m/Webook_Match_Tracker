@@ -1,6 +1,7 @@
 {% extends "operations/base.html" %}
+{% load i18n %}
 
-{% block title %}Live · {{ match.title_en }}{% endblock %}
+{% block title %}{% blocktrans with title=match.title_en %}Live · {{ title }}{% endblocktrans %}{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -11,8 +12,8 @@
         </div>
 
         <div class="filter-bar">
-            <a class="btn btn-secondary" href="{% url 'operations:match-detail' match.pk %}">Full Checklist</a>
-            <a class="btn btn-secondary" href="{% url 'operations:match-outstanding' match.pk %}">Outstanding Items</a>
+            <a class="btn btn-secondary" href="{% url 'operations:match-detail' match.pk %}">{% trans "Full Checklist" %}</a>
+            <a class="btn btn-secondary" href="{% url 'operations:match-outstanding' match.pk %}">{% trans "Outstanding Items" %}</a>
         </div>
     </div>
 </div>
@@ -27,30 +28,30 @@
         {% if is_live_now %}
             <span class="live-hero-badge"><span class="live-dot"></span>LIVE</span>
         {% else %}
-            <span class="mini-badge mini-badge-neutral">Not Live Yet</span>
+            <span class="mini-badge mini-badge-neutral">{% trans "Not Live Yet" %}</span>
         {% endif %}
     </div>
 
     <div class="live-meta-grid">
         <div class="live-meta-item">
-            <div class="help-text">Kickoff</div>
+            <div class="help-text">{% trans "Kickoff" %}</div>
             <div class="meta-value">{{ match.event_date }} {{ match.match_start_time }}</div>
         </div>
 
         <div class="live-meta-item">
-            <div class="help-text">Gates Open</div>
+            <div class="help-text">{% trans "Gates Open" %}</div>
             <div class="meta-value">{{ match.gates_open_time|default:"—" }}</div>
         </div>
 
         <div class="live-meta-item">
-            <div class="help-text">Source</div>
+            <div class="help-text">{% trans "Source" %}</div>
             <div class="meta-value">
-                {% if published_is_live %}Published on CMS{% elif auto_live_by_ops %}Auto-live (20-day window){% else %}—{% endif %}
+                {% if published_is_live %}{% trans "Published on CMS" %}{% elif auto_live_by_ops %}{% trans "Auto-live (20-day window)" %}{% else %}—{% endif %}
             </div>
         </div>
 
         <div class="live-meta-item">
-            <div class="help-text">Needs Attention</div>
+            <div class="help-text">{% trans "Needs Attention" %}</div>
             <div class="meta-value">{{ attention_items|length }}</div>
         </div>
     </div>
@@ -60,8 +61,8 @@
 
 <div class="card panel">
     <div class="dashboard-section-head">
-        <h2 class="panel-title">Needs Attention While Live</h2>
-        <span class="help-text">Delayed items and post-match tasks</span>
+        <h2 class="panel-title">{% trans "Needs Attention While Live" %}</h2>
+        <span class="help-text">{% trans "Delayed items and post-match tasks" %}</span>
     </div>
 
     {% if attention_items %}
@@ -69,7 +70,7 @@
             {% include "operations/partials/checklist_item_card.html" with item=item selected_filter="all" %}
         {% endfor %}
     {% else %}
-        <div class="empty-state">Nothing needs attention right now.</div>
+        <div class="empty-state">{% trans "Nothing needs attention right now." %}</div>
     {% endif %}
 </div>
 

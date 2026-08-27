@@ -1,20 +1,22 @@
 {% extends "operations/base.html" %}
+{% load i18n %}
 
-{% block title %}Submit Feedback{% endblock %}
+{% block title %}{% trans "Submit Feedback" %}{% endblock %}
 
 {% block page_help %}
     <p>
-        Use this form to <strong>submit a new suggestion</strong> — a bug, an idea, or anything
-        that could work better. It goes straight to the team for review.
+        {% blocktrans %}Use this form to <strong>submit a new suggestion</strong> — a bug, an idea, or anything
+        that could work better. It goes straight to the team for review.{% endblocktrans %}
     </p>
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1 class="page-title">Submit Feedback</h1>
+    <h1 class="page-title">{% trans "Submit Feedback" %}</h1>
     <p class="page-subtitle">
-        Got an idea, a bug, or something that could be better? Send it here — it goes straight
-        to the team for review. See <a href="{% url 'operations:feedback' %}">past feedback and decisions</a>.
+        {% url 'operations:feedback' as feedback_url %}
+        {% blocktrans %}Got an idea, a bug, or something that could be better? Send it here — it goes straight
+        to the team for review. See <a href="{{ feedback_url }}">past feedback and decisions</a>.{% endblocktrans %}
     </p>
 </div>
 
@@ -32,8 +34,8 @@
         {% endfor %}
 
         <div class="form-actions">
-            <a class="btn btn-secondary" href="{% url 'operations:feedback' %}">Cancel</a>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <a class="btn btn-secondary" href="{% url 'operations:feedback' %}">{% trans "Cancel" %}</a>
+            <button type="submit" class="btn btn-primary">{% trans "Submit" %}</button>
         </div>
     </form>
 </div>

@@ -1,0 +1,36 @@
+{% extends "events/panel/list.html" %}
+{% load i18n %}
+
+{% block page_subtitle %}
+    <p class="page-subtitle">{% trans "The criteria each event must meet before it can be sent to CMS." %}</p>
+{% endblock %}
+
+{% block table_head %}
+    <th>{% trans "Title" %}</th>
+    <th>{% trans "Category" %}</th>
+    <th>{% trans "Order" %}</th>
+    <th>{% trans "Required" %}</th>
+    <th>{% trans "Active" %}</th>
+    <th></th>
+{% endblock %}
+
+{% block table_body %}
+    {% for item in items %}
+        <tr>
+            <td>{{ item.title }}</td>
+            <td>{{ item.category.name }}</td>
+            <td>{{ item.sort_order }}</td>
+            <td>{% if item.is_required %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</td>
+            <td>
+                <span class="badge {% if item.is_active %}badge-published{% else %}badge-draft{% endif %}">
+                    {% if item.is_active %}{% trans "Active" %}{% else %}{% trans "Inactive" %}{% endif %}
+                </span>
+            </td>
+            <td>
+                <a class="btn btn-secondary btn-sm" href="{% url 'events:checklist-item-update' item.pk %}">{% trans "Edit" %}</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="6">{% trans "No checklist items found." %}</td></tr>
+    {% endfor %}
+{% endblock %}

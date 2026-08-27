@@ -1,9 +1,10 @@
 {% extends "admin/change_list.html" %}
+{% load i18n %}
 
 {% block object-tools-items %}
     <li>
         <a href="{% url 'admin:checklists_checklisttemplateitem_sync' %}">
-            Sync checklist templates
+            {% trans "Sync checklist templates" %}
         </a>
     </li>
     {{ block.super }}

@@ -1,9 +1,10 @@
 {# templates/operations/partials/match_status_badge.html #}
+{% load i18n %}
 <div id="match-status-box" class="card panel match-status-panel" hx-swap-oob="true">
     <div class="match-status-head">
         <div>
-            <h2 class="panel-title">Match Status</h2>
-            <p class="help-text">Status is updated automatically based on active required checklist items.</p>
+            <h2 class="panel-title">{% trans "Match Status" %}</h2>
+            <p class="help-text">{% trans "Status is updated automatically based on active required checklist items." %}</p>
         </div>
         <span class="badge badge-lg badge-{{ match.cms_status|slugify }}">
             {{ match.get_cms_status_display }}
@@ -13,7 +14,7 @@
     {% if match.cms_status == match_status.PUBLISHED %}
         <div class="match-status-live-banner">
             <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
-            <span class="help-text">Published matches are shown as live on the dashboard.</span>
+            <span class="help-text">{% trans "Published matches are shown as live on the dashboard." %}</span>
         </div>
     {% endif %}
 
@@ -28,17 +29,17 @@
             >
                 {% csrf_token %}
                 <button type="submit" class="btn btn-primary">
-                    <i class="ti ti-send"></i> Send to CMS
+                    <i class="ti ti-send"></i> {% trans "Send to CMS" %}
                 </button>
-                <span id="send-to-cms-loading" class="inline-indicator">Sending...</span>
+                <span id="send-to-cms-loading" class="inline-indicator">{% trans "Sending..." %}</span>
             </form>
         </div>
     {% elif match.cms_status == match_status.SENT_TO_CMS %}
         <div class="match-status-send-row">
             <span class="help-text">
-                <i class="ti ti-circle-check"></i> Sent
-                {% if match.sent_to_cms_at %} at {{ match.sent_to_cms_at }}{% endif %}
-                {% if match.sent_to_cms_by %} by {{ match.sent_to_cms_by }}{% endif %}
+                <i class="ti ti-circle-check"></i> {% trans "Sent" %}
+                {% if match.sent_to_cms_at %} {% blocktrans with sent_at=match.sent_to_cms_at %}at {{ sent_at }}{% endblocktrans %}{% endif %}
+                {% if match.sent_to_cms_by %} {% blocktrans with sent_by=match.sent_to_cms_by %}by {{ sent_by }}{% endblocktrans %}{% endif %}
             </span>
         </div>
     {% endif %}
@@ -48,9 +49,9 @@
             <div class="cms-control-head">
                 <i class="ti ti-adjustments-alt cms-control-icon"></i>
                 <div>
-                    <div class="block-title">CMS Status Control</div>
+                    <div class="block-title">{% trans "CMS Status Control" %}</div>
                     <p class="help-text">
-                        Choosing <strong>Published</strong> here will make the match appear live on the dashboard immediately.
+                        {% blocktrans %}Choosing <strong>Published</strong> here will make the match appear live on the dashboard immediately.{% endblocktrans %}
                     </p>
                 </div>
             </div>
@@ -64,7 +65,7 @@
 
                 <div class="cms-control-row">
                     <div class="field-group">
-                        <label for="cms_status">CMS Status</label>
+                        <label for="cms_status">{% trans "CMS Status" %}</label>
                         <select name="cms_status" id="cms_status">
                             {% for value, label in match_status.choices %}
                                 <option value="{{ value }}" {% if match.cms_status == value %}selected{% endif %}>
@@ -75,7 +76,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-primary">
-                        Update CMS Status
+                        {% trans "Update CMS Status" %}
                     </button>
                 </div>
             </form>

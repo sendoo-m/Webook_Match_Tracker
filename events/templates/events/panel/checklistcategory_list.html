@@ -1,0 +1,26 @@
+{% extends "events/panel/list.html" %}
+{% load i18n %}
+
+{% block page_subtitle %}
+    <p class="page-subtitle">{% trans "Categories group checklist items on the event checklist (e.g. Tickets, KVs)." %}</p>
+{% endblock %}
+
+{% block table_head %}
+    <th>{% trans "Name" %}</th>
+    <th>{% trans "Order" %}</th>
+    <th></th>
+{% endblock %}
+
+{% block table_body %}
+    {% for category in categories %}
+        <tr>
+            <td>{{ category.name }}</td>
+            <td>{{ category.sort_order }}</td>
+            <td>
+                <a class="btn btn-secondary btn-sm" href="{% url 'events:checklist-category-update' category.pk %}">{% trans "Edit" %}</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="3">{% trans "No checklist categories found." %}</td></tr>
+    {% endfor %}
+{% endblock %}

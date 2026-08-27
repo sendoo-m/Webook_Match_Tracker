@@ -1,0 +1,96 @@
+{# events/panel/event_import.html #}
+{% extends "operations/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Import Events" %} · {% trans "Events Panel" %}{% endblock %}
+
+{% block content %}
+{% include "events/panel/_subnav.html" %}
+
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">{% trans "Import Events" %}</h1>
+            <p class="page-subtitle">
+                {% blocktrans %}Upload a CSV or Excel file keyed by slug (existing slugs are updated, new ones are created).{% endblocktrans %}
+                <a href="{% url 'events:event-template' %}">{% trans "Download a blank template" %}</a> {% trans "or" %}
+                <a href="{% url 'events:event-export' %}">{% trans "export the current events" %}</a> {% trans "to see the expected columns." %}
+            </p>
+        </div>
+        <div class="filter-bar">
+            <a class="btn btn-secondary" href="{% url 'events:event-list' %}">{% trans "Back to Events" %}</a>
+        </div>
+    </div>
+</div>
+
+<div class="card panel" style="max-width:640px;">
+    <form method="post" enctype="multipart/form-data" class="form-stack">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}<p class="help-text">{{ field.help_text }}</p>{% endif %}
+                {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{% trans "Import" %}</button>
+        </div>
+    </form>
+</div>
+
+{% if result %}
+<div class="card panel">
+    <h2 class="panel-title">{% trans "Import Results" %}</h2>
+    <p class="help-text">
+        {% blocktrans with created=result.created updated=result.updated skipped=result.skipped|length errors=result.errors|length %}Created: {{ created }} · Updated: {{ updated }} ·
+        Skipped (filtered out): {{ skipped }} · Errors: {{ errors }}{% endblocktrans %}
+    </p>
+
+    {% if result.errors %}
+        <h3 class="panel-title">{% trans "Errors" %}</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>{% trans "Row" %}</th>
+                        <th>{% trans "Problem" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row_number, message in result.errors %}
+                        <tr>
+                            <td>{{ row_number }}</td>
+                            <td>{{ message }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    {% if result.skipped %}
+        <h3 class="panel-title">{% trans "Skipped (outside selected category filter)" %}</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>{% trans "Row" %}</th>
+                        <th>{% trans "Reason" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row_number, message in result.skipped %}
+                        <tr>
+                            <td>{{ row_number }}</td>
+                            <td>{{ message }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

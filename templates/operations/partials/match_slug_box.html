@@ -1,5 +1,6 @@
+{% load i18n %}
 <div class="card meta-box" id="match-slug-box">
-    <div class="meta-label">Slug</div>
+    <div class="meta-label">{% trans "Slug" %}</div>
     <div class="meta-value" style="display:flex; align-items:center; gap:8px; justify-content:space-between;">
         <span>{{ match.slug }}</span>
         {% if can_edit_slug %}
@@ -10,7 +11,7 @@
                 hx-target="#match-slug-box"
                 hx-swap="outerHTML"
             >
-                Edit
+                {% trans "Edit" %}
             </button>
         {% endif %}
     </div>

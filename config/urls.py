@@ -44,8 +44,11 @@ urlpatterns = [
     ),
     path("logout/", auth_views.LogoutView.as_view(next_page="login"), name="logout"),
 
+    path("i18n/", include("django.conf.urls.i18n")),
+
     path("operations/", include("operations.urls")),
     path("control-panel/", include("control_panel.urls")),
+    path("events/", include("events.urls")),
     # path("", include("matches.urls")),
 
     path("", lambda request: redirect("operations:dashboard")),

@@ -2,6 +2,7 @@
 Usage: {% include "operations/partials/club_chip.html" with club=match.home_club role="home" %}
 role is "home" or "away" - just picks which icon to show next to the logo.
 {% endcomment %}
+{% load display_helpers %}
 <span class="club-chip">
     {% if club.logo %}
         <img src="{{ club.logo.url }}" alt="{{ club.name_en }}" class="club-chip-logo">
@@ -11,5 +12,5 @@ role is "home" or "away" - just picks which icon to show next to the logo.
     {% elif role == "away" %}
         <i class="ti ti-plane-departure club-chip-role-icon" title="Away team"></i>
     {% endif %}
-    <span>{{ club.name_ar|default:club.name_en }}</span>
+    <span>{{ club|localized_name }}</span>
 </span>

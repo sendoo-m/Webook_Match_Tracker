@@ -1,5 +1,6 @@
 <!-- File: templates/operations/partials/activity_log_page.html -->
 <!-- Path: config/templates/operations/partials/activity_log_page.html -->
+{% load i18n %}
 <div id="activity-log-more">
     <div class="timeline-list">
         {% for log in activity_logs %}
@@ -15,7 +16,7 @@
                 hx-target="#activity-log-more"
                 hx-swap="outerHTML"
             >
-                Load more
+                {% trans "Load more" %}
             </button>
         </div>
     {% endif %}

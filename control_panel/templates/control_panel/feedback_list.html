@@ -1,19 +1,20 @@
 {# control_panel/feedback_list.html #}
 {% extends "control_panel/list.html" %}
+{% load i18n %}
 
 {% block page_subtitle %}
+    {% url 'operations:feedback' as feedback_url %}
     <p class="page-subtitle">
-        Manage entries shown on the public Feedback page.
-        <a href="{% url 'operations:feedback' %}">View the public page</a>.
+        {% blocktrans %}Manage entries shown on the public Feedback page. <a href="{{ feedback_url }}">View the public page</a>.{% endblocktrans %}
     </p>
 {% endblock %}
 
 {% block table_head %}
-    <th>Title</th>
-    <th>Category</th>
-    <th>Submitted By</th>
-    <th>Status</th>
-    <th>Updated</th>
+    <th>{% trans "Title" %}</th>
+    <th>{% trans "Category" %}</th>
+    <th>{% trans "Submitted By" %}</th>
+    <th>{% trans "Status" %}</th>
+    <th>{% trans "Updated" %}</th>
     <th></th>
 {% endblock %}
 
@@ -30,10 +31,10 @@
             </td>
             <td>{{ entry.updated_at|date:"M j, Y" }}</td>
             <td>
-                <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:feedback-update' entry.pk %}">Edit</a>
+                <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:feedback-update' entry.pk %}">{% trans "Edit" %}</a>
             </td>
         </tr>
     {% empty %}
-        <tr><td colspan="6">No feedback entries yet.</td></tr>
+        <tr><td colspan="6">{% trans "No feedback entries yet." %}</td></tr>
     {% endfor %}
 {% endblock %}

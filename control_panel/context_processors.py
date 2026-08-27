@@ -1,5 +1,6 @@
 # control_panel/context_processors.py
 
+from events.permissions import can_manage_events_panel, can_view_events_hub
 from operations.permissions import can_manage_control_panel, is_viewer_only
 
 from .design_tokens import LIGHT_TOKENS
@@ -13,6 +14,8 @@ def panel_nav_flag(request):
         "can_view_control_panel": can_manage_control_panel(user),
         "is_viewer_only": is_viewer_only(user),
         "latest_release_version": latest_release.version if latest_release else None,
+        "can_view_events_hub": can_view_events_hub(user),
+        "can_manage_events_panel": can_manage_events_panel(user),
     }
 
 

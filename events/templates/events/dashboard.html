@@ -1,0 +1,56 @@
+{# events/dashboard.html #}
+{% extends "operations/base.html" %}
+{% load display_helpers %}
+{% load i18n %}
+
+{% block title %}{% trans "Events Hub" %}{% endblock %}
+
+{% block page_help %}
+    <p>
+        {% blocktrans %}This is your <strong>Events Hub</strong> — every non-football event (Concerts, Seasons,
+        Experiences, Dining, and more) you have access to, grouped by category.{% endblocktrans %}
+    </p>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">{% trans "Events Hub" %}</h1>
+    <p class="page-subtitle">
+        {% blocktrans count counter=total_upcoming %}{{ counter }} upcoming event{% plural %}{{ counter }} upcoming events{% endblocktrans %}
+        {% if live_count %} · {% blocktrans count counter=live_count %}{{ counter }} live now{% plural %}{{ counter }} live now{% endblocktrans %}{% endif %}
+    </p>
+</div>
+
+{% for group, cards in cards_by_group %}
+    <div class="card panel dashboard-section">
+        <div class="dashboard-section-head">
+            <h2 class="panel-title">{{ group|localized_name }}</h2>
+            <span class="help-text">{% blocktrans count counter=cards|length %}{{ counter }} event{% plural %}{{ counter }} events{% endblocktrans %}</span>
+        </div>
+
+        <div class="dashboard-list">
+            {% for card in cards %}
+                <a href="{% url 'events:event-detail' card.event.pk %}" class="card report-match-card" style="display:block;">
+                    <div class="match-row-top">
+                        <div>
+                            <strong>{{ card.event.title_ar|default:card.event.title_en }}</strong>
+                            <div class="help-text">{{ card.event.category|localized_name }} · {{ card.event.event_date|default:"TBC" }} {{ card.event.start_time }}</div>
+                        </div>
+                        <div class="mini-badges">
+                            {% if card.is_live_now %}
+                                <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
+                            {% else %}
+                                <span class="badge badge-{{ card.event.cms_status|slugify }}">{{ card.event.get_cms_status_display }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+{% empty %}
+    <div class="card panel">
+        <p class="help-text">{% trans "No upcoming events found. Check back later or ask an admin to grant you category access." %}</p>
+    </div>
+{% endfor %}
+{% endblock %}

@@ -1,4 +1,5 @@
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
 from control_panel.forms import ClubForm
 from matches.models import Club
@@ -11,9 +12,9 @@ class TeamListView(PanelListView):
     template_name = "control_panel/club_list.html"
     context_object_name = "clubs"
     ordering = ["name_ar"]
-    page_title = "Teams"
+    page_title = _("Teams")
     create_url_name = "control_panel:team-create"
-    create_label = "Add Team"
+    create_label = _("Add Team")
 
 
 class TeamCreateView(PanelCreateView):
@@ -21,8 +22,8 @@ class TeamCreateView(PanelCreateView):
     form_class = ClubForm
     template_name = "control_panel/club_form.html"
     success_url = reverse_lazy("control_panel:team-list")
-    success_message = "Team created."
-    page_title = "Add Team"
+    success_message = _("Team created.")
+    page_title = _("Add Team")
     list_url_name = "control_panel:team-list"
 
 
@@ -31,8 +32,8 @@ class TeamUpdateView(PanelUpdateView):
     form_class = ClubForm
     template_name = "control_panel/club_form.html"
     success_url = reverse_lazy("control_panel:team-list")
-    success_message = "Team updated."
-    page_title = "Edit Team"
+    success_message = _("Team updated.")
+    page_title = _("Edit Team")
     list_url_name = "control_panel:team-list"
 
 

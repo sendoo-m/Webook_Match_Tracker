@@ -6,6 +6,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views import View
 
 from matches.models import Match
@@ -29,8 +30,8 @@ class SendToCMSView(LoginRequiredMixin, MatchScopedQuerysetMixin, View):
         match.refresh_from_db()
         if match.cms_status != Match.Status.READY_FOR_CMS:
             if request.headers.get("HX-Request") == "true":
-                return HttpResponseBadRequest("Match is not ready for CMS.")
-            messages.error(request, "Match is not ready for CMS.")
+                return HttpResponseBadRequest(_("Match is not ready for CMS."))
+            messages.error(request, _("Match is not ready for CMS."))
             return redirect("operations:match-detail", pk=match.pk)
         match.cms_status = Match.Status.SENT_TO_CMS
         match.sent_to_cms_at = timezone.now()
@@ -50,7 +51,7 @@ class SendToCMSView(LoginRequiredMixin, MatchScopedQuerysetMixin, View):
             )
             activity_html = render_to_string("operations/partials/activity_log_timeline.html", activity_context, request=request)
             return HttpResponse(progress_html + status_html + activity_html)
-        messages.success(request, "Match sent to CMS successfully.")
+        messages.success(request, _("Match sent to CMS successfully."))
         return redirect("operations:match-detail", pk=match.pk)
 
 class MatchCMSStatusUpdateView(LoginRequiredMixin, MatchScopedQuerysetMixin, View):
@@ -61,8 +62,8 @@ class MatchCMSStatusUpdateView(LoginRequiredMixin, MatchScopedQuerysetMixin, Vie
         allowed_statuses = {choice[0] for choice in Match.Status.choices}
         if new_status not in allowed_statuses:
             if request.headers.get("HX-Request") == "true":
-                return HttpResponseBadRequest("Invalid CMS status.")
-            messages.error(request, "Invalid CMS status.")
+                return HttpResponseBadRequest(_("Invalid CMS status."))
+            messages.error(request, _("Invalid CMS status."))
             return redirect("operations:match-detail", pk=match.pk)
         old_status = match.cms_status
         match.cms_status = new_status
@@ -107,5 +108,5 @@ class MatchCMSStatusUpdateView(LoginRequiredMixin, MatchScopedQuerysetMixin, Vie
         response_html = progress_html + status_html + activity_html
         if request.headers.get("HX-Request") == "true":
             return HttpResponse(response_html + spl_info_html)
-        messages.success(request, "CMS status updated successfully.")
+        messages.success(request, _("CMS status updated successfully."))
         return redirect("operations:match-detail", pk=match.pk)

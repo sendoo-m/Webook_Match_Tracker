@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 
 import openpyxl
 
-from checklists.models import ChecklistTemplateItem, MatchChecklistItem
+from checklists.services import attach_default_checklist_items
 from matches.models import Club, Competition, Match, Venue
 
 RIYADH_TZ = ZoneInfo("Asia/Riyadh")
@@ -26,7 +26,6 @@ EXPORT_FIELDS = [
     "match_end_time",
     "gates_open_time",
     "sale_starts_at",
-    "cms_status",
 ]
 
 
@@ -47,7 +46,6 @@ def _match_row_values(match):
         match.match_end_time.strftime("%H:%M") if match.match_end_time else "",
         match.gates_open_time.strftime("%H:%M") if match.gates_open_time else "",
         match.sale_starts_at.astimezone(RIYADH_TZ).strftime("%Y-%m-%d %H:%M") if match.sale_starts_at else "",
-        match.cms_status,
     ]
 
 
@@ -311,23 +309,14 @@ def _import_row(row, row_number, result, competition_filter_id=None):
         return
 
     if created:
-        active_templates = ChecklistTemplateItem.objects.filter(is_active=True)
-        MatchChecklistItem.objects.bulk_create(
-            [
-                MatchChecklistItem(match=match, template_item=template)
-                for template in active_templates
-            ]
-        )
+        attach_default_checklist_items(match)
         result.created += 1
     else:
         result.updated += 1
 
 
 def import_matches_csv(file_obj, competition_filter_id=None):
-    """
-    Row-by-row update_or_create keyed on slug. cms_status is intentionally
-    never written here - it's workflow-managed (CMS handoff), not bulk-importable.
-    """
+    """Row-by-row update_or_create keyed on slug."""
     result = ImportResult()
     text_stream = io.TextIOWrapper(file_obj, encoding="utf-8-sig")
     reader = csv.DictReader(text_stream)

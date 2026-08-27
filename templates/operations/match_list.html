@@ -1,33 +1,32 @@
 {% extends "operations/base.html" %}
 {% load static %}
+{% load display_helpers %}
+{% load i18n %}
 
-{% block title %}Matches{% endblock %}
+{% block title %}{% trans "Matches" %}{% endblock %}
 
 {% block page_help %}
     <p>
-        This is the <strong>Matches</strong> list — every match you have access to, with its
-        readiness progress, CMS status, venue, and any active discount at a glance.
+        {% blocktrans %}This is the <strong>Matches</strong> list — every match you have access to, with its
+        readiness progress, CMS status, venue, and any active discount at a glance.{% endblocktrans %}
     </p>
     <p>
-        Click a match card to flip it and see its status, progress, venue and discount on the
-        back - "Full details" opens the match itself. Matches already over are hidden by default
-        - use the "Period" filter and switch to "Past Matches" to see them, and use the "Round"
-        filter to jump straight to a round.
+        {% trans 'Click a match card to flip it and see its status, progress, venue and discount on the back - "Full details" opens the match itself. Matches already over are hidden by default - use the "Period" filter and switch to "Past Matches" to see them, and use the "Round" filter to jump straight to a round.' %}
     </p>
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1 class="page-title">Matches</h1>
-    <p class="page-subtitle">Browse, filter, and open each match checklist. Past matches are hidden by default.</p>
+    <h1 class="page-title">{% trans "Matches" %}</h1>
+    <p class="page-subtitle">{% trans "Browse, filter, and open each match checklist. Past matches are hidden by default." %}</p>
 </div>
 
 <div class="card panel">
-    <form method="get" class="filters">
+    <form method="get" class="filters" data-autosubmit>
         <div class="field-group">
-            <label>Status</label>
+            <label>{% trans "Status" %}</label>
             <select name="status">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for value, label in status_choices %}
                     <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
@@ -35,56 +34,56 @@
         </div>
 
         <div class="field-group">
-            <label>Home Team</label>
+            <label>{% trans "Home Team" %}</label>
             <select name="home_club">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for club in clubs %}
-                    <option value="{{ club.id }}" {% if selected_home_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club.name_ar }}</option>
+                    <option value="{{ club.id }}" {% if selected_home_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="field-group">
-            <label>Away Team</label>
+            <label>{% trans "Away Team" %}</label>
             <select name="away_club">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for club in clubs %}
-                    <option value="{{ club.id }}" {% if selected_away_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club.name_ar }}</option>
+                    <option value="{{ club.id }}" {% if selected_away_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="field-group">
-            <label>Competition</label>
+            <label>{% trans "Competition" %}</label>
             <select name="competition">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for competition in competitions %}
-                    <option value="{{ competition.id }}" {% if selected_competition == competition.id|stringformat:"s" %}selected{% endif %}>{{ competition.name_ar }}</option>
+                    <option value="{{ competition.id }}" {% if selected_competition == competition.id|stringformat:"s" %}selected{% endif %}>{{ competition|localized_name }}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="field-group">
-            <label>Round</label>
+            <label>{% trans "Round" %}</label>
             <select name="round">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for r in available_rounds %}
-                    <option value="{{ r }}" {% if selected_round == r|stringformat:"s" %}selected{% endif %}>Round {{ r }}</option>
+                    <option value="{{ r }}" {% if selected_round == r|stringformat:"s" %}selected{% endif %}>{% blocktrans with number=r %}Round {{ number }}{% endblocktrans %}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="field-group">
-            <label>Period</label>
+            <label>{% trans "Period" %}</label>
             <select name="period">
-                <option value="upcoming" {% if selected_period == "upcoming" %}selected{% endif %}>Upcoming</option>
-                <option value="past" {% if selected_period == "past" %}selected{% endif %}>Past Matches</option>
+                <option value="upcoming" {% if selected_period == "upcoming" %}selected{% endif %}>{% trans "Upcoming" %}</option>
+                <option value="past" {% if selected_period == "past" %}selected{% endif %}>{% trans "Past Matches" %}</option>
             </select>
         </div>
 
         <div class="field-group">
             <label>&nbsp;</label>
-            <button type="submit">Apply Filters</button>
+            <button type="submit">{% trans "Apply Filters" %}</button>
         </div>
     </form>
 </div>
@@ -167,14 +166,15 @@ card grid block below and un-comment this.
         <div class="match-flip-card" tabindex="0" role="button" aria-expanded="false" title="{{ match.title_en }}">
             <div class="match-flip-card-inner">
                 <div class="match-flip-card-face match-flip-card-front">
-                    <div class="match-flip-card-round">Round {{ match.round_number|default:"—" }}</div>
+                    <div class="match-flip-card-round">{% blocktrans with number=match.round_number|default:"—" %}Round {{ number }}{% endblocktrans %}</div>
                     <div class="match-flip-card-teams">
                         {% include "operations/partials/club_chip.html" with club=match.home_club role="home" %}
                         <span class="help-text">vs</span>
                         {% include "operations/partials/club_chip.html" with club=match.away_club role="away" %}
                     </div>
                     <div class="match-flip-card-date">
-                        <i class="ti ti-calendar-event"></i> {{ match.event_date|default:"TBC" }}
+                        {% trans "TBC" as tbc_label %}
+                        <i class="ti ti-calendar-event"></i> {{ match.event_date|default:tbc_label }}
                         {% if match.match_start_time %} · {{ match.match_start_time|time:"H:i" }}{% endif %}
                     </div>
                 </div>
@@ -196,16 +196,16 @@ card grid block below and un-comment this.
                     {% endif %}
                     <div class="match-flip-card-line{% if match.ticketing_plan_approved %} match-flip-card-line--positive{% endif %}">
                         <i class="ti {% if match.ticketing_plan_approved %}ti-circle-check{% else %}ti-circle-dashed{% endif %}"></i>
-                        SPL Plan {% if match.ticketing_plan_approved %}Approved{% else %}Pending{% endif %}
+                        {% if match.ticketing_plan_approved %}{% trans "SPL Plan Approved" %}{% else %}{% trans "SPL Plan Pending" %}{% endif %}
                     </div>
                     <a href="{% url 'operations:match-detail' match.pk %}" class="match-flip-card-link">
-                        Full details <i class="ti ti-arrow-right"></i>
+                        {% trans "Full details" %} <i class="ti ti-arrow-right"></i>
                     </a>
                 </div>
             </div>
         </div>
     {% empty %}
-        <p class="help-text">No matches found.</p>
+        <p class="help-text">{% trans "No matches found." %}</p>
     {% endfor %}
 </div>
 {% endblock %}

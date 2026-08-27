@@ -1,20 +1,21 @@
 {% extends "operations/base.html" %}
 {% load static %}
 {% load display_helpers %}
+{% load i18n %}
 
-{% block title %}Match Calendar{% endblock %}
+{% block title %}{% trans "Match Calendar" %}{% endblock %}
 
 {% block page_help %}
     <p>
-        This is the <strong>Match Calendar</strong> — every match plotted on the day it's
-        scheduled, so you can see the whole month at a glance.
+        {% blocktrans %}This is the <strong>Match Calendar</strong> — every match plotted on the day it's
+        scheduled, so you can see the whole month at a glance.{% endblocktrans %}
     </p>
     <p>
-        Use the arrows to move between months, or "Today" to jump back. Filter by Coordinator to
+        {% blocktrans %}Use the arrows to move between months, or "Today" to jump back. Filter by Coordinator to
         see only their matches. Click a match's round tag to open a quick-view popup with its
         details - click anywhere outside it to close. Live matches are highlighted in red,
         finished matches are faded out, and everything else shows its round number. Days with more
-        matches than fit show a "+N more" - click it to see all of that day's matches.
+        matches than fit show a "+N more" - click it to see all of that day's matches.{% endblocktrans %}
     </p>
 {% endblock %}
 
@@ -22,31 +23,31 @@
 <div class="page-header">
     <div class="page-header-row">
         <div>
-            <h1 class="page-title">Match Calendar</h1>
+            <h1 class="page-title">{% trans "Match Calendar" %}</h1>
             <p class="page-subtitle">{{ month_label }}</p>
         </div>
 
         <div class="filter-bar">
             <a class="btn btn-secondary" href="?year={{ prev_year }}&month={{ prev_month }}&coordinator={{ selected_coordinator }}">
-                <i class="ti ti-chevron-left"></i> Prev
+                <i class="ti ti-chevron-left"></i> {% trans "Prev" %}
             </a>
-            <a class="btn btn-secondary" href="?year={{ today.year }}&month={{ today.month }}&coordinator={{ selected_coordinator }}">Today</a>
+            <a class="btn btn-secondary" href="?year={{ today.year }}&month={{ today.month }}&coordinator={{ selected_coordinator }}">{% trans "Today" %}</a>
             <a class="btn btn-secondary" href="?year={{ next_year }}&month={{ next_month }}&coordinator={{ selected_coordinator }}">
-                Next <i class="ti ti-chevron-right"></i>
+                {% trans "Next" %} <i class="ti ti-chevron-right"></i>
             </a>
         </div>
     </div>
 </div>
 
 <div class="card panel">
-    <form method="get" class="filters">
+    <form method="get" class="filters" data-autosubmit>
         <input type="hidden" name="year" value="{{ year }}">
         <input type="hidden" name="month" value="{{ month }}">
 
         <div class="field-group">
-            <label>Coordinator</label>
+            <label>{% trans "Coordinator" %}</label>
             <select name="coordinator">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for coordinator in coordinators %}
                     <option value="{{ coordinator.id }}" {% if selected_coordinator == coordinator.id|stringformat:"s" %}selected{% endif %}>{{ coordinator|display_name }}</option>
                 {% endfor %}
@@ -55,20 +56,20 @@
 
         <div class="field-group">
             <label>&nbsp;</label>
-            <button type="submit">Apply Filter</button>
+            <button type="submit">{% trans "Apply Filter" %}</button>
         </div>
     </form>
 </div>
 
 <div class="card panel">
     <div class="calendar-grid">
-        <div class="calendar-weekday">Sun</div>
-        <div class="calendar-weekday">Mon</div>
-        <div class="calendar-weekday">Tue</div>
-        <div class="calendar-weekday">Wed</div>
-        <div class="calendar-weekday">Thu</div>
-        <div class="calendar-weekday">Fri</div>
-        <div class="calendar-weekday">Sat</div>
+        <div class="calendar-weekday">{% trans "Sun" %}</div>
+        <div class="calendar-weekday">{% trans "Mon" %}</div>
+        <div class="calendar-weekday">{% trans "Tue" %}</div>
+        <div class="calendar-weekday">{% trans "Wed" %}</div>
+        <div class="calendar-weekday">{% trans "Thu" %}</div>
+        <div class="calendar-weekday">{% trans "Fri" %}</div>
+        <div class="calendar-weekday">{% trans "Sat" %}</div>
 
         {% for week in weeks %}
             {% for day in week %}
@@ -108,7 +109,7 @@
                                 hx-target="#match-modal-body"
                                 hx-swap="innerHTML"
                             >
-                                +{{ day.extra_count }} more
+                                {% blocktrans with count=day.extra_count %}+{{ count }} more{% endblocktrans %}
                             </button>
                         {% endif %}
                     </div>

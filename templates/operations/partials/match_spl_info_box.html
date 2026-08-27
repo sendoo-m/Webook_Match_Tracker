@@ -1,25 +1,27 @@
+{% load i18n %}
 <div class="card meta-box" id="match-spl-info-box"{% if oob %} hx-swap-oob="true"{% endif %}>
-    <div class="meta-label">SPL Report Info</div>
+    <div class="meta-label">{% trans "SPL Report Info" %}</div>
     <div class="meta-value" style="display:flex; flex-direction:column; gap:6px;">
         <div class="mini-badges">
             <span class="mini-badge mini-badge-{% if match.ticketing_plan_approved %}success{% else %}neutral{% endif %}">
-                Ticketing Plan: {% if match.ticketing_plan_approved %}Approved{% else %}Not Approved{% endif %}
+                {% trans "Ticketing Plan" %}: {% if match.ticketing_plan_approved %}{% trans "Approved" %}{% else %}{% trans "Not Approved" %}{% endif %}
             </span>
             <span class="mini-badge mini-badge-{% if match.spl_tickets_sent %}success{% else %}neutral{% endif %}">
-                SPL Tickets: {% if match.spl_tickets_sent %}Sent{% else %}Not Sent{% endif %}
+                {% trans "SPL Tickets" %}: {% if match.spl_tickets_sent %}{% trans "Sent" %}{% else %}{% trans "Not Sent" %}{% endif %}
             </span>
             <span class="mini-badge mini-badge-{% if kv_ready %}success{% else %}neutral{% endif %}">
-                KV / Webook Images: {% if kv_ready %}Ready{% else %}Not Ready{% endif %}
+                {% trans "KV / Webook Images" %}: {% if kv_ready %}{% trans "Ready" %}{% else %}{% trans "Not Ready" %}{% endif %}
             </span>
             <span class="mini-badge mini-badge-{% if webook_ready %}success{% else %}neutral{% endif %}">
-                Webook Readiness: {% if webook_ready %}Ready{% else %}Not Ready{% endif %}
+                {% trans "Webook Readiness" %}: {% if webook_ready %}{% trans "Ready" %}{% else %}{% trans "Not Ready" %}{% endif %}
             </span>
         </div>
 
-        <div class="help-text">Actual release: {{ match.actual_release_at|default:"Not set" }}</div>
+        {% trans "Not set" as not_set_text %}
+        <div class="help-text">{% trans "Actual release" %}: {{ match.actual_release_at|default:not_set_text }}</div>
 
         {% if match.spl_comments %}
-            <div class="help-text">Comments: {{ match.spl_comments }}</div>
+            <div class="help-text">{% trans "Comments" %}: {{ match.spl_comments }}</div>
         {% endif %}
 
         {% if can_edit %}
@@ -30,7 +32,7 @@
                 hx-target="#match-spl-info-box"
                 hx-swap="outerHTML"
             >
-                Edit
+                {% trans "Edit" %}
             </button>
         {% endif %}
     </div>

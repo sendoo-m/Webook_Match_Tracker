@@ -1,10 +1,12 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.http import HttpResponse
 from django.urls import reverse, reverse_lazy
+from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import FormView
 
-from checklists.models import ChecklistTemplateItem, MatchChecklistItem
+from checklists.services import attach_default_checklist_items
 from control_panel.forms import MatchExportFilterForm, MatchForm, MatchImportForm
 from control_panel.permissions import ControlPanelAccessMixin
 from matches.import_export import (
@@ -13,7 +15,7 @@ from matches.import_export import (
     export_matches_xlsx,
     import_matches_file,
 )
-from matches.models import Match
+from matches.models import Club, Match, Venue
 
 from .base import PanelCreateView, PanelListView, PanelUpdateView
 
@@ -23,18 +25,39 @@ class MatchAdminListView(PanelListView):
     template_name = "control_panel/match_list.html"
     context_object_name = "matches"
     ordering = ["-event_date", "-match_start_time", "-id"]
-    page_title = "Matches"
+    page_title = _("Matches")
     create_url_name = "control_panel:match-create"
-    create_label = "Add Match"
+    create_label = _("Add Match")
 
     def get_queryset(self):
-        return super().get_queryset().select_related(
+        queryset = super().get_queryset().select_related(
             "competition", "home_club", "away_club", "venue"
         )
+        round_number = self.request.GET.get("round", "")
+        club_id = self.request.GET.get("club", "")
+        city = self.request.GET.get("city", "")
+        if round_number:
+            queryset = queryset.filter(round_number=round_number)
+        if club_id:
+            queryset = queryset.filter(Q(home_club_id=club_id) | Q(away_club_id=club_id))
+        if city:
+            queryset = queryset.filter(venue__city=city)
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["export_form"] = MatchExportFilterForm()
+        context["selected_round"] = self.request.GET.get("round", "")
+        context["selected_club"] = self.request.GET.get("club", "")
+        context["selected_city"] = self.request.GET.get("city", "")
+        context["rounds"] = (
+            Match.objects.exclude(round_number__isnull=True)
+            .values_list("round_number", flat=True).distinct().order_by("round_number")
+        )
+        context["clubs"] = Club.objects.filter(is_active=True).order_by("name_ar")
+        context["cities"] = (
+            Venue.objects.exclude(city="").values_list("city", flat=True).distinct().order_by("city")
+        )
         return context
 
 
@@ -43,19 +66,13 @@ class MatchAdminCreateView(PanelCreateView):
     form_class = MatchForm
     template_name = "control_panel/match_form.html"
     success_url = reverse_lazy("control_panel:match-list")
-    success_message = "Match created."
-    page_title = "Add Match"
+    success_message = _("Match created.")
+    page_title = _("Add Match")
     list_url_name = "control_panel:match-list"
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        active_templates = ChecklistTemplateItem.objects.filter(is_active=True)
-        MatchChecklistItem.objects.bulk_create(
-            [
-                MatchChecklistItem(match=self.object, template_item=template)
-                for template in active_templates
-            ]
-        )
+        attach_default_checklist_items(self.object)
         return response
 
 
@@ -64,8 +81,8 @@ class MatchAdminUpdateView(PanelUpdateView):
     form_class = MatchForm
     template_name = "control_panel/match_form.html"
     success_url = reverse_lazy("control_panel:match-list")
-    success_message = "Match updated."
-    page_title = "Edit Match"
+    success_message = _("Match updated.")
+    page_title = _("Edit Match")
     list_url_name = "control_panel:match-list"
 
 

@@ -1,4 +1,5 @@
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
 from checklists.models import ChecklistCategory, ChecklistTemplateItem
 from control_panel.forms import ChecklistCategoryForm, ChecklistTemplateItemForm
@@ -11,9 +12,9 @@ class ChecklistCategoryListView(PanelListView):
     template_name = "control_panel/checklistcategory_list.html"
     context_object_name = "categories"
     ordering = ["sort_order", "name"]
-    page_title = "Checklist Categories"
+    page_title = _("Checklist Categories")
     create_url_name = "control_panel:checklist-category-create"
-    create_label = "Add Category"
+    create_label = _("Add Category")
 
 
 class ChecklistCategoryCreateView(PanelCreateView):
@@ -21,8 +22,8 @@ class ChecklistCategoryCreateView(PanelCreateView):
     form_class = ChecklistCategoryForm
     template_name = "control_panel/checklistcategory_form.html"
     success_url = reverse_lazy("control_panel:checklist-category-list")
-    success_message = "Checklist category created."
-    page_title = "Add Checklist Category"
+    success_message = _("Checklist category created.")
+    page_title = _("Add Checklist Category")
     list_url_name = "control_panel:checklist-category-list"
 
 
@@ -31,8 +32,8 @@ class ChecklistCategoryUpdateView(PanelUpdateView):
     form_class = ChecklistCategoryForm
     template_name = "control_panel/checklistcategory_form.html"
     success_url = reverse_lazy("control_panel:checklist-category-list")
-    success_message = "Checklist category updated."
-    page_title = "Edit Checklist Category"
+    success_message = _("Checklist category updated.")
+    page_title = _("Edit Checklist Category")
     list_url_name = "control_panel:checklist-category-list"
 
 
@@ -41,9 +42,9 @@ class ChecklistItemListView(PanelListView):
     template_name = "control_panel/checklisttemplateitem_list.html"
     context_object_name = "items"
     ordering = ["category__sort_order", "sort_order", "title"]
-    page_title = "Checklist Items"
+    page_title = _("Checklist Items")
     create_url_name = "control_panel:checklist-item-create"
-    create_label = "Add Item"
+    create_label = _("Add Item")
 
     def get_queryset(self):
         return super().get_queryset().select_related("category")
@@ -54,8 +55,8 @@ class ChecklistItemCreateView(PanelCreateView):
     form_class = ChecklistTemplateItemForm
     template_name = "control_panel/checklisttemplateitem_form.html"
     success_url = reverse_lazy("control_panel:checklist-item-list")
-    success_message = "Checklist item created."
-    page_title = "Add Checklist Item"
+    success_message = _("Checklist item created.")
+    page_title = _("Add Checklist Item")
     list_url_name = "control_panel:checklist-item-list"
 
 
@@ -64,8 +65,8 @@ class ChecklistItemUpdateView(PanelUpdateView):
     form_class = ChecklistTemplateItemForm
     template_name = "control_panel/checklisttemplateitem_form.html"
     success_url = reverse_lazy("control_panel:checklist-item-list")
-    success_message = "Checklist item updated."
-    page_title = "Edit Checklist Item"
+    success_message = _("Checklist item updated.")
+    page_title = _("Edit Checklist Item")
     list_url_name = "control_panel:checklist-item-list"
 
 

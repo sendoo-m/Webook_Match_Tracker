@@ -1,5 +1,6 @@
+{% load i18n %}
 <div class="card meta-box" id="match-slug-box">
-    <div class="meta-label">Slug</div>
+    <div class="meta-label">{% trans "Slug" %}</div>
     <form
         hx-post="{% url 'operations:match-slug-update' match.pk %}"
         hx-target="#match-slug-box"
@@ -11,6 +12,6 @@
             {{ form.slug }}
             {% for error in form.slug.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
         </div>
-        <button type="submit" class="btn btn-primary" style="padding:6px 10px; font-size:12px;">Save</button>
+        <button type="submit" class="btn btn-primary" style="padding:6px 10px; font-size:12px;">{% trans "Save" %}</button>
     </form>
 </div>

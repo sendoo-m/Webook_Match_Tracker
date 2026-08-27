@@ -1,7 +1,8 @@
 <!-- File: templates/operations/partials/sidebar_delayed.html -->
 <!-- Path: config/templates/operations/partials/sidebar_delayed.html -->
+{% load i18n %}
 <div id="sidebar-delayed" class="card panel" hx-swap-oob="true">
-    <h2 class="panel-title">Delayed</h2>
+    <h2 class="panel-title">{% trans "Delayed" %}</h2>
 
     {% if delayed_items_list %}
         <div class="sidebar-list">
@@ -13,6 +14,6 @@
             {% endfor %}
         </div>
     {% else %}
-        <p class="help-text">No delayed items.</p>
+        <p class="help-text">{% trans "No delayed items." %}</p>
     {% endif %}
 </div>

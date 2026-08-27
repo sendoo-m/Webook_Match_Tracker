@@ -1,13 +1,14 @@
 {# control_panel/checklistcategory_list.html #}
 {% extends "control_panel/list.html" %}
+{% load i18n %}
 
 {% block page_subtitle %}
-    <p class="page-subtitle">Categories group checklist items on the match checklist (e.g. Tickets, Gates &amp; Admins).</p>
+    <p class="page-subtitle">{% trans "Categories group checklist items on the match checklist (e.g. Tickets, Gates & Admins)." %}</p>
 {% endblock %}
 
 {% block table_head %}
-    <th>Name</th>
-    <th>Order</th>
+    <th>{% trans "Name" %}</th>
+    <th>{% trans "Order" %}</th>
     <th></th>
 {% endblock %}
 
@@ -17,11 +18,11 @@
             <td>{{ category.name }}</td>
             <td>{{ category.sort_order }}</td>
             <td>
-                <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:checklist-category-update' category.pk %}">Edit</a>
+                <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:checklist-category-update' category.pk %}">{% trans "Edit" %}</a>
             </td>
         </tr>
     {% empty %}
-        <tr><td colspan="3">No checklist categories found.</td></tr>
+        <tr><td colspan="3">{% trans "No checklist categories found." %}</td></tr>
     {% endfor %}
 {% endblock %}
 

@@ -1,7 +1,8 @@
 {# control_panel/user_form.html #}
 {% extends "operations/base.html" %}
+{% load i18n %}
 
-{% block title %}{{ page_title }} · Control Panel{% endblock %}
+{% block title %}{{ page_title }} · {% trans "Control Panel" %}{% endblock %}
 
 {% block content %}
 {% include "control_panel/_subnav.html" %}
@@ -50,8 +51,8 @@
         </div>
 
         <p class="help-text">
-            Club Manager accounts are scoped to the clubs and sections picked below.
-            Operations Manager and Viewer accounts always see every match, regardless of what's picked here.
+            {% blocktrans %}Club Manager accounts are scoped to the clubs and sections picked below.
+            Operations Manager and Viewer accounts always see every match, regardless of what's picked here.{% endblocktrans %}
         </p>
 
         <div class="form-group">
@@ -65,8 +66,8 @@
         </div>
 
         <div class="form-actions">
-            <a class="btn btn-secondary" href="{{ list_url }}">Cancel</a>
-            <button type="submit" class="btn btn-primary">Save</button>
+            <a class="btn btn-secondary" href="{{ list_url }}">{% trans "Cancel" %}</a>
+            <button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
         </div>
     </form>
 </div>

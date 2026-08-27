@@ -1,19 +1,19 @@
 {% extends "operations/base.html" %}
 {% load static %}
+{% load display_helpers %}
+{% load i18n %}
 <!-- File: templates/operations/dashboard.html -->
 <!-- Path: config/templates/operations/dashboard.html -->
 
-{% block title %}Operations Dashboard{% endblock %}
+{% block title %}{% trans "Operations Dashboard" %}{% endblock %}
 
 {% block page_help %}
     <p>
-        This is the <strong>Operations Dashboard</strong> — a live snapshot of every match: what's
-        live right now and what needs attention (Alerts & Deadlines).
+        {% blocktrans %}This is the <strong>Operations Dashboard</strong> — a live snapshot of every match: what's
+        live right now and what needs attention (Alerts & Deadlines).{% endblocktrans %}
     </p>
     <p>
-        Use the round strip and filter chips in the "Filtered Matches" table to narrow down to exactly
-        the matches you care about - including Ready for Sale and Needs Reports. The page refreshes
-        itself automatically every few minutes.
+        {% trans 'Use the round strip and filter chips in the "Filtered Matches" table to narrow down to exactly the matches you care about - including Ready for Sale and Needs Reports. The page refreshes itself automatically every few minutes.' %}
     </p>
 {% endblock %}
 
@@ -28,82 +28,82 @@
     hx-disinherit="*"
 >
 <div class="page-header">
-    <h1 class="page-title">Operations Dashboard</h1>
+    <h1 class="page-title">{% trans "Operations Dashboard" %}</h1>
     <p class="page-subtitle">
-        Readiness, live visibility, ticket-sale readiness, alerts, and post-match follow-up.
-        <span class="help-text">Auto-refreshes every 3 minutes.</span>
+        {% trans "Readiness, live visibility, ticket-sale readiness, alerts, and post-match follow-up." %}
+        <span class="help-text">{% trans "Auto-refreshes every 3 minutes." %}</span>
     </p>
 </div>
 
 <div class="quick-actions">
     <a href="{% url 'operations:match-list' %}" class="quick-action">
-        <i class="ti ti-calendar-event"></i><span>Events</span>
+        <i class="ti ti-calendar-event"></i><span>{% trans "Events" %}</span>
     </a>
     <a href="{% url 'operations:calendar' %}" class="quick-action">
-        <i class="ti ti-calendar"></i><span>Calendar</span>
+        <i class="ti ti-calendar"></i><span>{% trans "Calendar" %}</span>
     </a>
     <a href="{% url 'operations:missing-requirements-report' %}" class="quick-action">
-        <i class="ti ti-alert-triangle"></i><span>Missing Items</span>
+        <i class="ti ti-alert-triangle"></i><span>{% trans "Missing Items" %}</span>
     </a>
     <a href="{% url 'operations:spl-report' %}" class="quick-action">
-        <i class="ti ti-report"></i><span>SPL Report</span>
+        <i class="ti ti-report"></i><span>{% trans "SPL Report" %}</span>
     </a>
     {% if can_view_control_panel %}
         <a href="{% url 'operations:workload-report' %}" class="quick-action">
-            <i class="ti ti-chart-bar"></i><span>Workload</span>
+            <i class="ti ti-chart-bar"></i><span>{% trans "Workload" %}</span>
         </a>
     {% endif %}
     <a href="{% url 'operations:feedback' %}" class="quick-action">
-        <i class="ti ti-message-2-star"></i><span>Feedback</span>
+        <i class="ti ti-message-2-star"></i><span>{% trans "Feedback" %}</span>
     </a>
 </div>
 
 <div class="dashboard-stats-grid">
     <a class="card stat-card stat-card-neutral" href="{% url 'operations:match-list' %}">
-        <div class="stat-label">Total Matches</div>
+        <div class="stat-label">{% trans "Total Matches" %}</div>
         <div class="stat-value">{{ stats.total_matches }}</div>
     </a>
 
     <a class="card stat-card stat-card-live" href="{% url 'operations:dashboard' %}?view=live#filtered-matches-panel">
-        <div class="stat-label">Live Now</div>
+        <div class="stat-label">{% trans "Live Now" %}</div>
         <div class="stat-value">{{ stats.live_matches }}</div>
     </a>
 
     <a class="card stat-card stat-card-info" href="{% url 'operations:dashboard' %}?view=starting_soon#filtered-matches-panel">
-        <div class="stat-label">Starting in 48h</div>
+        <div class="stat-label">{% trans "Starting in 48h" %}</div>
         <div class="stat-value">{{ stats.starting_soon_matches }}</div>
     </a>
 
     <a class="card stat-card stat-card-success" href="{% url 'operations:dashboard' %}?view=ready#filtered-matches-panel">
-        <div class="stat-label">Ready for Ticket Sale</div>
+        <div class="stat-label">{% trans "Ready for Ticket Sale" %}</div>
         <div class="stat-value">{{ stats.ready_for_ticket_sale_matches }}</div>
     </a>
 
     <a class="card stat-card stat-card-warning" href="{% url 'operations:dashboard' %}?view=alerts#filtered-matches-panel">
-        <div class="stat-label">Prep Alerts</div>
+        <div class="stat-label">{% trans "Prep Alerts" %}</div>
         <div class="stat-value">{{ stats.prep_alert_matches }}</div>
     </a>
 
     <a class="card stat-card stat-card-danger" href="{% url 'operations:dashboard' %}?view=reports#filtered-matches-panel">
-        <div class="stat-label">Needs Reports</div>
+        <div class="stat-label">{% trans "Needs Reports" %}</div>
         <div class="stat-value">{{ stats.matches_needing_reports }}</div>
     </a>
 
     <a class="card stat-card stat-card-upcoming" href="{% url 'operations:dashboard' %}?view=upcoming#filtered-matches-panel">
-        <div class="stat-label">Upcoming</div>
+        <div class="stat-label">{% trans "Upcoming" %}</div>
         <div class="stat-value">{{ stats.upcoming_matches }}</div>
     </a>
 
     <a class="card stat-card stat-card-past" href="{% url 'operations:dashboard' %}?view=past#filtered-matches-panel">
-        <div class="stat-label">Past Matches</div>
+        <div class="stat-label">{% trans "Past Matches" %}</div>
         <div class="stat-value">{{ stats.past_matches }}</div>
     </a>
 </div>
 
 <div class="card panel dashboard-section">
     <div class="dashboard-section-head">
-        <h2 class="panel-title"><i class="ti ti-shirt-sport"></i> Teams</h2>
-        <span class="help-text">Click a team to preview their next home matches</span>
+        <h2 class="panel-title"><i class="ti ti-shirt-sport"></i> {% trans "Teams" %}</h2>
+        <span class="help-text">{% trans "Click a team to preview their next home matches" %}</span>
     </div>
 
     <div class="team-scroll-strip">
@@ -122,18 +122,18 @@
                 {% if club.logo %}
                     <img src="{{ club.logo.url }}" alt="{{ club.name_en }}" class="team-chip-logo">
                 {% endif %}
-                <span>{{ club.name_ar|default:club.name_en }}</span>
+                <span>{{ club|localized_name }}</span>
             </div>
         {% empty %}
-            <p class="help-text">No teams found.</p>
+            <p class="help-text">{% trans "No teams found." %}</p>
         {% endfor %}
     </div>
 </div>
 
 <div class="card panel dashboard-section">
     <div class="dashboard-section-head">
-        <h2 class="panel-title"><i class="ti ti-list-numbers"></i> Rounds</h2>
-        <span class="help-text">Click a round to preview its matches</span>
+        <h2 class="panel-title"><i class="ti ti-list-numbers"></i> {% trans "Rounds" %}</h2>
+        <span class="help-text">{% trans "Click a round to preview its matches" %}</span>
     </div>
 
     <div class="round-scroll-strip">
@@ -158,15 +158,15 @@
 
 <details class="card panel dashboard-section dashboard-collapsible">
     <summary class="dashboard-collapsible-summary">
-        <span class="panel-title">Live Matches</span>
-        <span class="help-text">{{ stats.live_matches }} live now</span>
+        <span class="panel-title">{% trans "Live Matches" %}</span>
+        <span class="help-text">{% blocktrans count counter=stats.live_matches %}{{ counter }} live now{% plural %}{{ counter }} live now{% endblocktrans %}</span>
     </summary>
 
     <div class="round-preview-matches">
         {% for card in live_matches %}
             <a href="{% url 'operations:match-live' card.match.pk %}" class="round-preview-card">
                 <div class="round-preview-card-head">
-                    <span class="round-preview-round-tag">Round {{ card.match.round_number|default:"—" }}</span>
+                    <span class="round-preview-round-tag">{% blocktrans with number=card.match.round_number|default:"—" %}Round {{ number }}{% endblocktrans %}</span>
                     <span class="round-preview-status">
                         <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
                     </span>
@@ -178,15 +178,15 @@
                 </div>
             </a>
         {% empty %}
-            <p class="help-text">No live matches right now.</p>
+            <p class="help-text">{% trans "No live matches right now." %}</p>
         {% endfor %}
     </div>
 </details>
 
 <details class="card panel dashboard-section dashboard-collapsible">
     <summary class="dashboard-collapsible-summary">
-        <span class="panel-title">Alerts & Deadlines</span>
-        <span class="help-text">{{ stats.prep_alert_matches }} alert{{ stats.prep_alert_matches|pluralize }}</span>
+        <span class="panel-title">{% trans "Alerts & Deadlines" %}</span>
+        <span class="help-text">{% blocktrans count counter=stats.prep_alert_matches %}{{ counter }} alert{% plural %}{{ counter }} alerts{% endblocktrans %}</span>
     </summary>
 
     <div class="round-preview-matches">
@@ -202,7 +202,7 @@
                 hx-swap="innerHTML"
             >
                 <div class="round-preview-card-head">
-                    <span class="round-preview-round-tag">Round {{ card.match.round_number|default:"—" }}</span>
+                    <span class="round-preview-round-tag">{% blocktrans with number=card.match.round_number|default:"—" %}Round {{ number }}{% endblocktrans %}</span>
                     <span class="round-preview-status">
                         <span class="mini-badge mini-badge-{{ card.alert_level|default:'neutral' }}">
                             {{ card.alert_text }}
@@ -215,11 +215,11 @@
                     {% include "operations/partials/club_chip.html" with club=card.match.away_club role="away" %}
                 </div>
                 <div class="round-preview-meta">
-                    <span><i class="ti ti-calendar-time"></i> {{ card.days_to_match }} day{{ card.days_to_match|pluralize }}</span>
+                    <span><i class="ti ti-calendar-time"></i> {% blocktrans count counter=card.days_to_match %}{{ counter }} day{% plural %}{{ counter }} days{% endblocktrans %}</span>
                 </div>
             </div>
         {% empty %}
-            <p class="help-text">No prep alerts right now.</p>
+            <p class="help-text">{% trans "No prep alerts right now." %}</p>
         {% endfor %}
     </div>
 </details>

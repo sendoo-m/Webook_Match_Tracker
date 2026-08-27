@@ -7,6 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views import View
 from django.views.generic import TemplateView
 
@@ -110,7 +111,7 @@ class CalendarDayMatchesView(LoginRequiredMixin, MatchScopedQuerysetMixin, View)
         try:
             target_date = date(year, month, day)
         except ValueError:
-            return HttpResponseBadRequest("Invalid date.")
+            return HttpResponseBadRequest(_("Invalid date."))
 
         now = timezone.localtime()
         matches = self.filter_matches_queryset(

@@ -1,17 +1,18 @@
 {% extends "operations/base.html" %}
 {% load static %}
 {% load display_helpers %}
+{% load i18n %}
 
-{% block title %}Missing Operational Requirements{% endblock %}
+{% block title %}{% trans "Missing Operational Requirements" %}{% endblock %}
 
 {% block page_help %}
     <p>
-        This report lists every match with <strong>pending operational items</strong> — things
+        {% blocktrans %}This report lists every match with <strong>pending operational items</strong> — things
         that still need to be done before the match is ready. The icon chips under each match
         show which categories still have work outstanding. Filters apply as soon as you pick one
-        - no need to click "Apply Filters".
+        - no need to click "Apply Filters".{% endblocktrans %}
     </p>
-    <p>Click the teams to see exactly which items are outstanding and why, in a quick popup.</p>
+    <p>{% trans "Click the teams to see exactly which items are outstanding and why, in a quick popup." %}</p>
 {% endblock %}
 
 {% block content %}
@@ -21,43 +22,43 @@
 </div>
 
 <div class="card panel">
-    <form method="get" class="filters">
+    <form method="get" class="filters" data-autosubmit>
         <input type="hidden" name="filter" value="{{ selected_filter }}">
 
         <div class="field-group">
-            <label>Home Team</label>
+            <label>{% trans "Home Team" %}</label>
             <select name="home_club">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for club in clubs %}
-                    <option value="{{ club.id }}" {% if selected_home_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club.name_ar }}</option>
+                    <option value="{{ club.id }}" {% if selected_home_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="field-group">
-            <label>Away Team</label>
+            <label>{% trans "Away Team" %}</label>
             <select name="away_club">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for club in clubs %}
-                    <option value="{{ club.id }}" {% if selected_away_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club.name_ar }}</option>
+                    <option value="{{ club.id }}" {% if selected_away_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="field-group">
-            <label>Competition</label>
+            <label>{% trans "Competition" %}</label>
             <select name="competition">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for competition in competitions %}
-                    <option value="{{ competition.id }}" {% if selected_competition == competition.id|stringformat:"s" %}selected{% endif %}>{{ competition.name_ar }}</option>
+                    <option value="{{ competition.id }}" {% if selected_competition == competition.id|stringformat:"s" %}selected{% endif %}>{{ competition|localized_name }}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="field-group">
-            <label>Round</label>
+            <label>{% trans "Round" %}</label>
             <select name="round">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for r in rounds %}
                     <option value="{{ r }}" {% if selected_round == r|stringformat:"s" %}selected{% endif %}>{{ r }}</option>
                 {% endfor %}
@@ -66,9 +67,9 @@
 
         {% if is_admin %}
         <div class="field-group">
-            <label>Coordinator</label>
+            <label>{% trans "Coordinator" %}</label>
             <select name="user">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for u in users %}
                     <option value="{{ u.id }}" {% if selected_user == u.id|stringformat:"s" %}selected{% endif %}>{{ u|display_name }}</option>
                 {% endfor %}
@@ -77,26 +78,26 @@
         {% endif %}
 
         <div class="field-group">
-            <label>SPL Approval</label>
+            <label>{% trans "SPL Approval" %}</label>
             <select name="spl_approval">
-                <option value="">All</option>
-                <option value="approved" {% if selected_spl_approval == "approved" %}selected{% endif %}>Approved</option>
-                <option value="not_approved" {% if selected_spl_approval == "not_approved" %}selected{% endif %}>Not Approved</option>
+                <option value="">{% trans "All" %}</option>
+                <option value="approved" {% if selected_spl_approval == "approved" %}selected{% endif %}>{% trans "Approved" %}</option>
+                <option value="not_approved" {% if selected_spl_approval == "not_approved" %}selected{% endif %}>{% trans "Not Approved" %}</option>
             </select>
         </div>
 
         <div class="field-group">
-            <label>KVs</label>
+            <label>{% trans "KVs" %}</label>
             <select name="kv_status">
-                <option value="">All</option>
-                <option value="ready" {% if selected_kv_status == "ready" %}selected{% endif %}>Available</option>
-                <option value="not_ready" {% if selected_kv_status == "not_ready" %}selected{% endif %}>Not Available</option>
+                <option value="">{% trans "All" %}</option>
+                <option value="ready" {% if selected_kv_status == "ready" %}selected{% endif %}>{% trans "Available" %}</option>
+                <option value="not_ready" {% if selected_kv_status == "not_ready" %}selected{% endif %}>{% trans "Not Available" %}</option>
             </select>
         </div>
 
         <div class="field-group">
             <label>&nbsp;</label>
-            <button type="submit">Apply Filters</button>
+            <button type="submit">{% trans "Apply Filters" %}</button>
         </div>
     </form>
 </div>
