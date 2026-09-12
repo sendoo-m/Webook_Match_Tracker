@@ -6,13 +6,19 @@ from django.template.response import TemplateResponse
 from django.urls import path, reverse
 
 from checklists.models import MatchChecklistItem, CMSSubmission
+from .calendar_sync import CalendarSyncError, sync_roshan_league_from_calendar
 from .import_export import (
     build_import_template_xlsx,
+    export_calendar_import_xlsx,
     export_matches_csv,
     export_matches_xlsx,
     import_matches_file,
 )
 from .models import Club, Venue, Match, Competition
+
+# Where the "Update Roshan League Schedule" button also saves a copy of the
+# imported rows as an .xlsx, per the calendar-import feature's requirements.
+CALENDAR_EXPORT_SAVE_PATH = r"D:\2025\webook-match-tracker\config\SPL_2026-27_Rounds_6-12_from_calendar.xlsx"
 
 
 @admin.register(Competition)
@@ -171,6 +177,16 @@ class MatchAdmin(admin.ModelAdmin):
                 self.admin_site.admin_view(self.template_view),
                 name="matches_match_template",
             ),
+            path(
+                "sync-calendar/",
+                self.admin_site.admin_view(self.sync_calendar_view),
+                name="matches_match_sync_calendar",
+            ),
+            path(
+                "export-calendar/",
+                self.admin_site.admin_view(self.export_calendar_view),
+                name="matches_match_export_calendar",
+            ),
         ]
         return custom_urls + urls
 
@@ -252,6 +268,67 @@ class MatchAdmin(admin.ModelAdmin):
                 level=messages.SUCCESS,
             )
         return redirect(reverse("admin:matches_match_changelist"))
+
+    def sync_calendar_view(self, request):
+        """"Update Roshan League Schedule" button: GET shows a confirm page,
+        POST runs matches.calendar_sync.sync_roshan_league_from_calendar()
+        against the live database (Matchweeks 6-12 only) and also saves a
+        copy of the imported rows to CALENDAR_EXPORT_SAVE_PATH."""
+        if request.method != "POST":
+            context = {
+                **self.admin_site.each_context(request),
+                "opts": self.model._meta,
+                "title": "Update Roshan League Schedule",
+            }
+            return TemplateResponse(request, "admin/matches/match/calendar_sync_confirm.html", context)
+
+        try:
+            result = sync_roshan_league_from_calendar()
+        except CalendarSyncError as exc:
+            self.message_user(request, f"Calendar sync failed: {exc}", level=messages.ERROR)
+            return redirect(reverse("admin:matches_match_changelist"))
+
+        saved_note = ""
+        try:
+            xlsx_content = export_calendar_import_xlsx(result.rows)
+            with open(CALENDAR_EXPORT_SAVE_PATH, "wb") as xlsx_file:
+                xlsx_file.write(xlsx_content)
+            saved_note = f" A copy was saved to {CALENDAR_EXPORT_SAVE_PATH}."
+        except OSError as exc:
+            saved_note = f" (Could not save the Excel copy: {exc})"
+
+        skip_note = ""
+        if result.skipped:
+            first_reasons = "; ".join(f"{summary} - {reason}" for summary, reason in result.skipped[:5])
+            skip_note = f" Skipped {len(result.skipped)}: {first_reasons}."
+            if len(result.skipped) > 5:
+                skip_note += f" (+{len(result.skipped) - 5} more)"
+
+        self.message_user(
+            request,
+            f"Calendar sync completed. Created: {result.created}, updated: {result.updated}, "
+            f"ignored (unparsed round): {result.ignored_out_of_range}.{skip_note}{saved_note}",
+            level=messages.WARNING if result.skipped else messages.SUCCESS,
+        )
+        return redirect(reverse("admin:matches_match_changelist"))
+
+    def export_calendar_view(self, request):
+        """"Export Calendar Import (Excel)" button: single-click, dry-run
+        fetch (no database writes) that streams the same rows the sync
+        button would create/update as an .xlsx download."""
+        try:
+            result = sync_roshan_league_from_calendar(dry_run=True)
+        except CalendarSyncError as exc:
+            self.message_user(request, f"Could not export from the calendar: {exc}", level=messages.ERROR)
+            return redirect(reverse("admin:matches_match_changelist"))
+
+        content = export_calendar_import_xlsx(result.rows)
+        response = HttpResponse(
+            content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = 'attachment; filename="SPL_2026-27_Rounds_6-12_from_calendar.xlsx"'
+        return response
 
     def ops_dashboard_view(self, request):
         matches = Match.objects.all()

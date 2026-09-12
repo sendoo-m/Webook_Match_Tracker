@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div style="max-width: 760px;">
+    <h1>{% trans "Update Roshan League Schedule" %}</h1>
+
+    <p>
+        {% blocktrans %}This fetches every Roshan League fixture from SPL's Google Calendar feed and
+        creates/updates the matching matches - all rounds, every time it's run.{% endblocktrans %}
+    </p>
+
+    <ul>
+        <li>{% trans "Matches are matched by round + the two clubs playing, not by date or slug - so a match keeps updating correctly even if SPL reschedules it to a different day, and an existing match keeps its current slug." %}</li>
+        <li>{% trans "Fixtures whose kickoff time is still \"Time TBC\" on the calendar are skipped, not imported with a guessed time." %}</li>
+        <li>{% trans "A previously-known stadium is kept if the calendar's location briefly goes back to \"TBC\" - a match's venue only ever gets replaced by a new real one." %}</li>
+        <li>{% trans "A copy of the imported rows is also saved as an Excel file for reference." %}</li>
+        <li>{% trans "To keep this running automatically, schedule \"python manage.py sync_roshan_calendar\" (e.g. via Windows Task Scheduler) instead of clicking this button by hand." %}</li>
+    </ul>
+
+    <form method="post" style="margin-top: 20px;">
+        {% csrf_token %}
+        <input type="submit" value="{% trans 'Run sync' %}" class="default">
+        <a href="{% url 'admin:matches_match_changelist' %}" class="button" style="margin-left: 8px;">
+            {% trans "Cancel" %}
+        </a>
+    </form>
+</div>
+{% endblock %}

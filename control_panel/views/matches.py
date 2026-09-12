@@ -1,6 +1,11 @@
+from datetime import date
+
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import HttpResponse
+from django.shortcuts import redirect
+from django.template.response import TemplateResponse
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -9,6 +14,7 @@ from django.views.generic import FormView
 from checklists.services import attach_default_checklist_items
 from control_panel.forms import MatchExportFilterForm, MatchForm, MatchImportForm
 from control_panel.permissions import ControlPanelAccessMixin
+from matches.calendar_sync import CalendarSyncError, sync_roshan_league_from_calendar
 from matches.import_export import (
     build_import_template_xlsx,
     export_matches_csv,
@@ -58,6 +64,7 @@ class MatchAdminListView(PanelListView):
         context["cities"] = (
             Venue.objects.exclude(city="").values_list("city", flat=True).distinct().order_by("city")
         )
+        context["today"] = date.today()
         return context
 
 
@@ -132,3 +139,38 @@ class MatchImportView(LoginRequiredMixin, ControlPanelAccessMixin, FormView):
             import_file, import_file.name, competition.id if competition else None
         )
         return self.render_to_response(self.get_context_data(form=self.form_class(), result=result))
+
+
+class MatchSyncCalendarView(LoginRequiredMixin, ControlPanelAccessMixin, View):
+    """"Update Roshan League Schedule" button on the Control Panel's Matches
+    page - the same matches.calendar_sync.sync_roshan_league_from_calendar()
+    used by the Django Admin button and the sync_roshan_calendar management
+    command, just surfaced here too. GET shows a confirm page; POST runs the
+    sync (every round, not just 6-12) and redirects back to the match list
+    with a result message."""
+
+    def get(self, request, *args, **kwargs):
+        return TemplateResponse(request, "control_panel/match_sync_calendar.html", {})
+
+    def post(self, request, *args, **kwargs):
+        try:
+            result = sync_roshan_league_from_calendar()
+        except CalendarSyncError as exc:
+            messages.error(request, _("Calendar sync failed: %(error)s") % {"error": exc})
+            return redirect("control_panel:match-list")
+
+        skip_note = ""
+        if result.skipped:
+            skip_note = _(" %(count)s fixture(s) skipped (unrecognized club or kickoff time not yet confirmed).") % {
+                "count": len(result.skipped)
+            }
+
+        messages.success(
+            request,
+            _("Calendar sync completed. Created: %(created)s, updated: %(updated)s.%(skip_note)s") % {
+                "created": result.created,
+                "updated": result.updated,
+                "skip_note": skip_note,
+            },
+        )
+        return redirect("control_panel:match-list")

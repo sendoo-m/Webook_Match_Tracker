@@ -6,8 +6,10 @@ from django.db.models import Count, Q
 from django.views.generic import ListView
 
 from checklists.models import MatchChecklistItem
-from matches.models import Club, Competition, Match
+from matches.models import Competition, Match
 from operations.permissions import MatchScopedQuerysetMixin
+
+from .helpers import get_selectable_clubs
 
 
 class MatchListView(LoginRequiredMixin, MatchScopedQuerysetMixin, ListView):
@@ -35,17 +37,14 @@ class MatchListView(LoginRequiredMixin, MatchScopedQuerysetMixin, ListView):
         )
         qs = self.filter_matches_queryset(qs)
         status = self.request.GET.get("status")
-        home_club = self.request.GET.get("home_club")
-        away_club = self.request.GET.get("away_club")
+        club = self.request.GET.get("club")
         competition = self.request.GET.get("competition")
         round_number = self.request.GET.get("round")
         period = self.request.GET.get("period", "upcoming")
         if status:
             qs = qs.filter(cms_status=status)
-        if home_club:
-            qs = qs.filter(home_club_id=home_club)
-        if away_club:
-            qs = qs.filter(away_club_id=away_club)
+        if club:
+            qs = qs.filter(Q(home_club_id=club) | Q(away_club_id=club))
         if competition:
             qs = qs.filter(competition_id=competition)
         if round_number:
@@ -65,20 +64,17 @@ class MatchListView(LoginRequiredMixin, MatchScopedQuerysetMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         allowed_matches = self.filter_matches_queryset(Match.objects.all())
-        allowed_club_ids = Club.objects.filter(
-            Q(home_matches__in=allowed_matches) | Q(away_matches__in=allowed_matches)
-        ).distinct().values_list("id", flat=True)
         allowed_competition_ids = allowed_matches.values_list("competition_id", flat=True).distinct()
-        context["clubs"] = Club.objects.filter(is_active=True, id__in=allowed_club_ids).order_by("name_ar")
+        context["clubs"] = get_selectable_clubs(allowed_matches)
         context["competitions"] = Competition.objects.filter(
             is_active=True, id__in=allowed_competition_ids
         ).order_by("sort_order", "name_ar")
         context["status_choices"] = Match.Status.choices
         context["available_rounds"] = range(1, 35)
         context["selected_status"] = self.request.GET.get("status", "")
-        context["selected_home_club"] = self.request.GET.get("home_club", "")
-        context["selected_away_club"] = self.request.GET.get("away_club", "")
+        context["selected_club"] = self.request.GET.get("club", "")
         context["selected_competition"] = self.request.GET.get("competition", "")
         context["selected_round"] = self.request.GET.get("round", "")
         context["selected_period"] = self.request.GET.get("period", "upcoming")
+        context["today"] = date.today()
         return context

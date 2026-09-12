@@ -120,14 +120,14 @@
                     <th>{% trans "Pre-match" %}</th>
                     {% comment %} <th>Post-match</th> {% endcomment %}
                     <th>{% trans "Delayed" %}</th>
-                    <th>{% trans "CMS Status" %}</th>
+                    <th>{% trans "Ticket Link" %}</th>
                     <th>{% trans "Discount" %}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for card in featured_matches %}
-                    <tr>
-                        <td>
+                    <tr{% if card.is_live_now and not card.match.webook_purchase_url %} class="row-action-needed"{% endif %}>
+                        <td{% if card.is_live_now and not card.match.webook_purchase_url %} class="row-action-accent"{% endif %}>
                             <a href="{% url 'operations:match-detail' card.match.pk %}" class="match-row-link">
                                 {% include "operations/partials/club_chip.html" with club=card.match.home_club role="home" %}
                                 <span class="help-text">vs</span>
@@ -201,9 +201,18 @@
                         </td>
 
                         <td>
-                            <span class="badge badge-{{ card.match.cms_status|slugify }}">
-                                {{ card.match.get_cms_status_display }}
-                            </span>
+                            {% if card.match.webook_purchase_url %}
+                                <a href="{{ card.match.webook_purchase_url }}" target="_blank" rel="noopener" class="mini-badge mini-badge-success">
+                                    <i class="ti ti-ticket"></i> {% trans "Buy Tickets on Webook" %}
+                                </a>
+                            {% else %}
+                                <a
+                                    href="{% url 'operations:match-detail' card.match.pk %}"
+                                    class="btn btn-secondary btn-sm{% if card.is_live_now %} btn-add-ticket-link-urgent{% endif %}"
+                                >
+                                    <i class="ti ti-circle-plus"></i> {% trans "Add Ticket Link" %}
+                                </a>
+                            {% endif %}
                         </td>
 
                         <td>

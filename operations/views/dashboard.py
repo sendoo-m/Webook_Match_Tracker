@@ -12,8 +12,12 @@ from operations.permissions import MatchScopedQuerysetMixin, is_viewer_only
 from .helpers import (
     PREP_WINDOW_DAYS,
     build_dashboard_match_state,
+    compute_round_stats,
+    compute_spl_home_stats,
     get_coordinators_for_matches,
+    get_current_round_number,
     get_dashboard_prefetch,
+    get_round_date_ranges,
     get_roshan_league_competition,
 )
 
@@ -33,8 +37,7 @@ class OperationsDashboardView(LoginRequiredMixin, MatchScopedQuerysetMixin, Temp
             and self.request.headers.get("HX-Target") == "round-preview-panel"
         )
         # Round preview cards are the one piece shared verbatim between the
-        # two dashboards (see dashboard_round_preview.html's show_export_link
-        # flag) - both roles hit this same partial for that swap.
+        # two dashboards - both roles hit this same partial for that swap.
         if is_round_preview_request:
             return ["operations/partials/dashboard_round_preview.html"]
 
@@ -64,7 +67,6 @@ class OperationsDashboardView(LoginRequiredMixin, MatchScopedQuerysetMixin, Temp
         links (full schedule / by round / by match, all reusing the existing
         SPL Report export)."""
         now = timezone.localtime()
-        selected_round = self.request.GET.get("round", "")
         selected_club = self.request.GET.get("club", "")
         selected_coordinator = self.request.GET.get("coordinator", "")
         selected_spl_approval = self.request.GET.get("spl_approval", "")
@@ -79,6 +81,17 @@ class OperationsDashboardView(LoginRequiredMixin, MatchScopedQuerysetMixin, Temp
         )
         if roshan_competition:
             matches = matches.filter(competition=roshan_competition)
+
+        # Defaults to the current matchweek on a fresh page load (no ?round=
+        # in the URL at all) so the Rounds strip opens on "what's happening
+        # now" instead of an empty round-preview panel - an explicit
+        # ?round= (including "" from clearing the filter) is still respected.
+        round_date_ranges = get_round_date_ranges(matches)
+        current_round_number = get_current_round_number(round_date_ranges, now.date())
+        if "round" in self.request.GET:
+            selected_round = self.request.GET.get("round", "")
+        else:
+            selected_round = str(current_round_number) if current_round_number is not None else ""
 
         match_cards = [build_dashboard_match_state(match, now=now) for match in matches]
 
@@ -97,6 +110,7 @@ class OperationsDashboardView(LoginRequiredMixin, MatchScopedQuerysetMixin, Temp
                 round_number = None
 
         featured_matches = []
+        round_stats = None
         if round_number is not None:
             featured_matches = sorted(
                 [c for c in match_cards if c["match"].round_number == round_number],
@@ -105,14 +119,23 @@ class OperationsDashboardView(LoginRequiredMixin, MatchScopedQuerysetMixin, Temp
                     x["match"].match_start_time or time.min,
                 ),
             )
+            round_stats = compute_round_stats(featured_matches, now.date())
+            round_stats["date_range"] = round_date_ranges.get(round_number)
 
         # Comprehensive Upcoming & Live table - a normal filterable list on
         # top of the team/round browsing above, for "what's coming up and
-        # when" at a glance. Finished matches don't belong here - note this
-        # excludes match_finished, not is_past: a live match's kickoff IS in
-        # the past (is_past=True) but it hasn't finished yet, so it must
-        # still show up here.
-        table_cards = [c for c in match_cards if not c["match_finished"]]
+        # when" at a glance. Finished matches don't belong here by default -
+        # note this excludes match_finished, not is_past: a live match's
+        # kickoff IS in the past (is_past=True) but it hasn't finished yet,
+        # so it must still show up here. Explicitly asking for
+        # status=finished (via the League Stats "Finished" card/filter) is
+        # the one case that flips this - without this, that filter could
+        # never show anything, since every finished match was already
+        # dropped before the status check even ran.
+        if selected_status == "finished":
+            table_cards = [c for c in match_cards if c["match_finished"]]
+        else:
+            table_cards = [c for c in match_cards if not c["match_finished"]]
         if selected_club:
             table_cards = [c for c in table_cards if str(c["match"].home_club_id) == selected_club]
         if selected_coordinator:
@@ -130,6 +153,9 @@ class OperationsDashboardView(LoginRequiredMixin, MatchScopedQuerysetMixin, Temp
             table_cards = [c for c in table_cards if c["is_live_now"]]
         elif selected_status == "upcoming":
             table_cards = [c for c in table_cards if not c["is_live_now"]]
+        elif selected_status == "in_progress":
+            table_cards = [c for c in table_cards if c["match"].cms_status == Match.Status.IN_PROGRESS]
+        # "finished" needs no further narrowing here - already isolated above.
         table_cards = sorted(
             table_cards,
             key=lambda x: (
@@ -144,36 +170,77 @@ class OperationsDashboardView(LoginRequiredMixin, MatchScopedQuerysetMixin, Temp
             club.pk: club for club in all_clubs if club.pk in set(matches.values_list("home_club_id", flat=True))
         }
 
+        # League Stats cards - always over every match, no filter (the old
+        # Total/Round/Club "Filter By" form was removed; the per-round
+        # numbers now live in the Rounds section's round_stats card instead).
+        stats = compute_spl_home_stats(match_cards)
+
+        # Hick's Law: showing all 34 round chips at once is a lot of
+        # options to scan for one decision. Default to a small window
+        # around whichever round is actually active (falls back to round 1
+        # if the league has no current round yet) - "Show all" in the
+        # template reveals the rest without a server round-trip.
+        window_center = round_number if round_number is not None else (current_round_number or 1)
+        round_window = set(range(max(1, window_center - 2), min(34, window_center + 2) + 1))
+
         context.update({
             "now": now,
             "all_clubs": all_clubs,
             "available_rounds": range(1, 35),
+            "round_window": round_window,
+            "round_date_ranges": round_date_ranges,
+            "current_round_number": current_round_number,
             "selected_round": selected_round,
             "selected_club": selected_club,
             "selected_coordinator": selected_coordinator,
             "selected_spl_approval": selected_spl_approval,
             "selected_status": selected_status,
             "featured_matches": featured_matches,
+            "round_stats": round_stats,
             "roshan_competition": roshan_competition,
-            "show_export_link": True,
             "table_clubs": sorted(home_clubs_by_id.values(), key=lambda c: c.name_ar or c.name_en),
             "coordinators": get_coordinators_for_matches(matches),
             "table_cards": table_page_obj.object_list,
             "table_page_obj": table_page_obj,
             "table_match_count": len(table_cards),
+            "stats": stats,
         })
         return context
 
     def build_staff_context(self, context):
         now = timezone.localtime()
         selected_view = self.request.GET.get("view", "all")
-        selected_round = self.request.GET.get("round", "")
 
         matches = self.filter_matches_queryset(
             Match.objects.select_related("home_club", "away_club", "venue", "sent_to_cms_by")
             .order_by("event_date", "match_start_time")
             .prefetch_related("checklist_items__template_item__category")
         )
+
+        # Scoped to the Roshan League specifically (matching
+        # available_rounds = range(1, 35), its 34-round structure) - the
+        # Round strip mixes in every other competition's matches too, each
+        # with its own independent round numbering, so computing date
+        # ranges/"current round" across all of them would be meaningless.
+        roshan_competition = get_roshan_league_competition()
+        roshan_matches = matches.filter(competition=roshan_competition) if roshan_competition else matches
+        round_date_ranges = get_round_date_ranges(roshan_matches)
+
+        # Same "open on the current matchweek by default" rule as the
+        # viewer dashboard - see build_viewer_context for why an explicit
+        # ?round= (including "") is still respected. Also skipped when
+        # ?view= is present without ?round=: that's a filter-chip click
+        # (Live/Ready/Alerts/...), which must not get silently overridden
+        # by a round default just because the chip's plain <a href> doesn't
+        # carry a round param of its own.
+        current_round_number = get_current_round_number(round_date_ranges, now.date())
+        if "round" in self.request.GET:
+            selected_round = self.request.GET.get("round", "")
+        elif "view" in self.request.GET:
+            selected_round = ""
+        else:
+            selected_round = str(current_round_number) if current_round_number is not None else ""
+
         match_cards = [build_dashboard_match_state(match, now=now) for match in matches]
 
         # Clubs already came in via select_related on `matches`, so this is
@@ -238,6 +305,7 @@ class OperationsDashboardView(LoginRequiredMixin, MatchScopedQuerysetMixin, Temp
             except ValueError:
                 round_number = None
 
+        round_stats = None
         if round_number is not None:
             featured_matches = sorted(
                 [c for c in match_cards if c["match"].round_number == round_number],
@@ -246,6 +314,8 @@ class OperationsDashboardView(LoginRequiredMixin, MatchScopedQuerysetMixin, Temp
                     x["match"].match_start_time or time.min,
                 ),
             )
+            round_stats = compute_round_stats(featured_matches, now.date())
+            round_stats["date_range"] = round_date_ranges.get(round_number)
         else:
             featured_matches = featured_map.get(selected_view, upcoming_matches)
 
@@ -261,13 +331,23 @@ class OperationsDashboardView(LoginRequiredMixin, MatchScopedQuerysetMixin, Temp
             "starting_soon_matches": len(starting_soon_matches),
         }
 
+        # Hick's Law: showing all 34 round chips at once is a lot of
+        # options to scan for one decision - same window-around-the-active-
+        # round default as the viewer dashboard (see build_viewer_context).
+        window_center = round_number if round_number is not None else (current_round_number or 1)
+        round_window = set(range(max(1, window_center - 2), min(34, window_center + 2) + 1))
+
         context.update({
             "stats": stats,
             "now": now,
+            "match_status": Match.Status,
             "prep_window_days": PREP_WINDOW_DAYS,
             "selected_view": selected_view,
             "selected_round": selected_round,
             "available_rounds": range(1, 35),
+            "round_window": round_window,
+            "round_date_ranges": round_date_ranges,
+            "current_round_number": current_round_number,
             "all_clubs": all_clubs,
             # Both shown as compact lists/tables now (pills, table rows), so
             # no need to truncate the way the old card layouts required.
@@ -276,5 +356,6 @@ class OperationsDashboardView(LoginRequiredMixin, MatchScopedQuerysetMixin, Temp
             "upcoming_matches": upcoming_matches[:12],
             "past_matches": past_matches[:12],
             "featured_matches": featured_matches if round_number is not None else featured_matches[:12],
+            "round_stats": round_stats,
         })
         return context

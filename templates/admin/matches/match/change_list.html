@@ -17,5 +17,11 @@
     <li>
         <a href="{% url 'admin:matches_match_template' %}">{% trans "Download Import Template" %}</a>
     </li>
+    <li>
+        <a href="{% url 'admin:matches_match_sync_calendar' %}">{% trans "Update Roshan League Schedule" %}</a>
+    </li>
+    <li>
+        <a href="{% url 'admin:matches_match_export_calendar' %}">{% trans "Export Calendar Import (Excel)" %}</a>
+    </li>
     {{ block.super }}
 {% endblock %}

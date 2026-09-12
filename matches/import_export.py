@@ -89,7 +89,6 @@ SPL_REPORT_FIELDS = [
     "KV / Webook Images",
     "Webook Readiness",
     "SPL Complimentary Tickets",
-    "Comments",
     "Coordinator (Webook)",
 ]
 
@@ -106,10 +105,9 @@ def _spl_report_row_values(row):
         match.actual_release_at.astimezone(RIYADH_TZ).strftime("%Y-%m-%d %H:%M") if match.actual_release_at else "",
         f"{row['readiness_percent']}%",
         "Approved" if match.ticketing_plan_approved else "Not Approved",
-        "Ready" if row["kv_ready"] else "Not Ready",
+        "Received" if row["kv_ready"] else "Not Received",
         "Ready" if row["webook_ready"] else "Not Ready",
         "Sent" if match.spl_tickets_sent else "Not Sent",
-        match.spl_comments,
         (match.home_club.owner.get_full_name() or match.home_club.owner.username) if match.home_club.owner_id else "",
     ]
 
@@ -123,6 +121,71 @@ def export_spl_report_xlsx(rows):
 
     for row in rows:
         ws.append(_spl_report_row_values(row))
+
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    return buffer.getvalue()
+
+
+CALENDAR_IMPORT_FIELDS = [
+    "Round",
+    "Event_Name_AR",
+    "Event_Name_EN",
+    "Description_AR",
+    "Description_EN",
+    "Ticket_Sale_Start_Time",
+    "Ticket_Sale_Start_Date",
+    "Match_Date",
+    "Images",
+    "Gates_Open_Time",
+    "Match_Start_Time",
+    "Match_End_Time",
+    "Terms_AR",
+    "Terms_EN",
+    "Stadium_Name_AR",
+    "Stadium_Name_EN",
+    "Stadium_Google_Maps_URL",
+    "SLUG",
+]
+
+
+def _calendar_import_row_values(row):
+    sale_starts_local = row["sale_starts_at"].astimezone(RIYADH_TZ) if row["sale_starts_at"] else None
+    venue = row.get("venue")
+    return [
+        row["round_number"],
+        row["title_ar"],
+        row["title_en"],
+        row["description_ar"],
+        row["description_en"],
+        sale_starts_local.strftime("%H:%M") if sale_starts_local else "",
+        sale_starts_local.date().isoformat() if sale_starts_local else "",
+        row["event_date"].isoformat() if row["event_date"] else "",
+        "نعم" if row["has_images"] else "لا",
+        row["gates_open_time"].strftime("%H:%M") if row["gates_open_time"] else "",
+        row["match_start_time"].strftime("%H:%M") if row["match_start_time"] else "",
+        row["match_end_time"].strftime("%H:%M") if row["match_end_time"] else "",
+        row["terms_ar"],
+        row["terms_en"],
+        venue.name_ar if venue else "",
+        venue.name_en if venue else "",
+        venue.google_maps_url if venue else "",
+        row["slug"],
+    ]
+
+
+def export_calendar_import_xlsx(rows):
+    """rows: iterable of dicts shaped like matches.calendar_sync's per-match
+    row output (round_number, title_ar/en, description_ar/en, event_date,
+    match_start_time, match_end_time, gates_open_time, sale_starts_at,
+    has_images, terms_ar/en, venue, slug)."""
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Roshan League Import"
+    ws.append(CALENDAR_IMPORT_FIELDS)
+
+    for row in rows:
+        ws.append(_calendar_import_row_values(row))
 
     buffer = io.BytesIO()
     wb.save(buffer)

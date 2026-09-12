@@ -8,3 +8,4 @@ staticfiles/
 .idea/
 .vscode/
 .claude/
+SPL_*_Rounds_*.xlsx

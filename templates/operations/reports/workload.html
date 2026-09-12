@@ -1,4 +1,5 @@
 {% extends "operations/base.html" %}
+{% load static %}
 {% load display_helpers %}
 {% load i18n %}
 
@@ -43,7 +44,7 @@
 
 <div class="card panel">
     <h2 class="panel-title"><i class="ti ti-filter"></i>&nbsp; {% trans "Filters" %}</h2>
-    <form method="get" class="filters">
+    <form method="get" class="filters filter-toolbar" data-autosubmit>
         <div class="field-group">
             <label>{% trans "Coordinator" %}</label>
             <select name="user">
@@ -56,7 +57,7 @@
 
         <div class="field-group">
             <label>{% trans "Club" %}</label>
-            <select name="club">
+            <select name="club" data-searchable>
                 <option value="">{% trans "All" %}</option>
                 {% for club in clubs %}
                     <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
@@ -76,7 +77,7 @@
 
         <div class="field-group">
             <label>{% trans "Round" %}</label>
-            <select name="round">
+            <select name="round" data-searchable>
                 <option value="">{% trans "All" %}</option>
                 {% for r in rounds %}
                     <option value="{{ r }}" {% if selected_round == r|stringformat:"s" %}selected{% endif %}>{{ r }}</option>
@@ -86,7 +87,7 @@
 
         <div class="field-group">
             <label>&nbsp;</label>
-            <button type="submit">{% trans "Apply filters" %}</button>
+            <button type="submit" class="btn-apply-filters"><i class="ti ti-filter"></i> {% trans "Apply filters" %}</button>
         </div>
     </form>
 </div>
@@ -135,8 +136,8 @@
         </div>
     </div>
 
-    <div class="card panel">
-        <div class="panel-title"><i class="ti ti-shield"></i>&nbsp; {% trans "By club" %}</div>
+    <details class="card panel collapsible-section">
+        <summary class="panel-title"><i class="ti ti-shield"></i>&nbsp; {% trans "By club" %} <i class="ti ti-chevron-down collapsible-caret"></i></summary>
         <p class="help-text" style="margin:0 0 var(--space-5);">{% trans "Sorted by highest remaining backlog first." %}</p>
         <div class="table-wrap">
             <table>
@@ -176,12 +177,12 @@
                 </tbody>
             </table>
         </div>
-    </div>
+    </details>
 </div>
 
-<div class="card panel">
-    <div class="panel-title"><i class="ti ti-calendar-event"></i>&nbsp; {% trans "By round" %}</div>
-    <p class="help-text" style="margin:0 0 var(--space-5);">{% blocktrans %}Sorted by highest remaining backlog first. 34 rounds total.{% endblocktrans %}</p>
+<details class="card panel collapsible-section">
+    <summary class="panel-title"><i class="ti ti-calendar-event"></i>&nbsp; {% trans "By round" %} <i class="ti ti-chevron-down collapsible-caret"></i></summary>
+    <p class="help-text" style="margin:0 0 var(--space-5);">{% trans "Sorted by highest remaining backlog first. Grouped by competition and round, since round numbers aren't shared across competitions." %}</p>
     <div class="table-wrap">
         <table>
             <thead>
@@ -195,7 +196,10 @@
             <tbody>
                 {% for row in by_round|dictsortreversed:"remaining" %}
                 <tr>
-                    <td>{% blocktrans with number=row.round_number|default:"—" %}Round {{ number }}{% endblocktrans %}</td>
+                    <td>
+                        {% blocktrans with number=row.round_number|default:"—" %}Round {{ number }}{% endblocktrans %}
+                        <span class="help-text">({{ row.competition__name_ar|default:row.competition__name_en }})</span>
+                    </td>
                     <td>{{ row.total }}</td>
                     <td>
                         {% if row.remaining %}
@@ -220,7 +224,7 @@
             </tbody>
         </table>
     </div>
-</div>
+</details>
 
 <div class="card panel">
     <div class="panel-title"><i class="ti ti-list"></i>&nbsp; {% trans "Matches" %}</div>
@@ -243,12 +247,24 @@
                     <td><a href="{% url 'operations:match-detail' match.pk %}">{{ match.title_en }}</a></td>
                     <td>{{ match.home_club.owner|display_name }}</td>
                     <td>{{ match.competition|localized_name }}</td>
-                    <td>{{ match.round_number|default:"—" }}</td>
+                    <td>
+                        {% if match.round_number %}
+                            <span class="mini-badge mini-badge-neutral" title="{{ match.competition|localized_name }}">
+                                {{ match.competition.name_en|first }}{{ match.round_number }}
+                            </span>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
                     <td>{{ match.event_date }} {{ match.match_start_time }}</td>
                     <td>
-                        <span class="badge badge-{{ match.cms_status|slugify }}">
-                            {{ match.get_cms_status_display }}
-                        </span>
+                        {% if match.event_date == today %}
+                            <span class="badge badge-today"><i class="ti ti-point-filled"></i> {% trans "Today" %}</span>
+                        {% else %}
+                            <span class="badge badge-{{ match.cms_status|slugify }}">
+                                {{ match.get_cms_status_display }}
+                            </span>
+                        {% endif %}
                     </td>
                     <td>
                         {% if match.has_discount %}
@@ -271,6 +287,9 @@
                 {% if page_obj.has_previous %}
                     <a class="pagination-link" href="?user={{ selected_user }}&club={{ selected_club }}&competition={{ selected_competition }}&round={{ selected_round }}&page=1">{% trans "First" %}</a>
                     <a class="pagination-link" href="?user={{ selected_user }}&club={{ selected_club }}&competition={{ selected_competition }}&round={{ selected_round }}&page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>
+                {% else %}
+                    <span class="pagination-link pagination-link-disabled">{% trans "First" %}</span>
+                    <span class="pagination-link pagination-link-disabled">{% trans "Previous" %}</span>
                 {% endif %}
 
                 <span class="pagination-current">{% blocktrans with number=page_obj.number total=page_obj.paginator.num_pages %}Page {{ number }} of {{ total }}{% endblocktrans %}</span>
@@ -278,9 +297,17 @@
                 {% if page_obj.has_next %}
                     <a class="pagination-link" href="?user={{ selected_user }}&club={{ selected_club }}&competition={{ selected_competition }}&round={{ selected_round }}&page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>
                     <a class="pagination-link" href="?user={{ selected_user }}&club={{ selected_club }}&competition={{ selected_competition }}&round={{ selected_round }}&page={{ page_obj.paginator.num_pages }}">{% trans "Last" %}</a>
+                {% else %}
+                    <span class="pagination-link pagination-link-disabled">{% trans "Next" %}</span>
+                    <span class="pagination-link pagination-link-disabled">{% trans "Last" %}</span>
                 {% endif %}
             </div>
         </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
+    <script src="{% static 'operations/js/searchable-select.js' %}"></script>
 {% endblock %}

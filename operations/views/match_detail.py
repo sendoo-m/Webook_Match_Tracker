@@ -1,6 +1,7 @@
 # operations/views/match_detail.py
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils import timezone
 from django.views.generic import DetailView
 
 from matches.models import Match
@@ -31,6 +32,8 @@ class MatchDetailView(LoginRequiredMixin, MatchScopedQuerysetMixin, DetailView):
         context = super().get_context_data(**kwargs)
         selected_filter = self.request.GET.get("filter", "open")
         context["match_status"] = Match.Status
+        context["today"] = timezone.localdate()
+        context["active_tab"] = "overview"
 
         # can_edit is per-MATCH: a Club Manager can edit their own home
         # fixtures but not someone else's, an Operations Manager can see
@@ -42,5 +45,5 @@ class MatchDetailView(LoginRequiredMixin, MatchScopedQuerysetMixin, DetailView):
         context["can_edit_slug"] = can_manage_control_panel(self.request.user)
 
         context.update(build_match_detail_side_context(self.object, selected_filter=selected_filter))
-        context.update(build_spl_report_row(self.object))
+        context.update(build_spl_report_row(self.object, timezone.localtime()))
         return context

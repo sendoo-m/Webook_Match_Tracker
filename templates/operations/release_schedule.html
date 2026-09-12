@@ -1,0 +1,252 @@
+{% extends "operations/base.html" %}
+{% load static %}
+{% load display_helpers %}
+{% load i18n %}
+
+{% block title %}{% trans "Match Release Schedule" %}{% endblock %}
+
+{% block page_help %}
+    <p>
+        {% blocktrans %}Every match's ticket sale must go on sale <strong>20 days before kickoff</strong>.
+        This page tracks that against the actual release date: <span style="color: var(--success)">green</span>
+        means it went on sale on time, <span style="color: var(--danger)">red</span> means it's late or
+        overdue, <span style="color: var(--warning)">amber</span> means today is the deadline, and
+        <span style="color: var(--info)">blue</span> means it isn't due yet.{% endblocktrans %}
+    </p>
+    <p>
+        {% blocktrans %}For anything late, set a reason - either SPL hasn't provided the match
+        schedule/dates yet, or the ticket design is delayed (with notes on who it's waiting on).
+        You only see matches you have access to: your own club's, or everything if you manage
+        operations or SPL.{% endblocktrans %}
+    </p>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">{% trans "Match Release Schedule" %}</h1>
+    <p class="page-subtitle">{% trans "Ticket sale release dates vs. the 20-day-before-kickoff rule." %}</p>
+</div>
+
+{% if round_default_applied and current_round_number %}
+    <p class="help-text">
+        {% blocktrans with number=current_round_number %}Showing from Round {{ number }} onward (the current round) - pick a specific round below, or "All" to include past rounds too.{% endblocktrans %}
+    </p>
+{% endif %}
+
+{% include "operations/partials/round_navigator.html" %}
+
+<div class="card panel">
+    <form method="get" class="filters filter-toolbar" data-autosubmit>
+        <input type="hidden" name="round" value="{{ selected_round }}">
+        <div class="field-group">
+            <label>{% trans "Club" %}</label>
+            <select name="club" data-searchable>
+                <option value="">{% trans "All" %}</option>
+                {% for club in clubs %}
+                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>{% trans "Release Status" %}</label>
+            <select name="status">
+                <option value="">{% trans "All" %}</option>
+                <option value="live_missing_release_date" {% if selected_status == "live_missing_release_date" %}selected{% endif %}>{% trans "Live, Missing Release Date" %}</option>
+                <option value="delayed" {% if selected_status == "delayed" %}selected{% endif %}>{% trans "Delayed" %}</option>
+                <option value="due_today" {% if selected_status == "due_today" %}selected{% endif %}>{% trans "Due Today" %}</option>
+                <option value="upcoming" {% if selected_status == "upcoming" %}selected{% endif %}>{% trans "Upcoming" %}</option>
+                <option value="released_on_time" {% if selected_status == "released_on_time" %}selected{% endif %}>{% trans "Released On Time" %}</option>
+                <option value="released_late" {% if selected_status == "released_late" %}selected{% endif %}>{% trans "Released Late" %}</option>
+                <option value="overdue" {% if selected_status == "overdue" %}selected{% endif %}>{% trans "Overdue (Delayed + Released Late)" %}</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn-apply-filters"><i class="ti ti-filter"></i> {% trans "Apply Filters" %}</button>
+        </div>
+    </form>
+</div>
+
+<div class="card panel">
+    {% with qs="&club="|add:selected_club|add:"&round="|add:selected_round %}
+    <div class="triage-bar">
+        <a class="filter-chip filter-chip-critical{% if selected_status == "live_missing_release_date" %} is-active{% endif %}" href="?status=live_missing_release_date{{ qs }}">
+            <i class="ti ti-alert-octagon"></i> {% trans "No Release Date" %} ({{ triage_counts.live_missing_release_date }})
+        </a>
+        <a class="filter-chip filter-chip-danger{% if selected_status == "overdue" %} is-active{% endif %}" href="?status=overdue{{ qs }}">
+            <i class="ti ti-alert-triangle"></i> {% trans "Overdue" %} ({{ triage_counts.overdue }})
+        </a>
+        <a class="filter-chip filter-chip-warning{% if selected_status == "due_today" %} is-active{% endif %}" href="?status=due_today{{ qs }}">
+            <i class="ti ti-clock"></i> {% trans "Due Today" %} ({{ triage_counts.due_today }})
+        </a>
+        <a class="filter-chip filter-chip-info{% if selected_status == "upcoming" %} is-active{% endif %}" href="?status=upcoming{{ qs }}">
+            <i class="ti ti-calendar-time"></i> {% trans "Upcoming" %} ({{ triage_counts.upcoming }})
+        </a>
+        {% if selected_status %}
+            <a class="filter-chip" href="?status={{ qs }}">{% trans "Clear" %}</a>
+        {% endif %}
+    </div>
+    {% endwith %}
+
+    <p class="help-text">{% blocktrans count counter=row_count %}{{ counter }} match{% plural %}{{ counter }} matches{% endblocktrans %}</p>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>{% trans "Round" %}</th>
+                    <th>{% trans "Match" %}</th>
+                    <th>{% trans "Release Status" %}</th>
+                    <th>{% trans "Match Date" %}</th>
+                    <th>{% trans "Planned Release Date" %}</th>
+                    <th>{% trans "Actual Release Date" %}</th>
+                    <th>{% trans "Delay Reason" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row.match.round_number|default:"—" }}</td>
+                    <td>
+                        <a href="{% url 'operations:match-detail' row.match.pk %}" class="match-row-link match-row-link-stacked">
+                            <span class="match-row-team" title="{{ row.match.home_club|localized_name }}">
+                                <i class="ti ti-home"></i> {{ row.match.home_club|localized_name }}
+                            </span>
+                            <span class="match-row-team" title="{{ row.match.away_club|localized_name }}">
+                                <i class="ti ti-plane-departure"></i> {{ row.match.away_club|localized_name }}
+                            </span>
+                        </a>
+                    </td>
+                    <td>
+                        {% if row.status == "live_missing_release_date" %}
+                            <span class="mini-badge mini-badge-critical">
+                                <i class="ti ti-alert-octagon"></i> {% trans "Live - No Release Date Recorded" %}
+                            </span>
+                        {% elif row.status == "delayed" %}
+                            {% if row.delay_days >= 16 %}
+                                <span class="mini-badge mini-badge-danger">
+                                    <i class="ti ti-alert-triangle"></i>
+                                    {% blocktrans count counter=row.delay_days %}{{ counter }} day overdue{% plural %}{{ counter }} days overdue{% endblocktrans %}
+                                </span>
+                            {% elif row.delay_days >= 5 %}
+                                <span class="mini-badge mini-badge-orange">
+                                    <i class="ti ti-alert-triangle"></i>
+                                    {% blocktrans count counter=row.delay_days %}{{ counter }} day overdue{% plural %}{{ counter }} days overdue{% endblocktrans %}
+                                </span>
+                            {% else %}
+                                <span class="mini-badge mini-badge-warning">
+                                    <i class="ti ti-alert-triangle"></i>
+                                    {% blocktrans count counter=row.delay_days %}{{ counter }} day overdue{% plural %}{{ counter }} days overdue{% endblocktrans %}
+                                </span>
+                            {% endif %}
+                        {% elif row.status == "due_today" %}
+                            <span class="mini-badge mini-badge-warning"><i class="ti ti-clock"></i> {% trans "Due Today" %}</span>
+                        {% elif row.status == "upcoming" %}
+                            <span class="mini-badge mini-badge-info"><i class="ti ti-calendar-time"></i> {% trans "Upcoming" %}</span>
+                        {% elif row.status == "released_late" %}
+                            {% if row.delay_days >= 16 %}
+                                <span class="mini-badge mini-badge-danger">
+                                    <i class="ti ti-alert-triangle"></i>
+                                    {% blocktrans count counter=row.delay_days %}Released {{ counter }} day late{% plural %}Released {{ counter }} days late{% endblocktrans %}
+                                </span>
+                            {% elif row.delay_days >= 5 %}
+                                <span class="mini-badge mini-badge-orange">
+                                    <i class="ti ti-alert-triangle"></i>
+                                    {% blocktrans count counter=row.delay_days %}Released {{ counter }} day late{% plural %}Released {{ counter }} days late{% endblocktrans %}
+                                </span>
+                            {% else %}
+                                <span class="mini-badge mini-badge-warning">
+                                    <i class="ti ti-alert-triangle"></i>
+                                    {% blocktrans count counter=row.delay_days %}Released {{ counter }} day late{% plural %}Released {{ counter }} days late{% endblocktrans %}
+                                </span>
+                            {% endif %}
+                        {% elif row.status == "released_on_time" %}
+                            <span class="mini-badge mini-badge-success"><i class="ti ti-circle-check"></i> {% trans "Released On Time" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ row.match.event_date }}</td>
+                    <td>{{ row.planned_release_date }}</td>
+                    <td>{{ row.match.actual_release_at|default:"—" }}</td>
+                    <td>
+                        {% if row.status == "delayed" or row.status == "released_late" %}
+                            {% if row.can_edit_reason %}
+                                <details class="delay-reason-editor">
+                                    <summary class="btn btn-secondary btn-sm">
+                                        {% if row.match.release_delay_reason %}
+                                            <i class="ti ti-edit"></i> {% trans "Edit Reason" %}
+                                        {% else %}
+                                            <i class="ti ti-circle-plus"></i> {% trans "Add Reason" %}
+                                        {% endif %}
+                                    </summary>
+                                    <form method="post" action="{% url 'operations:release-delay-update' row.match.pk %}" class="release-delay-form">
+                                        {% csrf_token %}
+                                        <select name="release_delay_reason">
+                                            <option value="">{% trans "Select a reason" %}</option>
+                                            {% for value, label in delay_reason_choices %}
+                                                <option value="{{ value }}" {% if row.match.release_delay_reason == value %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <textarea name="release_delay_notes" rows="1" placeholder="{% trans 'Notes (optional)' %}">{{ row.match.release_delay_notes }}</textarea>
+                                        <button type="submit" class="btn btn-secondary btn-sm">{% trans "Save" %}</button>
+                                    </form>
+                                </details>
+                            {% elif row.match.release_delay_reason %}
+                                {% with reason_display=row.match.get_release_delay_reason_display %}
+                                    <span class="mini-badge mini-badge-neutral">
+                                        <i class="ti ti-note"></i>
+                                        {% if reason_display == row.match.release_delay_reason %}{{ row.match.release_delay_reason|humanize_slug }}{% else %}{{ reason_display }}{% endif %}
+                                    </span>
+                                {% endwith %}
+                                {% if row.match.release_delay_notes %}
+                                    <div class="help-text">{{ row.match.release_delay_notes }}</div>
+                                {% endif %}
+                            {% else %}
+                                <span class="mini-badge mini-badge-warning"><i class="ti ti-alert-circle"></i> {% trans "No reason set yet" %}</span>
+                            {% endif %}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7">{% trans "No matches found for this filter." %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+        {% with qs="&club="|add:selected_club|add:"&round="|add:selected_round|add:"&status="|add:selected_status %}
+        <div class="pagination-wrap">
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a class="pagination-link" href="?page=1{{ qs }}">{% trans "First" %}</a>
+                    <a class="pagination-link" href="?page={{ page_obj.previous_page_number }}{{ qs }}">{% trans "Previous" %}</a>
+                {% else %}
+                    <span class="pagination-link pagination-link-disabled">{% trans "First" %}</span>
+                    <span class="pagination-link pagination-link-disabled">{% trans "Previous" %}</span>
+                {% endif %}
+
+                <span class="pagination-current">
+                    {% blocktrans with number=page_obj.number total=page_obj.paginator.num_pages %}Page {{ number }} of {{ total }}{% endblocktrans %}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a class="pagination-link" href="?page={{ page_obj.next_page_number }}{{ qs }}">{% trans "Next" %}</a>
+                    <a class="pagination-link" href="?page={{ page_obj.paginator.num_pages }}{{ qs }}">{% trans "Last" %}</a>
+                {% else %}
+                    <span class="pagination-link pagination-link-disabled">{% trans "Next" %}</span>
+                    <span class="pagination-link pagination-link-disabled">{% trans "Last" %}</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endwith %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
+    <script src="{% static 'operations/js/searchable-select.js' %}"></script>
+{% endblock %}

@@ -1,6 +1,7 @@
 # operations/views/outstanding.py
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils import timezone
 from django.views.generic import DetailView
 
 from matches.models import Match
@@ -26,6 +27,8 @@ class MatchOutstandingItemsView(LoginRequiredMixin, MatchScopedQuerysetMixin, De
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["match_status"] = Match.Status
+        context["today"] = timezone.localdate()
+        context["active_tab"] = "outstanding"
         # Per-match, same rule as match_detail.py: Club Manager only on their
         # own home fixtures, Operations Manager view-only, Super Admin always.
         context["can_edit"] = user_can_manage_match(self.request.user, self.object)

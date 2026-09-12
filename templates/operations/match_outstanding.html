@@ -4,19 +4,9 @@
 {% block title %}{% blocktrans with title=match.title_en %}Outstanding · {{ title }}{% endblocktrans %}{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">{{ match.title_en }}</h1>
-            <p class="page-subtitle">{% blocktrans count counter=outstanding_count %}{{ counter }} outstanding item{% plural %}{{ counter }} outstanding items{% endblocktrans %}</p>
-        </div>
+{% include "operations/partials/match_detail_header.html" %}
 
-        <div class="filter-bar">
-            <a class="btn btn-secondary" href="{% url 'operations:match-detail' match.pk %}">{% trans "Full Checklist" %}</a>
-            <a class="btn btn-secondary" href="{% url 'operations:match-live' match.pk %}">{% trans "Live View" %}</a>
-        </div>
-    </div>
-</div>
+<p class="help-text">{% blocktrans count counter=outstanding_count %}{{ counter }} outstanding item{% plural %}{{ counter }} outstanding items{% endblocktrans %}</p>
 
 {% if delayed_items_list %}
     <div class="card panel">

@@ -6,13 +6,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Webook Event Tracker{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/webook-logo.svg' %}">
 
     <script src="{% static 'operations/js/theme-init.js' %}"></script>
     <script src="{% static 'operations/js/sidebar-init.js' %}"></script>
+    <script src="{% static 'operations/js/density-init.js' %}"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     <link rel="stylesheet" href="{% static 'design_tokens.css' %}">
-    <link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=41">
+    <link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=58">
 
     <meta name="htmx-config" content='{"includeIndicatorStyles": true}'>
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
@@ -22,14 +24,16 @@
 {% url 'operations:dashboard' as dashboard_url %}
 {% url 'operations:match-list' as match_list_url %}
 {% url 'operations:calendar' as calendar_url %}
+{% url 'operations:release-schedule' as release_schedule_url %}
 {% url 'operations:missing-requirements-report' as missing_url %}
 {% url 'operations:spl-report' as spl_report_url %}
+{% url 'operations:spl-approvals' as spl_approvals_url %}
 {% url 'operations:feedback-submit' as feedback_submit_url %}
 {% url 'operations:changelog' as changelog_url %}
 {% url 'operations:workload-report' as workload_url %}
 {% url 'control_panel:home' as control_panel_url %}
-{% url 'events:dashboard' as events_hub_url %}
-{% url 'events:panel-home' as events_panel_url %}
+{% comment %} {% url 'events:dashboard' as events_hub_url %} {% endcomment %}
+{% comment %} {% url 'events:panel-home' as events_panel_url %} {% endcomment %}
 
 <div class="app-shell">
     {% if request.user.is_authenticated %}
@@ -66,9 +70,15 @@
                 <a href="{{ calendar_url }}" title="{% trans 'Calendar' %}" class="sidebar-link{% if request.path == calendar_url %} is-active{% endif %}">
                     <i class="ti ti-calendar"></i><span>{% trans "Calendar" %}</span>
                 </a>
+                <a href="{{ release_schedule_url }}" title="{% trans 'Release Schedule' %}" class="sidebar-link{% if request.path == release_schedule_url %} is-active{% endif %}">
+                    <i class="ti ti-rocket"></i><span>{% trans "Release Schedule" %}</span>
+                </a>
                 {% if is_viewer_only %}
                 <a href="{{ spl_report_url }}" title="{% trans 'SPL Report' %}" class="sidebar-link{% if request.path == spl_report_url %} is-active{% endif %}">
                     <i class="ti ti-report"></i><span>{% trans "SPL Report" %}</span>
+                </a>
+                <a href="{{ spl_approvals_url }}" title="{% trans 'SPL Approvals' %}" class="sidebar-link{% if request.path == spl_approvals_url %} is-active{% endif %}">
+                    <i class="ti ti-checkbox"></i><span>{% trans "SPL Approvals" %}</span>
                 </a>
                 {% endif %}
                 {% if not is_viewer_only %}
@@ -84,7 +94,7 @@
                     <i class="ti ti-settings"></i><span>{% trans "Control panel" %}</span>
                 </a>
                 {% endif %}
-                {% if can_view_events_hub %}
+                {% comment %} {% if can_view_events_hub %}
                 <a href="{{ events_hub_url }}" title="{% trans 'Events Hub' %}" class="sidebar-link{% if request.path == events_hub_url %} is-active{% endif %}">
                     <i class="ti ti-confetti"></i><span>{% trans "Events Hub" %}</span>
                 </a>
@@ -93,7 +103,7 @@
                 <a href="{{ events_panel_url }}" title="{% trans 'Events Panel' %}" class="sidebar-link{% if request.path == events_panel_url %} is-active{% endif %}">
                     <i class="ti ti-adjustments"></i><span>{% trans "Events Panel" %}</span>
                 </a>
-                {% endif %}
+                {% endif %} {% endcomment %}
                 {% comment %} <a href="/admin/" target="_blank" rel="noopener noreferrer" class="sidebar-link">
                     <i class="ti ti-external-link"></i><span>Admin</span>
                 </a> {% endcomment %}
@@ -253,6 +263,7 @@
 <script src="{% static 'operations/js/modal.js' %}"></script>
 <script src="{% static 'operations/js/theme-toggle.js' %}"></script>
 <script src="{% static 'operations/js/sidebar-toggle.js' %}"></script>
+<script src="{% static 'operations/js/density-toggle.js' %}"></script>
 <script src="{% static 'operations/js/training-panel.js' %}"></script>
 <script src="{% static 'operations/js/feedback-modal.js' %}"></script>
 <script src="{% static 'operations/js/match-modal.js' %}"></script>

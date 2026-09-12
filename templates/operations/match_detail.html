@@ -1,5 +1,6 @@
 ﻿{# templates/operations/match_detail.html #}
 {% extends "operations/base.html" %}
+{% load static %}
 {% load i18n %}
 
 {% block title %}{{ match.title_en }}{% endblock %}
@@ -13,27 +14,10 @@
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">
-                {{ match.title_en }}
-                {% if not can_edit %}
-                    <span class="mini-badge mini-badge-neutral">{% trans "Read only" %}</span>
-                {% endif %}
-            </h1>
-            <p class="page-subtitle">{{ match.title_ar }}</p>
-        </div>
+{% include "operations/partials/match_detail_header.html" %}
 
-        <div class="filter-bar">
-            <a class="btn btn-secondary" href="{% url 'operations:match-live' match.pk %}"><i class="ti ti-broadcast"></i> {% trans "Live View" %}</a>
-            <a class="btn btn-secondary" href="{% url 'operations:match-outstanding' match.pk %}"><i class="ti ti-list-check"></i> {% trans "Outstanding Items" %}</a>
-        </div>
-    </div>
-</div>
-
-{% include "operations/partials/match_progress_summary.html" %}
 {% include "operations/partials/match_status_badge.html" %}
+{% include "operations/partials/match_progress_summary.html" %}
 
 <div class="meta-grid">
     <div class="card meta-box">
@@ -130,13 +114,17 @@
 
             <div id="checklist-groups">
                 {% for category, items in grouped_checklist.items %}
-                    <div class="checklist-group">
-                        <h2>{{ category.name }}</h2>
+                    <details class="checklist-group" {% if forloop.first %}open{% endif %}>
+                        <summary class="checklist-group-summary">
+                            <span class="checklist-group-title">{{ category.name }}</span>
+                            <span class="mini-badge mini-badge-neutral">{{ items|length }}</span>
+                            <i class="ti ti-chevron-down checklist-group-caret"></i>
+                        </summary>
 
                         {% for item in items %}
                             {% include "operations/partials/checklist_item_card.html" with item=item %}
                         {% endfor %}
-                    </div>
+                    </details>
                 {% empty %}
                     <div class="card panel">
                         <p>{% trans "No checklist items found for this match." %}</p>
@@ -153,156 +141,32 @@
     </aside>
 </div>
 
-{% include "operations/partials/activity_log_timeline.html" %}
-{% endblock %}
-
-{% comment %} {% extends "operations/base.html" %}
-
-{% block title %}{{ match.title_en }}{% endblock %}
-
-{% block page_help %}
-    <p>
-        This is a single <strong>match's detail page</strong> — its checklist, discount code,
-        SPL report info, CMS status, and activity history all in one place.
-    </p>
-    <p>If you manage this match, you can update checklist items and settings directly here.</p>
-{% endblock %}
-
-{% block content %}
-<div class="page-header">
-    <div class="page-header-row">
+{% if required_done == required_total and not delayed_items %}
+    <div class="card panel peak-end-summary peak-end-summary--positive">
+        <i class="ti ti-circle-check peak-end-summary-icon"></i>
         <div>
-            <h1 class="page-title">{{ match.title_en }}</h1>
-            <p class="page-subtitle">{{ match.title_ar }}</p>
-        </div>
-
-        <div class="filter-bar">
-            <a class="btn btn-secondary" href="{% url 'operations:match-live' match.pk %}"><i class="ti ti-broadcast"></i> Live View</a>
-            <a class="btn btn-secondary" href="{% url 'operations:match-outstanding' match.pk %}"><i class="ti ti-list-check"></i> Outstanding Items</a>
+            <div class="block-title">{% trans "All core requirements are ready." %}</div>
+            <p class="help-text">{% blocktrans %}{{ done_items }} of {{ total_items }} checklist items complete.{% endblocktrans %}</p>
         </div>
     </div>
-</div>
-
-{% include "operations/partials/match_progress_summary.html" %}
-{% include "operations/partials/match_status_badge.html" %}
-
-<div class="meta-grid">
-    <div class="card meta-box">
-        <div class="meta-label">Event Date</div>
-        <div class="meta-value">{{ match.event_date }} {{ match.match_start_time }}</div>
-    </div>
-
-    <div class="card meta-box">
-        <div class="meta-label">Venue</div>
-        <div class="meta-value">{{ match.venue }}</div>
-    </div>
-
-    {% include "operations/partials/match_slug_box.html" %}
-
-    <div class="card meta-box">
-        <div class="meta-label">Home / Away</div>
-        <div class="meta-value" style="display:flex; align-items:center; gap:8px;">
-            {% include "operations/partials/club_chip.html" with club=match.home_club role="home" %}
-            <span class="help-text">vs</span>
-            {% include "operations/partials/club_chip.html" with club=match.away_club role="away" %}
+{% else %}
+    <div class="card panel peak-end-summary peak-end-summary--warning">
+        <i class="ti ti-alert-triangle peak-end-summary-icon"></i>
+        <div>
+            <div class="block-title">{% trans "This match still needs attention before it's ready." %}</div>
+            <p class="help-text">
+                {% if delayed_items %}{% blocktrans count counter=delayed_items %}{{ counter }} delayed item{% plural %}{{ counter }} delayed items{% endblocktrans %}{% endif %}
+                {% if delayed_items and required_done != required_total %} · {% endif %}
+                {% if required_done != required_total %}{% blocktrans with done=required_done total=required_total %}{{ done }} of {{ total }} required items done{% endblocktrans %}{% endif %}
+            </p>
         </div>
     </div>
+{% endif %}
 
-    {% include "operations/partials/match_discount_box.html" %}
-    {% include "operations/partials/match_spl_info_box.html" %}
-</div>
+{% include "operations/partials/activity_log_mini.html" %}
+{% endblock %}
 
-<div class="detail-layout">
-    <div>
-        <div id="checklist-area">
-            <div class="card panel">
-                <div class="filter-bar">
-                    <button
-                        class="btn {% if selected_filter == 'open' %}btn-primary{% endif %}"
-                        hx-get="{% url 'operations:match-detail' match.pk %}?filter=open"
-                        hx-target="#checklist-area"
-                        hx-select="#checklist-area"
-                        hx-swap="outerHTML"
-                    >
-                        Open Only
-                    </button>
+{% block extra_js %}
+    <script src="{% static 'operations/js/cms-status-control.js' %}"></script>
+{% endblock %}
 
-                    <button
-                        class="btn {% if selected_filter == 'all' %}btn-primary{% endif %}"
-                        hx-get="{% url 'operations:match-detail' match.pk %}?filter=all"
-                        hx-target="#checklist-area"
-                        hx-select="#checklist-area"
-                        hx-swap="outerHTML"
-                    >
-                        All
-                    </button>
-
-                    <button
-                        class="btn {% if selected_filter == 'not_started' %}btn-primary{% endif %}"
-                        hx-get="{% url 'operations:match-detail' match.pk %}?filter=not_started"
-                        hx-target="#checklist-area"
-                        hx-select="#checklist-area"
-                        hx-swap="outerHTML"
-                    >
-                        Not Started
-                    </button>
-
-                    <button
-                        class="btn {% if selected_filter == 'in_progress' %}btn-primary{% endif %}"
-                        hx-get="{% url 'operations:match-detail' match.pk %}?filter=in_progress"
-                        hx-target="#checklist-area"
-                        hx-select="#checklist-area"
-                        hx-swap="outerHTML"
-                    >
-                        In Progress
-                    </button>
-
-                    <button
-                        class="btn {% if selected_filter == 'delayed' %}btn-primary{% endif %}"
-                        hx-get="{% url 'operations:match-detail' match.pk %}?filter=delayed"
-                        hx-target="#checklist-area"
-                        hx-select="#checklist-area"
-                        hx-swap="outerHTML"
-                    >
-                        Delayed
-                    </button>
-
-                    <button
-                        class="btn {% if selected_filter == 'done' %}btn-primary{% endif %}"
-                        hx-get="{% url 'operations:match-detail' match.pk %}?filter=done"
-                        hx-target="#checklist-area"
-                        hx-select="#checklist-area"
-                        hx-swap="outerHTML"
-                    >
-                        Done
-                    </button>
-                </div>
-            </div>
-
-            <div id="checklist-groups">
-                {% for category, items in grouped_checklist.items %}
-                    <div class="checklist-group">
-                        <h2>{{ category.name }}</h2>
-
-                        {% for item in items %}
-                            {% include "operations/partials/checklist_item_card.html" with item=item %}
-                        {% endfor %}
-                    </div>
-                {% empty %}
-                    <div class="card panel">
-                        <p>No checklist items found for this match.</p>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    <aside class="detail-sidebar">
-        {% include "operations/partials/sidebar_not_started.html" %}
-        {% include "operations/partials/sidebar_in_progress.html" %}
-        {% include "operations/partials/sidebar_delayed.html" %}
-    </aside>
-</div>
-
-{% include "operations/partials/activity_log_timeline.html" %}
-{% endblock %} {% endcomment %}

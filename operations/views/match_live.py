@@ -9,6 +9,7 @@ from operations.permissions import MatchScopedQuerysetMixin
 from .helpers import (
     POST_MATCH_CATEGORY_NAME,
     build_dashboard_match_state,
+    build_match_progress_context,
     get_match_activity_page_context,
 )
 
@@ -56,5 +57,9 @@ class MatchLiveView(LoginRequiredMixin, MatchScopedQuerysetMixin, DetailView):
         context.update(build_dashboard_match_state(match, now=now))
         context["match_status"] = Match.Status
         context["attention_items"] = attention_items
+        context["active_tab"] = "live"
+        # Needed for the shared header's progress bar, which every tab now
+        # shows regardless of what that tab itself is otherwise about.
+        context.update(build_match_progress_context(match))
         context.update(get_match_activity_page_context(match, page=1))
         return context

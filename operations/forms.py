@@ -56,6 +56,42 @@ class MatchSPLInfoForm(forms.ModelForm):
         return value
 
 
+class SPLPlanApprovalUploadForm(forms.ModelForm):
+    class Meta:
+        model = Match
+        fields = ["plan_approval_file"]
+
+
+class WebookPurchaseLinkForm(forms.ModelForm):
+    class Meta:
+        model = Match
+        fields = ["webook_purchase_url"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Postel's Law: accept a pasted link in any reasonable shape (extra
+        # whitespace, missing "https://") and normalize it before the
+        # URLField's own validation runs - otherwise a perfectly findable
+        # link like "webook.com/xyz" gets rejected outright just for
+        # missing a scheme, instead of being fixed up automatically.
+        if self.data is not None and "webook_purchase_url" in self.data:
+            raw = (self.data.get("webook_purchase_url") or "").strip()
+            if raw and "://" not in raw:
+                raw = f"https://{raw}"
+            if raw != self.data.get("webook_purchase_url"):
+                self.data = self.data.copy()
+                self.data["webook_purchase_url"] = raw
+
+
+class ReleaseDelayForm(forms.ModelForm):
+    class Meta:
+        model = Match
+        fields = ["release_delay_reason", "release_delay_notes"]
+        widgets = {
+            "release_delay_notes": forms.Textarea(attrs={"rows": 2}),
+        }
+
+
 class FeedbackSubmissionForm(forms.ModelForm):
     """Quick self-service form - just enough for someone to submit an idea.
     The narrative fields (situation before/after, decision reason, status)

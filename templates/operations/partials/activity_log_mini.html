@@ -1,0 +1,24 @@
+{% comment %}
+templates/operations/partials/activity_log_mini.html
+Compact activity summary for Overview/Live - Miller's Law: showing the
+full log inline on every tab was extra load with no extra information,
+since the same data is now one click away on its own Activity tab.
+Requires in context: match, activity_logs (only the first few are shown).
+{% endcomment %}
+{% load i18n %}
+<div class="card panel">
+    <div class="timeline-head">
+        <h2 class="panel-title" style="margin:0;">{% trans "Recent Activity" %}</h2>
+        <a href="{% url 'operations:match-activity' match.pk %}" class="btn btn-secondary btn-sm">
+            {% trans "View full activity log" %} <i class="ti ti-arrow-right"></i>
+        </a>
+    </div>
+
+    <div class="timeline-list">
+        {% for log in activity_logs|slice:":3" %}
+            {% include "operations/partials/activity_log_item.html" with log=log %}
+        {% empty %}
+            <p class="help-text">{% trans "No activity yet." %}</p>
+        {% endfor %}
+    </div>
+</div>

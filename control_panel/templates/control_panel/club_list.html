@@ -22,7 +22,10 @@
                     <span class="help-text">—</span>
                 {% endif %}
             </td>
-            <td>{{ club.name_ar }}</td>
+            <td>
+                {{ club.name_ar }}
+                {% if club.is_test_club %}<span class="mini-badge mini-badge-neutral">{% trans "Test" %}</span>{% endif %}
+            </td>
             <td>{{ club.name_en }}</td>
             <td>{{ club.short_name|default:"—" }}</td>
             <td>{{ club.owner|default:"—" }}</td>
@@ -30,6 +33,11 @@
                 <span class="badge {% if club.is_active %}badge-published{% else %}badge-draft{% endif %}">
                     {% if club.is_active %}{% trans "Active" %}{% else %}{% trans "Inactive" %}{% endif %}
                 </span>
+                {% if club.is_active and not club.is_test_club and not club.owner %}
+                    <span class="mini-badge mini-badge-warning" title="{% trans 'Missing an assigned owner/coordinator.' %}">
+                        <i class="ti ti-alert-circle"></i> {% trans "Incomplete" %}
+                    </span>
+                {% endif %}
             </td>
             <td>
                 <div class="row-actions">

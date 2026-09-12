@@ -22,7 +22,7 @@
 </div>
 
 <div class="card panel">
-    <form method="get" class="filters" data-autosubmit>
+    <form method="get" class="filters filter-toolbar" data-autosubmit>
         <div class="field-group">
             <label>{% trans "Status" %}</label>
             <select name="status">
@@ -34,21 +34,11 @@
         </div>
 
         <div class="field-group">
-            <label>{% trans "Home Team" %}</label>
-            <select name="home_club">
+            <label>{% trans "Club" %}</label>
+            <select name="club" data-searchable>
                 <option value="">{% trans "All" %}</option>
                 {% for club in clubs %}
-                    <option value="{{ club.id }}" {% if selected_home_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="field-group">
-            <label>{% trans "Away Team" %}</label>
-            <select name="away_club">
-                <option value="">{% trans "All" %}</option>
-                {% for club in clubs %}
-                    <option value="{{ club.id }}" {% if selected_away_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
+                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -65,7 +55,7 @@
 
         <div class="field-group">
             <label>{% trans "Round" %}</label>
-            <select name="round">
+            <select name="round" data-searchable>
                 <option value="">{% trans "All" %}</option>
                 {% for r in available_rounds %}
                     <option value="{{ r }}" {% if selected_round == r|stringformat:"s" %}selected{% endif %}>{% blocktrans with number=r %}Round {{ number }}{% endblocktrans %}</option>
@@ -83,7 +73,7 @@
 
         <div class="field-group">
             <label>&nbsp;</label>
-            <button type="submit">{% trans "Apply Filters" %}</button>
+            <button type="submit" class="btn-apply-filters"><i class="ti ti-filter"></i> {% trans "Apply Filters" %}</button>
         </div>
     </form>
 </div>
@@ -179,9 +169,13 @@ card grid block below and un-comment this.
                     </div>
                 </div>
                 <div class="match-flip-card-face match-flip-card-back">
-                    <span class="badge badge-{{ match.cms_status|slugify }}">
-                        {{ match.get_cms_status_display }}
-                    </span>
+                    {% if match.event_date == today %}
+                        <span class="badge badge-today"><i class="ti ti-point-filled"></i> {% trans "Today" %}</span>
+                    {% else %}
+                        <span class="badge badge-{{ match.cms_status|slugify }}">
+                            {{ match.get_cms_status_display }}
+                        </span>
+                    {% endif %}
                     <div class="progress-with-label">
                         <div class="progress">
                             <div class="progress-bar" style="width:{% widthratio match.done_items match.total_items 100 %}%"></div>
@@ -213,4 +207,5 @@ card grid block below and un-comment this.
 {% block extra_js %}
     <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
     <script src="{% static 'operations/js/match-cards-flip.js' %}"></script>
+    <script src="{% static 'operations/js/searchable-select.js' %}"></script>
 {% endblock %}

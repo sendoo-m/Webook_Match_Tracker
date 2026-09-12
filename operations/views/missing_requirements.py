@@ -7,11 +7,17 @@ from django.utils import timezone
 from django.views.generic import TemplateView
 
 from checklists.models import MatchChecklistItem
-from matches.models import Club, Competition, Match
+from matches.models import Competition, Match
 from matches.utils import combine_match_datetime
 from operations.permissions import ExcludeViewerAccessMixin, MatchScopedQuerysetMixin, can_view_all_matches
 
-from .helpers import get_match_detail_prefetch, get_missing_requirements_pending_items, is_kv_ready
+from .helpers import (
+    get_match_detail_prefetch,
+    get_missing_requirements_eligible_items_count,
+    get_missing_requirements_pending_items,
+    get_selectable_clubs,
+    is_kv_ready,
+)
 
 class MissingRequirementsReportView(LoginRequiredMixin, ExcludeViewerAccessMixin, MatchScopedQuerysetMixin, TemplateView):
     template_name = "operations/reports/missing_requirements.html"
@@ -30,8 +36,7 @@ class MissingRequirementsReportView(LoginRequiredMixin, ExcludeViewerAccessMixin
         selected_filter = self.request.GET.get("filter", "all")
         is_admin = can_view_all_matches(self.request.user)
 
-        selected_home_club = self.request.GET.get("home_club", "")
-        selected_away_club = self.request.GET.get("away_club", "")
+        selected_club = self.request.GET.get("club", "")
         selected_competition = self.request.GET.get("competition", "")
         selected_round = self.request.GET.get("round", "")
         selected_user = self.request.GET.get("user", "") if is_admin else ""
@@ -40,12 +45,9 @@ class MissingRequirementsReportView(LoginRequiredMixin, ExcludeViewerAccessMixin
 
         scoped_matches = self.filter_matches_queryset(Match.objects.all())
 
-        allowed_club_ids = Club.objects.filter(
-            Q(home_matches__in=scoped_matches) | Q(away_matches__in=scoped_matches)
-        ).distinct().values_list("id", flat=True)
         allowed_competition_ids = scoped_matches.values_list("competition_id", flat=True).distinct()
 
-        context["clubs"] = Club.objects.filter(is_active=True, id__in=allowed_club_ids).order_by("name_ar")
+        context["clubs"] = get_selectable_clubs(scoped_matches)
         context["competitions"] = Competition.objects.filter(
             is_active=True, id__in=allowed_competition_ids
         ).order_by("sort_order", "name_ar")
@@ -63,10 +65,8 @@ class MissingRequirementsReportView(LoginRequiredMixin, ExcludeViewerAccessMixin
             .order_by("event_date", "match_start_time")
             .prefetch_related(get_match_detail_prefetch())
         )
-        if selected_home_club:
-            matches = matches.filter(home_club_id=selected_home_club)
-        if selected_away_club:
-            matches = matches.filter(away_club_id=selected_away_club)
+        if selected_club:
+            matches = matches.filter(Q(home_club_id=selected_club) | Q(away_club_id=selected_club))
         if selected_competition:
             matches = matches.filter(competition_id=selected_competition)
         if selected_round:
@@ -94,12 +94,17 @@ class MissingRequirementsReportView(LoginRequiredMixin, ExcludeViewerAccessMixin
                 categories_by_id.setdefault(category.id, category)
             pending_categories = sorted(categories_by_id.values(), key=lambda c: c.sort_order)
 
+            total_items = get_missing_requirements_eligible_items_count(match)
+            done_items = total_items - len(pending_items)
+
             all_rows.append({
                 "match": match,
                 "event_dt": match_dt,
                 "pending_count": len(pending_items),
                 "pending_items": pending_items,
                 "pending_categories": pending_categories,
+                "total_items": total_items,
+                "done_items": done_items,
                 "has_notes": has_notes,
                 "has_delayed": has_delayed,
                 "is_upcoming": is_upcoming,
@@ -136,8 +141,7 @@ class MissingRequirementsReportView(LoginRequiredMixin, ExcludeViewerAccessMixin
             "paginator": paginator,
             "selected_filter": selected_filter,
             "filter_counts": filter_counts,
-            "selected_home_club": selected_home_club,
-            "selected_away_club": selected_away_club,
+            "selected_club": selected_club,
             "selected_competition": selected_competition,
             "selected_round": selected_round,
             "selected_user": selected_user,

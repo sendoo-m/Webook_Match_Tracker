@@ -13,6 +13,7 @@ urlpatterns = [
     path("matches/export/", views.MatchExportView.as_view(), name="match-export"),
     path("matches/import/", views.MatchImportView.as_view(), name="match-import"),
     path("matches/template/", views.MatchTemplateView.as_view(), name="match-template"),
+    path("matches/sync-calendar/", views.MatchSyncCalendarView.as_view(), name="match-sync-calendar"),
 
     path("teams/", views.TeamListView.as_view(), name="team-list"),
     path("teams/new/", views.TeamCreateView.as_view(), name="team-create"),

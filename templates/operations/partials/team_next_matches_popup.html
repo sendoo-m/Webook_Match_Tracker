@@ -26,11 +26,19 @@
                 <div class="round-preview-card-head">
                     <span class="round-preview-round-tag">{% blocktrans with number=card.match.round_number|default:"—" %}Round {{ number }}{% endblocktrans %}</span>
                     <span class="round-preview-status">
-                        {% if card.is_live_now %}
-                            <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
-                        {% else %}
-                            <span class="badge badge-{{ card.match.cms_status|slugify }}">{{ card.match.get_cms_status_display }}</span>
-                        {% endif %}
+                        {% with status=card|match_lifecycle_status %}
+                            {% if status == "live" %}
+                                <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
+                            {% elif status == "past" %}
+                                <span class="mini-badge mini-badge-neutral"><i class="ti ti-flag-2"></i> {% trans "Past" %}</span>
+                            {% elif status == "happening" %}
+                                <span class="mini-badge mini-badge-warning"><i class="ti ti-player-play"></i> {% trans "Happening" %}</span>
+                            {% elif status == "tbc" %}
+                                <span class="mini-badge mini-badge-neutral"><i class="ti ti-help-circle"></i> {% trans "TBC" %}</span>
+                            {% else %}
+                                <span class="mini-badge mini-badge-info"><i class="ti ti-calendar-time"></i> {% trans "Upcoming" %}</span>
+                            {% endif %}
+                        {% endwith %}
                     </span>
                 </div>
                 <div class="round-preview-teams">
@@ -47,6 +55,17 @@
                         <span><i class="ti ti-map-pin"></i> {{ card.match.venue }}</span>
                     {% endif %}
                 </div>
+                {% if card.match.webook_purchase_url %}
+                    <a
+                        href="{{ card.match.webook_purchase_url }}"
+                        target="_blank"
+                        rel="noopener"
+                        class="round-preview-ticket-link"
+                        onclick="event.stopPropagation()"
+                    >
+                        <i class="ti ti-ticket"></i> {% trans "Buy Tickets" %}
+                    </a>
+                {% endif %}
             </div>
         {% empty %}
             <p class="help-text">{% trans "No upcoming home matches scheduled for this team." %}</p>

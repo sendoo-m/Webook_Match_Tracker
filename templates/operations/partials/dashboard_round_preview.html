@@ -1,9 +1,11 @@
 {% load i18n %}
+{% load display_helpers %}
 {% if selected_round %}
-    <div class="round-preview-matches">
+    <div class="round-preview-layout">
+    <div class="round-preview-matches round-preview-matches-3col">
         {% for card in featured_matches %}
             <div
-                class="round-preview-card"
+                class="round-preview-card{% if card|match_lifecycle_status == "live" %} round-preview-card--live{% endif %}"
                 role="button"
                 tabindex="0"
                 data-modal-trigger
@@ -15,13 +17,19 @@
                 <div class="round-preview-card-head">
                     <span class="round-preview-round-tag">{% blocktrans with number=card.match.round_number|default:"—" %}Round {{ number }}{% endblocktrans %}</span>
                     <span class="round-preview-status">
-                        {% if card.is_live_now %}
-                            <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
-                        {% elif card.match_finished %}
-                            <span class="mini-badge mini-badge-neutral"><i class="ti ti-flag-2"></i> {% trans "Finished" %}</span>
-                        {% else %}
-                            <span class="badge badge-{{ card.match.cms_status|slugify }}">{{ card.match.get_cms_status_display }}</span>
-                        {% endif %}
+                        {% with status=card|match_lifecycle_status %}
+                            {% if status == "live" %}
+                                <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
+                            {% elif status == "past" %}
+                                <span class="mini-badge mini-badge-neutral"><i class="ti ti-flag-2"></i> {% trans "Past" %}</span>
+                            {% elif status == "happening" %}
+                                <span class="mini-badge mini-badge-warning"><i class="ti ti-player-play"></i> {% trans "Happening" %}</span>
+                            {% elif status == "tbc" %}
+                                <span class="mini-badge mini-badge-neutral"><i class="ti ti-help-circle"></i> {% trans "TBC" %}</span>
+                            {% else %}
+                                <span class="mini-badge mini-badge-info"><i class="ti ti-calendar-time"></i> {% trans "Upcoming" %}</span>
+                            {% endif %}
+                        {% endwith %}
                     </span>
                 </div>
                 <div class="round-preview-teams">
@@ -39,19 +47,82 @@
                         <span><i class="ti ti-map-pin"></i> {{ card.match.venue }}</span>
                     {% endif %}
                 </div>
-                {% if show_export_link %}
+                {% if card.match.webook_purchase_url %}
                     <a
-                        href="{% url 'operations:spl-report-export' %}?match={{ card.match.pk }}"
-                        class="round-preview-export-link"
+                        href="{{ card.match.webook_purchase_url }}"
+                        target="_blank"
+                        rel="noopener"
+                        class="round-preview-ticket-link"
                         onclick="event.stopPropagation()"
                     >
-                        <i class="ti ti-file-spreadsheet"></i> {% trans "Export this match" %}
+                        <i class="ti ti-ticket"></i> {% trans "Buy Tickets" %}
                     </a>
                 {% endif %}
             </div>
         {% empty %}
             <p class="help-text">{% blocktrans with number=selected_round %}No matches found for Round {{ number }}.{% endblocktrans %}</p>
         {% endfor %}
+    </div>
+
+    {% if round_stats %}
+        <div class="round-stats-card">
+            <div class="round-stats-card-head">
+                <span class="round-stats-card-title">{% trans "Round Statistics" %}</span>
+                <span class="round-preview-round-tag">{% blocktrans with number=selected_round %}Round {{ number }}{% endblocktrans %}</span>
+            </div>
+            {% if round_stats.date_range %}
+                <div class="round-stats-date">
+                    <i class="ti ti-calendar-event"></i> {{ round_stats.date_range.0 }} – {{ round_stats.date_range.1 }}
+                </div>
+            {% endif %}
+            <div class="round-stats-group">
+                <span class="round-stats-group-title">{% trans "Match Status" %}</span>
+                <div class="round-stats-grid">
+                    <div class="round-stat-item round-stat-item-live" title="{% trans 'Currently live - published on the CMS, or auto-detected live by the match schedule.' %}">
+                        <span class="round-stat-value">{{ round_stats.live_count }}</span>
+                        <span class="round-stat-label">{% trans "Live" %}</span>
+                    </div>
+                    <div class="round-stat-item" title="{% trans 'Has a match date, not live, not in progress, not finished yet.' %}">
+                        <span class="round-stat-value">{{ round_stats.upcoming_count }}</span>
+                        <span class="round-stat-label">{% trans "Upcoming" %}</span>
+                    </div>
+                    <div class="round-stat-item round-stat-item-warning" title="{% trans 'Kickoff time has passed and the match is not finished yet.' %}">
+                        <span class="round-stat-value">{{ round_stats.happening_count }}</span>
+                        <span class="round-stat-label">{% trans "Happening" %}</span>
+                    </div>
+                    <div class="round-stat-item round-stat-item-neutral" title="{% trans 'Match already finished.' %}">
+                        <span class="round-stat-value">{{ round_stats.past_count }}</span>
+                        <span class="round-stat-label">{% trans "Past" %}</span>
+                    </div>
+                    <div class="round-stat-item round-stat-item-neutral" title="{% trans 'No match date set yet.' %}">
+                        <span class="round-stat-value">{{ round_stats.tbc_count }}</span>
+                        <span class="round-stat-label">{% trans "TBC" %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="round-stats-group">
+                <span class="round-stats-group-title">{% trans "Operational Readiness" %}</span>
+                <div class="round-stats-grid">
+                    <div class="round-stat-item round-stat-item-success" title="{% trans 'Ticket sale went on sale on or before the 20-days-before-kickoff deadline.' %}">
+                        <span class="round-stat-value">{{ round_stats.released_on_time_count }}</span>
+                        <span class="round-stat-label">{% trans "Released On Time" %}</span>
+                    </div>
+                    <div class="round-stat-item round-stat-item-danger" title="{% trans 'Released after the 20-days-before-kickoff deadline, or still unreleased with that deadline already passed.' %}">
+                        <span class="round-stat-value">{{ round_stats.delayed_release_count }}</span>
+                        <span class="round-stat-label">{% trans "Delayed Release" %}</span>
+                    </div>
+                    <div class="round-stat-item round-stat-item-goal round-stat-item-success" title="{% blocktrans with approved=round_stats.plan_approvals_count total=round_stats.match_count %}{{ approved }} of {{ total }} matches approved this round.{% endblocktrans %}">
+                        <span class="round-stat-goal-value">{{ round_stats.plan_approvals_count }}<span class="round-stat-goal-total">/{{ round_stats.match_count }}</span></span>
+                        <span class="round-stat-label">{% trans "Plan Approvals" %}</span>
+                        <div class="progress progress-sm">
+                            <div class="progress-bar" style="width:{% widthratio round_stats.plan_approvals_count round_stats.match_count 100 %}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
     </div>
 {% else %}
     <p class="help-text">{% trans "Pick a round above to preview its matches." %}</p>

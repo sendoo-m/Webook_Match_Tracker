@@ -58,52 +58,72 @@
     </a>
 </div>
 
-<div class="dashboard-stats-grid">
-    <a class="card stat-card stat-card-neutral" href="{% url 'operations:match-list' %}">
-        <div class="stat-label">{% trans "Total Matches" %}</div>
-        <div class="stat-value">{{ stats.total_matches }}</div>
-    </a>
+<div class="dashboard-kpi-wrap">
+    <div class="round-stats-group">
+        <span class="round-stats-group-title">{% trans "Volume" %}</span>
+        <div class="dashboard-stats-grid dashboard-stats-grid-flex">
+            <a class="card stat-card stat-card-neutral" href="{% url 'operations:match-list' %}">
+                <div class="stat-label">{% trans "Total Matches" %}</div>
+                <div class="stat-value">{{ stats.total_matches }}</div>
+            </a>
+            <a class="card stat-card stat-card-upcoming" href="{% url 'operations:dashboard' %}?view=upcoming#filtered-matches-panel">
+                <div class="stat-label">{% trans "Upcoming" %}</div>
+                <div class="stat-value">{{ stats.upcoming_matches }}</div>
+            </a>
+            <a class="card stat-card stat-card-past" href="{% url 'operations:dashboard' %}?view=past#filtered-matches-panel">
+                <div class="stat-label">{% trans "Past Matches" %}</div>
+                <div class="stat-value">{{ stats.past_matches }}</div>
+            </a>
+        </div>
+    </div>
 
-    <a class="card stat-card stat-card-live" href="{% url 'operations:dashboard' %}?view=live#filtered-matches-panel">
-        <div class="stat-label">{% trans "Live Now" %}</div>
-        <div class="stat-value">{{ stats.live_matches }}</div>
-    </a>
+    <div class="round-stats-group">
+        <span class="round-stats-group-title">{% trans "Live Ops" %}</span>
+        <div class="dashboard-stats-grid dashboard-stats-grid-flex">
+            <a class="card stat-card stat-card-live" href="{% url 'operations:dashboard' %}?view=live#filtered-matches-panel">
+                <div class="stat-label">{% trans "Live Now" %}</div>
+                <div class="stat-value">{{ stats.live_matches }}</div>
+            </a>
+            <a class="card stat-card stat-card-info" href="{% url 'operations:dashboard' %}?view=starting_soon#filtered-matches-panel">
+                <div class="stat-label">{% trans "Starting in 48h" %}</div>
+                <div class="stat-value">{{ stats.starting_soon_matches }}</div>
+            </a>
+            <a class="card stat-card stat-card-success" href="{% url 'operations:dashboard' %}?view=ready#filtered-matches-panel">
+                <div class="stat-label">{% trans "Ready for Ticket Sale" %}</div>
+                <div class="stat-value">{{ stats.ready_for_ticket_sale_matches }}</div>
+            </a>
+        </div>
+    </div>
 
-    <a class="card stat-card stat-card-info" href="{% url 'operations:dashboard' %}?view=starting_soon#filtered-matches-panel">
-        <div class="stat-label">{% trans "Starting in 48h" %}</div>
-        <div class="stat-value">{{ stats.starting_soon_matches }}</div>
-    </a>
-
-    <a class="card stat-card stat-card-success" href="{% url 'operations:dashboard' %}?view=ready#filtered-matches-panel">
-        <div class="stat-label">{% trans "Ready for Ticket Sale" %}</div>
-        <div class="stat-value">{{ stats.ready_for_ticket_sale_matches }}</div>
-    </a>
-
-    <a class="card stat-card stat-card-warning" href="{% url 'operations:dashboard' %}?view=alerts#filtered-matches-panel">
-        <div class="stat-label">{% trans "Prep Alerts" %}</div>
-        <div class="stat-value">{{ stats.prep_alert_matches }}</div>
-    </a>
-
-    <a class="card stat-card stat-card-danger" href="{% url 'operations:dashboard' %}?view=reports#filtered-matches-panel">
-        <div class="stat-label">{% trans "Needs Reports" %}</div>
-        <div class="stat-value">{{ stats.matches_needing_reports }}</div>
-    </a>
-
-    <a class="card stat-card stat-card-upcoming" href="{% url 'operations:dashboard' %}?view=upcoming#filtered-matches-panel">
-        <div class="stat-label">{% trans "Upcoming" %}</div>
-        <div class="stat-value">{{ stats.upcoming_matches }}</div>
-    </a>
-
-    <a class="card stat-card stat-card-past" href="{% url 'operations:dashboard' %}?view=past#filtered-matches-panel">
-        <div class="stat-label">{% trans "Past Matches" %}</div>
-        <div class="stat-value">{{ stats.past_matches }}</div>
-    </a>
+    <div class="round-stats-group">
+        <span class="round-stats-group-title">{% trans "Needs Attention" %}</span>
+        <div class="dashboard-stats-grid dashboard-stats-grid-flex">
+            <a class="card stat-card stat-card-warning" href="{% url 'operations:dashboard' %}?view=alerts#filtered-matches-panel">
+                <div class="stat-label">{% trans "Prep Alerts" %}</div>
+                <div class="stat-value">{{ stats.prep_alert_matches }}</div>
+            </a>
+            <a class="card stat-card stat-card-danger" href="{% url 'operations:dashboard' %}?view=reports#filtered-matches-panel">
+                <div class="stat-label">{% trans "Needs Reports" %}</div>
+                <div class="stat-value">{{ stats.matches_needing_reports }}</div>
+            </a>
+        </div>
+    </div>
 </div>
 
 <div class="card panel dashboard-section">
     <div class="dashboard-section-head">
-        <h2 class="panel-title"><i class="ti ti-shirt-sport"></i> {% trans "Teams" %}</h2>
-        <span class="help-text">{% trans "Click a team to preview their next home matches" %}</span>
+        <div>
+            <h2 class="panel-title"><i class="ti ti-shirt-sport"></i> {% trans "Teams" %}</h2>
+            <span class="help-text">{% trans "Click a team to preview their next home matches" %}</span>
+        </div>
+        <div class="scroll-strip-arrows">
+            <button type="button" class="scroll-arrow-btn" data-scroll-dir="-1" aria-label="{% trans 'Scroll left' %}">
+                <i class="ti ti-chevron-left"></i>
+            </button>
+            <button type="button" class="scroll-arrow-btn" data-scroll-dir="1" aria-label="{% trans 'Scroll right' %}">
+                <i class="ti ti-chevron-right"></i>
+            </button>
+        </div>
     </div>
 
     <div class="team-scroll-strip">
@@ -133,22 +153,42 @@
 <div class="card panel dashboard-section">
     <div class="dashboard-section-head">
         <h2 class="panel-title"><i class="ti ti-list-numbers"></i> {% trans "Rounds" %}</h2>
-        <span class="help-text">{% trans "Click a round to preview its matches" %}</span>
+        {% with current_range=round_date_ranges|get_item:current_round_number %}
+            {% if current_round_number and current_range %}
+                <span class="help-text">
+                    {% blocktrans with number=current_round_number start=current_range.0 end=current_range.1 %}Today falls under Round {{ number }} ({{ start }} – {{ end }}) - opened below automatically.{% endblocktrans %}
+                </span>
+            {% else %}
+                <span class="help-text">{% trans "Click a round to preview its matches" %}</span>
+            {% endif %}
+        {% endwith %}
     </div>
 
-    <div class="round-scroll-strip">
+    <div class="round-scroll-strip" id="round-strip" data-expanded="window">
         {% for r in available_rounds %}
-            <a
-                href="?round={{ r }}"
-                class="round-chip {% if selected_round == r|stringformat:'s' %}is-active{% endif %}"
-                hx-get="{% url 'operations:dashboard' %}?round={{ r }}"
-                hx-target="#round-preview-panel"
-                hx-swap="innerHTML"
-                hx-push-url="true"
-            >
-                {{ r }}
-            </a>
+            {% with range=round_date_ranges|get_item:r %}
+                <a
+                    href="?round={{ r }}"
+                    class="round-chip {% if selected_round == r|stringformat:'s' %}is-active{% endif %}"
+                    hx-get="{% url 'operations:dashboard' %}?round={{ r }}"
+                    hx-target="#round-preview-panel"
+                    hx-swap="innerHTML"
+                    hx-push-url="true"
+                    data-in-window="{% if r in round_window %}true{% else %}false{% endif %}"
+                    data-half="{% if r <= 17 %}1{% else %}2{% endif %}"
+                    {% if range %}title="{{ range.0 }} – {{ range.1 }}"{% endif %}
+                >
+                    {{ r }}
+                </a>
+            {% endwith %}
         {% endfor %}
+    </div>
+
+    <div class="round-strip-toggles">
+        <button type="button" class="filter-chip" data-round-expand="half1">{% trans "1–17" %}</button>
+        <button type="button" class="filter-chip" data-round-expand="half2">{% trans "18–34" %}</button>
+        <button type="button" class="filter-chip" data-round-expand="all">{% trans "Show all rounds" %}</button>
+        <button type="button" class="filter-chip" data-round-expand="window" hidden>{% trans "Show fewer rounds" %}</button>
     </div>
 
     <div id="round-preview-panel">
@@ -230,4 +270,6 @@
 
 {% block extra_js %}
     <script src="{% static 'operations/js/round-strip.js' %}"></script>
+    <script src="{% static 'operations/js/round-strip-collapse.js' %}"></script>
+    <script src="{% static 'operations/js/scroll-strip-arrows.js' %}"></script>
 {% endblock %}

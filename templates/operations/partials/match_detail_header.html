@@ -1,0 +1,52 @@
+{% comment %}
+templates/operations/partials/match_detail_header.html
+Shared sticky header for the match-detail page cluster (Overview/Checklist/
+Live/Outstanding/Activity) - title, teams, venue, kickoff, a single Match
+Status badge, and the completion percentage are all visible here regardless
+of which tab is open, so re-reading the whole page isn't needed just to
+check status. Requires in context: match, match_status (the Match.Status
+enum), active_tab ("overview"/"live"/"outstanding"), and the progress
+fields from build_match_progress_context (total_items/done_items/
+progress_percent) - every view in this cluster supplies these.
+{% endcomment %}
+{% load i18n %}
+{% load display_helpers %}
+<div class="match-detail-header">
+    <div class="match-detail-header-top">
+        <div>
+            <h1 class="page-title">{{ match.title_en }}</h1>
+            <p class="page-subtitle">{{ match.title_ar }}</p>
+        </div>
+
+        <div class="match-detail-header-status">
+            {% if match.cms_status == match_status.PUBLISHED %}
+                <span class="mini-badge mini-badge-live"><span class="live-dot"></span>{% trans "LIVE" %}</span>
+            {% else %}
+                <span class="badge badge-{{ match.cms_status|slugify }}">{{ match.get_cms_status_display }}</span>
+            {% endif %}
+
+            {% if total_items %}
+                <div class="match-detail-header-progress" title="{% blocktrans with done=done_items total=total_items %}{{ done }} of {{ total }} checklist items complete{% endblocktrans %}">
+                    <div class="progress progress-sm">
+                        <div class="progress-bar" style="width:{{ progress_percent }}%"></div>
+                    </div>
+                    <span class="progress-label">{{ done_items }}/{{ total_items }} · {{ progress_percent }}%</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="match-detail-header-meta">
+        <span><i class="ti ti-shirt-sport"></i> {{ match.home_club|localized_name }} <span class="help-text">{% trans "vs" %}</span> {{ match.away_club|localized_name }}</span>
+        <span><i class="ti ti-trophy"></i> {{ match.competition|localized_name }}</span>
+        <span><i class="ti ti-map-pin"></i> {{ match.venue|default:"—" }}</span>
+        <span><i class="ti ti-calendar-event"></i> {% trans "TBC" as tbc_label %}{{ match.event_date|default:tbc_label }} {% if match.match_start_time %}{{ match.match_start_time|time:"H:i" }}{% endif %}</span>
+    </div>
+
+    <nav class="subnav match-detail-tabs">
+        <a href="{% url 'operations:match-detail' match.pk %}" class="subnav-link{% if active_tab == "overview" %} is-active{% endif %}">{% trans "Overview" %}</a>
+        <a href="{% url 'operations:match-live' match.pk %}" class="subnav-link{% if active_tab == "live" %} is-active{% endif %}"><i class="ti ti-broadcast"></i> {% trans "Live" %}</a>
+        <a href="{% url 'operations:match-outstanding' match.pk %}" class="subnav-link{% if active_tab == "outstanding" %} is-active{% endif %}"><i class="ti ti-list-check"></i> {% trans "Outstanding" %}</a>
+        <a href="{% url 'operations:match-activity' match.pk %}" class="subnav-link{% if active_tab == "activity" %} is-active{% endif %}"><i class="ti ti-history"></i> {% trans "Activity" %}</a>
+    </nav>
+</div>

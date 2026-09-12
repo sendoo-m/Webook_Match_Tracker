@@ -1,0 +1,165 @@
+{% extends "operations/base.html" %}
+{% load static %}
+{% load display_helpers %}
+{% load i18n %}
+
+{% block title %}{% trans "SPL Approvals" %}{% endblock %}
+
+{% block page_help %}
+    <p>
+        {% blocktrans %}This is where the SPL team confirms the ticketing plan (with its supporting
+        approval file) and confirms complimentary tickets were sent, one match at a time - moved
+        out of the SPL Report table so the report stays a read-only overview.{% endblocktrans %}
+    </p>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">{% trans "SPL Approvals" %}</h1>
+            <p class="page-subtitle">{% trans "Confirm the ticketing plan and complimentary tickets for each match." %}</p>
+        </div>
+
+        <div class="filter-bar">
+            <a class="btn btn-ghost" href="{% url 'operations:spl-finished-matches' %}">
+                <i class="ti ti-history"></i> {% trans "Finished Matches" %}
+            </a>
+            <a class="btn btn-ghost" href="{% url 'operations:spl-report' %}">
+                <i class="ti ti-report"></i> {% trans "View SPL Report" %}
+            </a>
+        </div>
+    </div>
+</div>
+
+{% include "operations/partials/round_navigator.html" %}
+
+<div class="card panel">
+    <form method="get" class="filters filter-toolbar" data-autosubmit>
+        <input type="hidden" name="round" value="{{ selected_round }}">
+        <div class="field-group">
+            <label>{% trans "Club" %}</label>
+            <select name="club" data-searchable>
+                <option value="">{% trans "All" %}</option>
+                {% for club in clubs %}
+                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>{% trans "Coordinator" %}</label>
+            <select name="coordinator">
+                <option value="">{% trans "All" %}</option>
+                {% for coordinator in coordinators %}
+                    <option value="{{ coordinator.id }}" {% if selected_coordinator == coordinator.id|stringformat:"s" %}selected{% endif %}>{{ coordinator|display_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn-apply-filters"><i class="ti ti-filter"></i> {% trans "Apply Filters" %}</button>
+        </div>
+    </form>
+</div>
+
+<div class="spl-approval-list">
+    {% for row in rows %}
+        <div class="card panel spl-approval-card">
+            <div class="spl-approval-card-head">
+                <span class="round-preview-round-tag">{% blocktrans with number=row.match.round_number|default:"—" %}Round {{ number }}{% endblocktrans %}</span>
+                <a href="{% url 'operations:match-detail' row.match.pk %}" class="help-text">
+                    {% if row.match.event_date %}{{ row.match.event_date }}{% else %}{% trans "TBC" %}{% endif %}
+                </a>
+            </div>
+
+            <div class="spl-approval-card-teams">
+                {% include "operations/partials/club_chip.html" with club=row.match.home_club role="home" %}
+                <span class="help-text">vs</span>
+                {% include "operations/partials/club_chip.html" with club=row.match.away_club role="away" %}
+            </div>
+
+            <div class="spl-approval-card-body">
+                <div class="spl-approval-block">
+                    <div class="spl-approval-block-head">
+                        <span class="block-title">{% trans "Ticketing Plan Status" %}</span>
+                        <span class="mini-badge mini-badge-{{ row.match.ticketing_plan_approved|urgency_badge_class:row.days_to_match }}">
+                            {% if row.match.ticketing_plan_approved %}{% trans "Approved" %}{% else %}{% trans "Not Approved" %}{% endif %}
+                        </span>
+                    </div>
+
+                    {% if row.match.ticketing_plan_approved_at %}
+                        <div class="help-text">{% blocktrans with when=row.match.ticketing_plan_approved_at %}on {{ when }}{% endblocktrans %}</div>
+                    {% endif %}
+
+                    {% if not row.match.ticketing_plan_approved and can_confirm_spl_plan %}
+                        <form method="post" action="{% url 'operations:spl-plan-confirm' row.match.pk %}" class="logout-form spl-confirm-form">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm">
+                                <i class="ti ti-clipboard-check"></i> {% trans "Confirm Plan" %}
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    {% if can_confirm_spl_plan %}
+                        <form
+                            method="post"
+                            action="{% url 'operations:spl-plan-approval-upload' row.match.pk %}"
+                            enctype="multipart/form-data"
+                            class="logout-form spl-plan-upload-form"
+                        >
+                            {% csrf_token %}
+                            <input type="file" name="plan_approval_file" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" required>
+                            <button type="submit" class="btn btn-secondary btn-sm">{% trans "Upload Approval File" %}</button>
+                        </form>
+                    {% endif %}
+
+                    {% if row.match.plan_approval_file %}
+                        <div class="spl-plan-file-link">
+                            <i class="ti ti-paperclip"></i>
+                            <a href="{{ row.match.plan_approval_file.url }}" target="_blank" rel="noopener">
+                                {{ row.match.plan_approval_file.name|cut:"spl_plan_approvals/" }}
+                            </a>
+                        </div>
+                        {% if row.match.plan_approval_file_uploaded_at %}
+                            <div class="help-text">{% blocktrans with when=row.match.plan_approval_file_uploaded_at %}uploaded {{ when }}{% endblocktrans %}</div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <div class="spl-approval-block">
+                    <div class="spl-approval-block-head">
+                        <span class="block-title">{% trans "SPL Complimentary Tickets" %}</span>
+                        <span class="mini-badge mini-badge-{{ row.match.spl_tickets_sent|urgency_badge_class:row.days_to_match }}">
+                            {% if row.match.spl_tickets_sent %}{% trans "Sent" %}{% else %}{% trans "Not Sent" %}{% endif %}
+                        </span>
+                    </div>
+
+                    {% if row.match.spl_tickets_sent_at %}
+                        <div class="help-text">{% blocktrans with when=row.match.spl_tickets_sent_at %}on {{ when }}{% endblocktrans %}</div>
+                    {% endif %}
+
+                    {% if not row.match.spl_tickets_sent and can_confirm_spl_tickets %}
+                        <form method="post" action="{% url 'operations:spl-tickets-confirm' row.match.pk %}" class="logout-form spl-confirm-form">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm">
+                                <i class="ti ti-ticket"></i> {% trans "Confirm Tickets Sent" %}
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="card panel">
+            <p class="help-text">{% trans "No matches found." %}</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
+    <script src="{% static 'operations/js/searchable-select.js' %}"></script>
+{% endblock %}

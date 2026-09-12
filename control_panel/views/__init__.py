@@ -23,6 +23,7 @@ from .matches import (
     MatchAdminUpdateView,
     MatchExportView,
     MatchImportView,
+    MatchSyncCalendarView,
     MatchTemplateView,
 )
 from .release_notes import ReleaseNoteCreateView, ReleaseNoteListView, ReleaseNoteUpdateView
@@ -51,6 +52,7 @@ __all__ = [
     "MatchAdminUpdateView",
     "MatchExportView",
     "MatchImportView",
+    "MatchSyncCalendarView",
     "MatchTemplateView",
     "PanelHomeView",
     "ReleaseNoteCreateView",

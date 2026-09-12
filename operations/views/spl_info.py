@@ -4,6 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
+from django.utils import timezone
 from django.views import View
 
 from matches.models import Match
@@ -39,7 +40,7 @@ class MatchSPLInfoUpdateView(LoginRequiredMixin, MatchScopedQuerysetMixin, View)
             form.save()
             html = render_to_string(
                 "operations/partials/match_spl_info_box.html",
-                {"match": match, "can_edit": True, **build_spl_report_row(match)},
+                {"match": match, "can_edit": True, **build_spl_report_row(match, timezone.localtime())},
                 request=request,
             )
         else:

@@ -10,6 +10,7 @@ from django.utils.translation import gettext as _
 from django.views import View
 
 from matches.models import Match
+from operations.forms import WebookPurchaseLinkForm
 from operations.models import MatchActivityLog
 from operations.permissions import MatchScopedQuerysetMixin, require_match_access
 
@@ -46,7 +47,7 @@ class SendToCMSView(LoginRequiredMixin, MatchScopedQuerysetMixin, View):
             progress_html = render_to_string("operations/partials/match_progress_summary.html", build_match_progress_context(match), request=request)
             status_html = render_to_string(
                 "operations/partials/match_status_badge.html",
-                {"match": match, "match_status": Match.Status, "can_edit": True},
+                {"match": match, "match_status": Match.Status, "can_edit": True, "today": timezone.localdate()},
                 request=request,
             )
             activity_html = render_to_string("operations/partials/activity_log_timeline.html", activity_context, request=request)
@@ -91,6 +92,7 @@ class MatchCMSStatusUpdateView(LoginRequiredMixin, MatchScopedQuerysetMixin, Vie
         match.refresh_from_db()
         detail_context = build_match_detail_side_context(match)
         detail_context["match_status"] = Match.Status
+        detail_context["today"] = timezone.localdate()
         detail_context["can_edit"] = True  # this view already required require_match_access above
         detail_context.update(get_match_activity_page_context(match, page=1))
         progress_html = render_to_string("operations/partials/match_progress_summary.html", detail_context, request=request)
@@ -102,11 +104,51 @@ class MatchCMSStatusUpdateView(LoginRequiredMixin, MatchScopedQuerysetMixin, Vie
         # swap this same box directly.
         spl_info_html = render_to_string(
             "operations/partials/match_spl_info_box.html",
-            {"match": match, "can_edit": True, "oob": True, **build_spl_report_row(match)},
+            {"match": match, "can_edit": True, "oob": True, **build_spl_report_row(match, timezone.localtime())},
             request=request,
         )
         response_html = progress_html + status_html + activity_html
         if request.headers.get("HX-Request") == "true":
             return HttpResponse(response_html + spl_info_html)
         messages.success(request, _("CMS status updated successfully."))
+        return redirect("operations:match-detail", pk=match.pk)
+
+
+class MatchWebookLinkUpdateView(LoginRequiredMixin, MatchScopedQuerysetMixin, View):
+    """Sets the public webook.com ticket purchase link shown on the Match
+    Status panel once a match is Published/live - same permission gate
+    (require_match_access) as the other CMS status actions on that panel."""
+
+    def post(self, request, pk, *args, **kwargs):
+        match = get_object_or_404(self.filter_matches_queryset(Match.objects.all()), pk=pk)
+        require_match_access(request.user, match)
+
+        form = WebookPurchaseLinkForm(request.POST, instance=match)
+        if not form.is_valid():
+            error_text = " ".join(str(error) for errors in form.errors.values() for error in errors)
+            if request.headers.get("HX-Request") == "true":
+                # A normal messages.error() here would be silently lost -
+                # this response is an htmx partial swap, not a full page
+                # render, so the messages block in base.html never sees it.
+                return HttpResponseBadRequest(error_text or _("Could not update the link."))
+            messages.error(request, error_text or _("Could not update the link."))
+            return redirect("operations:match-detail", pk=match.pk)
+
+        form.save()
+        log_match_activity(
+            match=match,
+            action=MatchActivityLog.Action.STATUS_CHANGED,
+            description="Webook purchase link updated.",
+            user=request.user,
+        )
+        messages.success(request, _("Webook purchase link updated."))
+
+        match.refresh_from_db()
+        detail_context = build_match_detail_side_context(match)
+        detail_context["match_status"] = Match.Status
+        detail_context["today"] = timezone.localdate()
+        detail_context["can_edit"] = True
+        status_html = render_to_string("operations/partials/match_status_badge.html", detail_context, request=request)
+        if request.headers.get("HX-Request") == "true":
+            return HttpResponse(status_html)
         return redirect("operations:match-detail", pk=match.pk)

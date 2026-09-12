@@ -1,0 +1,39 @@
+{# control_panel/match_sync_calendar.html #}
+{% extends "operations/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Update Roshan League Schedule" %} · {% trans "Control Panel" %}{% endblock %}
+
+{% block content %}
+{% include "control_panel/_subnav.html" %}
+
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">{% trans "Update Roshan League Schedule" %}</h1>
+            <p class="page-subtitle">
+                {% blocktrans %}Fetches every Roshan League fixture from SPL's Google Calendar feed and
+                creates/updates the matching matches - all rounds, every time it's run.{% endblocktrans %}
+            </p>
+        </div>
+        <div class="filter-bar">
+            <a class="btn btn-secondary" href="{% url 'control_panel:match-list' %}">{% trans "Back to Matches" %}</a>
+        </div>
+    </div>
+</div>
+
+<div class="card panel" style="max-width:640px;">
+    <ul>
+        <li>{% trans "Matches are matched by round + the two clubs playing, not by date or slug - so a match keeps updating correctly even if SPL reschedules it, and an existing match keeps its current slug." %}</li>
+        <li>{% trans "Fixtures whose kickoff time is still \"Time TBC\" on the calendar are skipped, not imported with a guessed time." %}</li>
+        <li>{% trans "A previously-known stadium is kept if the calendar's location briefly goes back to \"TBC\"." %}</li>
+    </ul>
+
+    <form method="post" class="form-stack">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{% trans "Run sync" %}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

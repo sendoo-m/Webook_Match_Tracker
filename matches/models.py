@@ -1,7 +1,28 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+
+PLAN_APPROVAL_ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png", "pdf", "doc", "docx", "xls", "xlsx"]
+PLAN_APPROVAL_MAX_SIZE_MB = 10
+
+
+def validate_plan_approval_file(value):
+    """Keeps the SPL "plan approval" upload to images/office docs only, and
+    under a sane size - the field otherwise has no other constraint on what
+    gets attached."""
+    extension = value.name.rsplit(".", 1)[-1].lower() if "." in value.name else ""
+    if extension not in PLAN_APPROVAL_ALLOWED_EXTENSIONS:
+        raise ValidationError(
+            _("Unsupported file type. Allowed types: %(extensions)s.")
+            % {"extensions": ", ".join(PLAN_APPROVAL_ALLOWED_EXTENSIONS)}
+        )
+    if value.size > PLAN_APPROVAL_MAX_SIZE_MB * 1024 * 1024:
+        raise ValidationError(
+            _("File is too large. Maximum size is %(max_mb)s MB.") % {"max_mb": PLAN_APPROVAL_MAX_SIZE_MB}
+        )
 
 
 class Competition(models.Model):
@@ -46,6 +67,10 @@ class Club(models.Model):
     short_name = models.CharField(max_length=50, blank=True)
     logo = models.ImageField(upload_to="club_logos/", blank=True, null=True)
     is_active = models.BooleanField(default=True)
+    is_test_club = models.BooleanField(
+        default=False,
+        help_text="Excluded from every user-facing club list/filter/report - for dummy fixtures used in testing, not real teams.",
+    )
 
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -84,6 +109,11 @@ class Match(models.Model):
         READY_FOR_CMS = "ready_for_cms", "Ready for CMS"
         SENT_TO_CMS = "sent_to_cms", "Sent to CMS"
         PUBLISHED = "published", "Published"
+
+    class ReleaseDelayReason(models.TextChoices):
+        SPL_SCHEDULE_MISSING = "spl_schedule_missing", "SPL hasn't provided the match schedule/dates yet"
+        KVS_DELAY = "kvs_delay", "KVs delay"
+        OTHER = "other", "Other"
 
     competition = models.ForeignKey(
         Competition,
@@ -140,9 +170,66 @@ class Match(models.Model):
         blank=True,
         help_text="When tickets actually went live, if different from the planned sale_starts_at.",
     )
+    webook_purchase_url = models.URLField(
+        blank=True,
+        help_text="Public ticket purchase link on webook.com, filled in once the match goes live/published.",
+    )
     ticketing_plan_approved = models.BooleanField(default=False)
+    ticketing_plan_approved_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the SPL team confirmed the ticketing plan - kept even after the match is finished, for the Finished Matches history.",
+    )
     spl_tickets_sent = models.BooleanField(default=False)
+    spl_tickets_sent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the SPL team confirmed complimentary tickets were sent.",
+    )
     spl_comments = models.TextField(blank=True)
+    plan_approval_file = models.FileField(
+        upload_to="spl_plan_approvals/",
+        null=True,
+        blank=True,
+        validators=[validate_plan_approval_file],
+        help_text="Signed ticketing plan approval document (image, PDF, or Office file).",
+    )
+    plan_approval_file_uploaded_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the current plan_approval_file was uploaded.",
+    )
+
+    # Explains WHY ticket sale release is running late, per the Match
+    # Release Schedule page - purely descriptive, doesn't affect any other
+    # computed status (release lateness itself is derived from event_date
+    # and actual_release_at, not stored - see operations/views/helpers.py
+    # compute_release_status).
+    release_delay_reason = models.CharField(
+        max_length=30,
+        choices=ReleaseDelayReason.choices,
+        blank=True,
+    )
+    release_delay_notes = models.TextField(
+        blank=True,
+        help_text="Details for the delay reason - e.g. which club/party the ticket design delay is on.",
+    )
+
+    # Added for the Google Calendar import (matches/calendar_sync.py): the
+    # calendar feed has no equivalent of these, so the importer always
+    # stamps the same constant text/False - they exist mainly so the
+    # calendar import's Excel export has somewhere to read Terms/Images from.
+    terms_ar = models.TextField(blank=True, default="لا يوجد استرجاع للمبالغ.")
+    terms_en = models.TextField(blank=True, default="Refund is not allowed.")
+    has_images = models.BooleanField(
+        default=False,
+        help_text=(
+            "Manually confirmed marketing images are ready. NOT the same as "
+            "the KV/Webook Images readiness on the SPL Report, which is "
+            "derived from checklist items - this field is only ever set by "
+            "hand or left False by the calendar import."
+        ),
+    )
 
     cms_status = models.CharField(
         max_length=30,

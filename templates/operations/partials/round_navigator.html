@@ -1,0 +1,64 @@
+{% comment %}
+templates/operations/partials/round_navigator.html
+Shared round-selection control - Previous/Next arrows plus a single
+click-to-open picker for jumping to any round or clearing back to "All
+Rounds". Replaces the separate "Round" <select> that used to sit in the
+filter form next to this bar on Release Schedule/SPL Report/SPL Approvals -
+one control for round selection, not two doing the same job differently.
+Requires in context: current_round_number, prev_round, next_round, rounds
+(every round number this page can filter to), selected_club,
+selected_coordinator, selected_status (define as "" on pages with no status
+filter - it's used as a filter argument below, so it must exist), and
+either selected_round (a single round already picked) or current_round_number
+as the round being shown (SPL Report defaults to "current round onward"
+rather than one round, so the bar centers on current_round_number until the
+visitor clicks Previous, Next, or a round in the picker).
+{% endcomment %}
+{% load i18n %}
+{% if rounds %}
+    {% with active_round=selected_round|default:current_round_number %}
+    {% with qs="&club="|add:selected_club|add:"&coordinator="|add:selected_coordinator|add:"&status="|add:selected_status %}
+    <div class="card panel round-navigator">
+        {% if prev_round %}
+            <a class="round-nav-btn" href="?round={{ prev_round }}{{ qs }}">
+                <i class="ti ti-chevron-left"></i> {% trans "Previous Round" %}
+            </a>
+        {% else %}
+            <span class="round-nav-btn round-nav-btn-disabled">
+                <i class="ti ti-chevron-left"></i> {% trans "Previous Round" %}
+            </span>
+        {% endif %}
+
+        <details class="round-nav-picker">
+            <summary class="round-nav-current">
+                {% if active_round %}
+                    {% blocktrans with number=active_round %}Round {{ number }}{% endblocktrans %}
+                    {% if active_round|stringformat:"s" == current_round_number|stringformat:"s" %}
+                        <span class="mini-badge mini-badge-success">{% trans "Current" %}</span>
+                    {% endif %}
+                {% else %}
+                    {% trans "All Rounds" %}
+                {% endif %}
+                <i class="ti ti-chevron-down round-nav-picker-caret"></i>
+            </summary>
+            <div class="round-nav-picker-menu">
+                <a href="?round={{ qs }}" class="round-nav-picker-item{% if not active_round %} is-active{% endif %}">{% trans "All Rounds" %}</a>
+                {% for r in rounds %}
+                    <a href="?round={{ r }}{{ qs }}" class="round-nav-picker-item{% if active_round|stringformat:'s' == r|stringformat:'s' %} is-active{% endif %}">{% blocktrans with number=r %}Round {{ number }}{% endblocktrans %}</a>
+                {% endfor %}
+            </div>
+        </details>
+
+        {% if next_round %}
+            <a class="round-nav-btn" href="?round={{ next_round }}{{ qs }}">
+                {% trans "Next Round" %} <i class="ti ti-chevron-right"></i>
+            </a>
+        {% else %}
+            <span class="round-nav-btn round-nav-btn-disabled">
+                {% trans "Next Round" %} <i class="ti ti-chevron-right"></i>
+            </span>
+        {% endif %}
+    </div>
+    {% endwith %}
+    {% endwith %}
+{% endif %}

@@ -32,7 +32,7 @@
     --info: var(--content-content-info);
     --info-soft: var(--backgrounds-bg-info);
 
-    --live: var(--content-content-danger-active);
+    --live: var(--content-content-success);
 
     --neutral-soft: var(--surface-surface-l2);
     --neutral-text: var(--content-content-secondary);
@@ -104,7 +104,7 @@ html[data-theme="light"] {
     --info-soft: #F8F5FF;
     --primary: #FF2C79;
     --primary-soft: #FFD4E4;
-    --live: #D81A48;
+    --live: #17C653;
     --neutral-soft: #F5F5F6;
     --neutral-text: #8B8E9A;
 }
@@ -130,7 +130,7 @@ html[data-theme="dark"] {
     --info-soft: #7239EA33;
     --primary: #FF2C79;
     --primary-soft: #FFD4E4;
-    --live: #D81A48;
+    --live: #17C653;
     --neutral-soft: #2F2F32;
     --neutral-text: #8B8E9A;
 }
@@ -210,6 +210,45 @@ button:hover,
 
 .btn-secondary:hover {
     background: var(--surface-2);
+}
+
+/* Collapsible "More filters" - keeps a heavy filter panel down to ~4
+   always-visible fields, with the rest tucked behind one toggle instead
+   of competing for attention every time the page loads. */
+.more-filters {
+    flex-basis: 100%;
+}
+
+.more-filters > summary {
+    display: inline-flex;
+    cursor: pointer;
+    list-style: none;
+}
+
+.more-filters > summary::-webkit-details-marker {
+    display: none;
+}
+
+.more-filters-body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+}
+
+/* Lighter than even .btn-secondary - for a page's secondary nav links that
+   shouldn't visually compete with that page's one real primary action
+   (e.g. "Apply Filters"). No border/fill at rest, just text. */
+.btn-ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--muted);
+}
+
+.btn-ghost:hover {
+    background: var(--surface-2);
+    border-color: var(--border);
+    color: var(--text);
 }
 
 .btn-block {
@@ -567,16 +606,22 @@ button:hover,
     color: var(--info);
 }
 
+/* Doherty Threshold: an opacity transition (rather than a hard display
+   toggle) so the "Saving.../Sending..." indicator always reads as a
+   perceptible, immediate response to the click - even when the request
+   itself resolves in well under 400ms. */
 .inline-indicator {
-    display: none;
+    display: inline-block;
+    opacity: 0;
     font-size: 13px;
     font-weight: 600;
     color: var(--info);
+    transition: opacity 0.3s ease;
 }
 
 .htmx-request .inline-indicator,
 .htmx-request.inline-indicator {
-    display: inline-block;
+    opacity: 1;
 }
 
 /* Page header */
@@ -592,6 +637,65 @@ button:hover,
 .page-subtitle {
     margin: 0;
     color: var(--muted);
+}
+
+/* Match detail header (Overview/Checklist/Live/Outstanding/Activity) -
+   sticky so status/progress stay visible without scrolling back up,
+   regardless of which tab is open. */
+.match-detail-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    margin: var(--space-8) calc(var(--content-gutter) * -1) var(--space-8);
+    padding: var(--space-6) var(--content-gutter) var(--space-5);
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+}
+
+.match-detail-header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+}
+
+.match-detail-header-status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-2);
+}
+
+.match-detail-header-progress {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.match-detail-header-progress .progress {
+    width: 100px;
+}
+
+.match-detail-header-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+    margin-top: var(--space-4);
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.match-detail-header-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.match-detail-tabs {
+    margin: var(--space-5) 0 0;
+    padding-bottom: 0;
+    border-bottom: 0;
 }
 
 /* Cards */
@@ -624,6 +728,27 @@ button:hover,
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--space-6);
     margin: var(--space-8) 0 var(--space-10);
+}
+
+/* KPI row chunked into labeled groups (Volume/Live Ops/Needs Attention) -
+   reuses .round-stats-group/-title from the Round Statistics block so the
+   same "chunked stats" pattern reads consistently across the page. */
+.dashboard-kpi-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-6);
+    margin: var(--space-8) 0 var(--space-10);
+}
+
+.dashboard-kpi-wrap .round-stats-group {
+    flex: 1 1 260px;
+}
+
+.dashboard-stats-grid-flex {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--space-4);
+    margin: 0;
 }
 
 .dashboard-grid-2 {
@@ -786,13 +911,181 @@ button:hover,
     color: var(--white);
 }
 
-/* Teams strip - horizontal list of club logos above the round strip */
+/* Collapsed by default (Hick's Law) - only the window around the active
+   round shows until "1-17"/"18-34"/"Show all rounds" is clicked. */
+.round-scroll-strip[data-expanded="window"] .round-chip[data-in-window="false"] {
+    display: none;
+}
+
+.round-scroll-strip[data-expanded="half1"] .round-chip[data-in-window="false"][data-half="2"] {
+    display: none;
+}
+
+.round-scroll-strip[data-expanded="half2"] .round-chip[data-in-window="false"][data-half="1"] {
+    display: none;
+}
+
+.round-strip-toggles {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin-top: var(--space-3);
+}
+
+/* Round Navigator - the Previous/Current/Next Round bar on SPL Approvals
+   and SPL Report, replacing the plain First/Previous/Next/Last pagination
+   look with something that reads as "browsing rounds" specifically. */
+.round-navigator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    padding: var(--space-4) var(--space-5);
+}
+
+.round-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.round-nav-btn:hover {
+    background: var(--surface-2);
+    border-color: var(--primary);
+    text-decoration: none;
+}
+
+.round-nav-btn-disabled {
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+/* The <summary> IS .round-nav-current now (round picker merged into the
+   nav bar instead of a separate Round <select> next to it) - strip the
+   native disclosure marker so it reads as a plain clickable label. */
+.round-nav-picker {
+    position: relative;
+}
+
+.round-nav-picker > summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    cursor: pointer;
+    list-style: none;
+}
+
+.round-nav-picker > summary::-webkit-details-marker {
+    display: none;
+}
+
+.round-nav-picker-caret {
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.round-nav-picker-menu {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(64px, 1fr));
+    gap: 4px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding: var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.round-nav-picker-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.round-nav-picker-item:hover {
+    background: var(--surface-2);
+    text-decoration: none;
+}
+
+.round-nav-picker-item.is-active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--white);
+}
+
+/* Teams strip - horizontal list of club logos above the round strip.
+   Scrolled via the two arrow buttons in the section head now, not the
+   native scrollbar (still usable via trackpad/drag, just not shown). */
+.team-search-input {
+    margin-bottom: var(--space-3);
+    max-width: 320px;
+}
+
 .team-scroll-strip {
     display: flex;
     gap: var(--space-3);
     overflow-x: auto;
     padding-bottom: 4px;
-    scrollbar-width: thin;
+    scrollbar-width: none;
+}
+
+.team-scroll-strip::-webkit-scrollbar {
+    display: none;
+}
+
+.scroll-strip-arrows {
+    display: flex;
+    gap: 6px;
+    flex: 0 0 auto;
+}
+
+.scroll-arrow-btn,
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.15s ease;
+}
+
+.scroll-arrow-btn:hover,
+.icon-btn:hover {
+    background: var(--surface-2);
 }
 
 .team-chip {
@@ -810,6 +1103,15 @@ button:hover,
     white-space: nowrap;
     cursor: pointer;
     transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+/* team-search.js toggles the native `hidden` attribute, but the plain
+   [hidden] { display: none } rule is user-agent origin - it always loses
+   to this author-origin "display: inline-flex" declaration above,
+   regardless of specificity, so the chips never actually hid without this
+   explicit override. */
+.team-chip[hidden] {
+    display: none;
 }
 
 .team-chip:hover {
@@ -866,6 +1168,149 @@ button:hover,
 .round-preview-card:focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
+}
+
+/* Live match card - visually distinct from the rest of the round's cards
+   beyond just the small LIVE badge in the corner (Von Restorff). */
+.round-preview-card--live {
+    border-color: var(--live);
+    border-inline-start-width: 3px;
+    background: var(--success-soft);
+}
+
+/* Rounds section on the dashboards: the match-card grid and the per-round
+   stats card are flex siblings, not a single shared grid - sharing one
+   grid (an earlier version of this) made every row's height stretch to fit
+   the stats card's own tall content, leaving huge gaps between short match
+   card rows. As flex siblings, the match grid's rows size purely from its
+   own cards; the stats card just stretches to match the grid's total
+   height via align-items: stretch. */
+.round-preview-layout {
+    display: flex;
+    align-items: stretch;
+    gap: var(--space-4);
+    margin-top: var(--space-6);
+}
+
+.round-preview-matches-3col {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-content: start;
+    gap: var(--space-4);
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.round-stats-card {
+    flex: 0 0 280px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+}
+
+.round-stats-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.round-stats-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.round-stats-date {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.round-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+}
+
+.round-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: var(--space-3);
+    border-radius: var(--radius);
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+.round-stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.round-stat-label {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+/* Each modifier tints the whole box (background + border), not just the
+   number - a colored digit alone in an otherwise-identical gray box is
+   easy to miss scanning past 7-8 of them at once (Von Restorff: the box
+   itself needs to look different, not just its text). */
+.round-stat-item-success { background: var(--success-soft); border-color: var(--success); }
+.round-stat-item-success .round-stat-value { color: var(--success); }
+.round-stat-item-live { background: var(--live); border-color: var(--live); }
+.round-stat-item-live .round-stat-value,
+.round-stat-item-live .round-stat-label { color: var(--white); }
+.round-stat-item-danger { background: var(--danger-soft); border-color: var(--danger); }
+.round-stat-item-danger .round-stat-value { color: var(--danger); }
+.round-stat-item-warning { background: var(--warning-soft); border-color: var(--warning); }
+.round-stat-item-warning .round-stat-value { color: var(--warning); }
+.round-stat-item-neutral .round-stat-value { color: var(--muted); }
+
+.round-stats-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.round-stats-group-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.round-stat-item-goal {
+    align-items: stretch;
+    gap: var(--space-2);
+}
+
+.round-stat-goal-value {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--success);
+}
+
+.round-stat-goal-total {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.round-stat-item-goal .round-stat-label {
+    text-align: center;
 }
 
 /* Round tag sits next to the status badge in one head row now (previously
@@ -942,6 +1387,18 @@ button:hover,
 }
 
 .round-preview-export-link:hover {
+    text-decoration: underline;
+}
+
+.round-preview-ticket-link {
+    align-self: flex-start;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--success);
+    text-decoration: none;
+}
+
+.round-preview-ticket-link:hover {
     text-decoration: underline;
 }
 
@@ -1030,6 +1487,25 @@ button:hover,
 }
 
 .match-flip-card-teams .club-chip span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* SPL Report's Home/Away Team columns are single-name cells (no vs pair
+   to stack), so the fix here is just: never let one long name wrap and
+   grow that row taller than its neighbors. */
+.spl-report-team-cell {
+    max-width: 160px;
+}
+
+.spl-report-team-cell .club-chip {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.spl-report-team-cell .club-chip span {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1142,6 +1618,20 @@ a.stat-card:hover {
     text-decoration: none;
 }
 
+.triage-bar {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-4);
+}
+
+/* Idle-state tint per bucket so the bar itself previews the severity
+   ladder at a glance, not just a row of identical gray pills. */
+.filter-chip-critical { border-color: color-mix(in srgb, var(--danger) 55%, black); color: color-mix(in srgb, var(--danger) 55%, black); }
+.filter-chip-danger { border-color: var(--danger); color: var(--danger); }
+.filter-chip-warning { border-color: var(--warning); color: var(--warning); }
+.filter-chip-info { border-color: var(--info); color: var(--info); }
+
 .filter-chip.is-active {
     /* Was background: var(--text) - --text flips from dark to light between
        themes, so this rendered as a near-white chip with white text (i.e.
@@ -1157,6 +1647,51 @@ a.stat-card:hover {
     gap: var(--space-4);
     flex-wrap: wrap;
     align-items: end;
+}
+
+/* The filter row directly above a table (no card boundary between them)
+   needs its own breathing room - .filters has no margin by default since
+   most other filter forms already sit in their own separate card. */
+.dashboard-table-filters {
+    margin-bottom: var(--space-6);
+}
+
+/* Law of Common Region: the filter controls read as one distinct "control
+   unit" separate from the table below it, instead of floating loose
+   directly above the table inside the same outer card. */
+.filter-toolbar {
+    padding: var(--space-5);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+}
+
+/* Fitts's Law: the one button that actually runs the filters should be an
+   easy, obvious target sitting right at the end of the same row - not a
+   same-sized, easy-to-miss button lost among the fields. */
+.btn-apply-filters {
+    padding: 11px 22px;
+    font-size: 14px;
+}
+
+/* A live match with no ticket link yet is an urgent action item - the
+   whole row gets a warning tint plus an accent bar so it stands out while
+   scanning the table, not just the badge text inside one cell. */
+tr.row-action-needed td {
+    background: var(--warning-soft);
+}
+
+.row-action-accent {
+    border-inline-start: 3px solid var(--warning);
+}
+
+.btn-add-ticket-link-urgent.btn-add-ticket-link-urgent {
+    border-color: var(--warning);
+    color: var(--warning);
+}
+
+.btn-add-ticket-link-urgent.btn-add-ticket-link-urgent:hover {
+    background: var(--warning-soft);
 }
 
 .field-group,
@@ -1177,6 +1712,151 @@ a.stat-card:hover {
     background: var(--surface-2);
     color: var(--muted);
     font-weight: 600;
+}
+
+.spl-plan-upload-form {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.spl-plan-upload-form input[type="file"] {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 11px;
+}
+
+.spl-plan-upload-form button {
+    flex: 0 0 auto;
+}
+
+.spl-plan-file-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.spl-approval-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.spl-approval-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-3);
+}
+
+.spl-approval-card-teams {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.spl-approval-card-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+}
+
+@media (max-width: 720px) {
+    .spl-approval-card-body {
+        grid-template-columns: 1fr;
+    }
+}
+
+.spl-approval-block {
+    padding: var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+}
+
+.spl-approval-block-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+/* Plan vs. Tickets Confirm buttons look identical otherwise - different
+   icon + accent color per confirmation type so it's clear at a glance
+   which one a click is about to fire. */
+/* Searchable select - progressive enhancement of a plain <select> into a
+   type-to-filter combobox (see searchable-select.js). The native <select>
+   stays in the DOM (hidden) as the real form control; this is purely the
+   replacement UI drawn in its place. */
+.searchable-select-native {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.searchable-select {
+    position: relative;
+}
+
+.searchable-select-menu {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 4px);
+    inset-inline-start: 0;
+    width: 100%;
+    max-height: 240px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.searchable-select-item {
+    display: block;
+    width: 100%;
+    text-align: start;
+    padding: 7px 10px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.searchable-select-item:hover {
+    background: var(--surface-2);
+}
+
+.searchable-select-item.is-active {
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.searchable-select-empty {
+    padding: 7px 10px;
+    color: var(--muted);
+    font-size: 13px;
 }
 
 .form-control {
@@ -1235,6 +1915,7 @@ th {
 .status-pill {
     display: inline-flex;
     align-items: center;
+    gap: 4px;
     border-radius: var(--radius-pill);
     font-size: 12px;
     font-weight: 700;
@@ -1250,6 +1931,10 @@ th {
     padding: 5px 10px;
 }
 
+/* A match happening today (event_date == today) but not live yet - shown
+   instead of the plain cms_status badge, same precedence spot as LIVE and
+   Finished already use, everywhere a match's status is displayed. */
+.badge-today { background: var(--success-soft); color: var(--success); }
 .badge-draft { background: var(--neutral-soft); color: var(--neutral-text); }
 .badge-in-progress,
 .badge-in_progress { background: var(--info-soft); color: var(--info); }
@@ -1283,9 +1968,26 @@ th {
 .mini-badge-info { background: var(--info-soft); color: var(--info); }
 .mini-badge-neutral { background: var(--neutral-soft); color: var(--neutral-text); }
 
+/* Release Status severity ladder - extends the existing danger/warning
+   badges with two more steps so the SEVERITY reads from color alone while
+   scanning, not just the badge text. critical (live with no release date
+   at all) is the most alarming; orange sits between the existing
+   danger/warning tones for a "moderately overdue" middle ground. Derived
+   via color-mix from the existing tokens so both stay theme-aware
+   automatically instead of hardcoding a second set of light/dark hexes. */
+.mini-badge-critical {
+    background: color-mix(in srgb, var(--danger) 55%, black);
+    color: var(--white);
+}
+
+.mini-badge-orange {
+    background: color-mix(in srgb, var(--danger) 45%, var(--warning) 55%);
+    color: var(--white);
+}
+
 /* Status pill (checklist item state), used on cards + toggles */
 .status-pill--not_started { background: var(--warning-soft); color: var(--warning); }
-.status-pill--in_progress { background: var(--info-soft); color: var(--info); }
+.status-pill--in_progress { background: color-mix(in srgb, var(--danger) 12%, var(--warning-soft)); color: color-mix(in srgb, var(--danger) 40%, var(--warning) 60%); }
 .status-pill--delayed { background: var(--danger-soft); color: var(--danger); }
 .status-pill--done { background: var(--success-soft); color: var(--success); }
 
@@ -1296,6 +1998,73 @@ th {
     background: var(--surface-2);
     border-radius: var(--radius-pill);
     overflow: hidden;
+}
+
+.progress-sm {
+    width: 100%;
+    height: 5px;
+    margin-top: 4px;
+}
+
+/* Impersonation ("Login as") is a much higher-trust action than routine
+   Edit/Deactivate - needs to visually stand apart, not share their exact
+   .btn-secondary look, on top of the JS confirm() step in the template. */
+.btn-impersonate {
+    background: var(--warning-soft);
+    border-color: var(--warning);
+    color: var(--warning);
+}
+
+.btn-impersonate:hover {
+    background: var(--warning);
+    border-color: var(--warning);
+    color: var(--white);
+}
+
+/* Collapsed by default - "By club"/"By round" are long breakdown tables
+   stacked one after another on one page; tucking them behind a toggle
+   (like "By coordinator", which stays open since it's short) keeps the
+   page from being one long uninterrupted scroll of report shapes. */
+.collapsible-section > summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.collapsible-section > summary::-webkit-details-marker {
+    display: none;
+}
+
+.collapsible-caret {
+    transition: transform 0.15s ease;
+}
+
+.collapsible-section[open] .collapsible-caret {
+    transform: rotate(180deg);
+}
+
+/* "Required" was Yes for every single row - a full text column added
+   nothing. Shrunk to a narrow, centered checkmark so it doesn't compete
+   visually with the columns that actually vary. */
+.checklist-required-col {
+    width: 1%;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.checklist-required-col i {
+    color: var(--success);
+}
+
+.missing-req-progress {
+    max-width: 220px;
+    margin-bottom: var(--space-3);
+}
+
+.missing-req-progress .progress {
+    flex: 1 1 auto;
 }
 
 .progress-bar {
@@ -1355,6 +2124,34 @@ th {
     padding: 4px 6px;
     margin: -4px -6px;
     transition: background-color 0.15s ease;
+}
+
+/* Fixed 2-line height regardless of club name length, so a long name never
+   grows the row and knocks every other cell out of alignment with its
+   neighbors while scanning down the table. */
+.match-row-link-stacked {
+    flex-wrap: nowrap;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    max-width: 220px;
+}
+
+.match-row-team {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 13px;
+    color: var(--text);
+}
+
+.match-row-team i {
+    flex: 0 0 auto;
+    color: var(--muted);
+    font-size: 13px;
 }
 
 .match-row-link:hover {
@@ -1442,6 +2239,10 @@ th {
     margin-bottom: var(--space-5);
 }
 
+.match-quick-view-progress .mini-badge {
+    margin-top: var(--space-2);
+}
+
 .match-quick-view-link {
     width: 100%;
     justify-content: center;
@@ -1497,7 +2298,16 @@ th {
     height: 100%;
     background: var(--primary);
     border-radius: var(--radius-pill);
+    transition: width 0.3s ease, background-color 0.3s ease;
 }
+
+/* Goal-Gradient Effect: the bar's own color shifts warmer-to-green as it
+   nears 100%, reinforcing "getting closer to done" beyond just the fill
+   width. */
+.progress-fill-graduated.progress-fill--low { background: var(--primary); }
+.progress-fill-graduated.progress-fill--mid { background: color-mix(in srgb, var(--primary) 50%, var(--warning) 50%); }
+.progress-fill-graduated.progress-fill--high { background: color-mix(in srgb, var(--warning) 40%, var(--success) 60%); }
+.progress-fill-graduated.progress-fill--done { background: var(--success); }
 
 .progress-summary-head {
     display: flex;
@@ -1520,6 +2330,10 @@ th {
     gap: var(--space-4);
 }
 
+.summary-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .summary-tile {
     padding: var(--space-5);
     border-radius: var(--radius);
@@ -1538,7 +2352,10 @@ th {
    producing a mismatched look. Using the semantic color itself adapts correctly
    since it's now defined per-theme (see html[data-theme] above). */
 .summary-tile--warning { border-color: var(--warning); background: var(--warning-soft); }
-.summary-tile--info { border-color: var(--info); background: var(--info-soft); }
+/* In Progress kept in the same warm/yellow family as Not Started (not the
+   unrelated info/purple it used before) but a shade toward orange so the
+   two stay visually distinguishable from each other. */
+.summary-tile--info { border-color: color-mix(in srgb, var(--danger) 40%, var(--warning) 60%); background: color-mix(in srgb, var(--danger) 12%, var(--warning-soft)); }
 .summary-tile--success { border-color: var(--success); background: var(--success-soft); }
 .summary-tile--danger { border-color: var(--danger); background: var(--danger-soft); }
 .summary-tile--primary { border-color: var(--primary); background: var(--primary-soft); }
@@ -1604,8 +2421,47 @@ th {
 }
 
 /* Checklist */
+/* Miller's Law: a <details> per category instead of a flat always-open
+   list - only the first category opens by default, the rest collapse
+   behind a clear header, so a long checklist doesn't force one
+   continuous scroll through every category at once. */
 .checklist-group {
-    margin-bottom: var(--space-10);
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid var(--border);
+}
+
+.checklist-group:last-child {
+    border-bottom: 0;
+}
+
+.checklist-group-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    cursor: pointer;
+    list-style: none;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.checklist-group-summary::-webkit-details-marker {
+    display: none;
+}
+
+.checklist-group-title {
+    flex: 1 1 auto;
+}
+
+.checklist-group-caret {
+    color: var(--muted);
+    transition: transform 0.15s ease;
+}
+
+.checklist-group[open] .checklist-group-caret {
+    transform: rotate(180deg);
 }
 
 .checklist-card {
@@ -1683,7 +2539,7 @@ th {
    use a fixed dark text color instead (from design_tokens.css, constant
    regardless of theme, meant exactly for text on top of vivid backgrounds). */
 .status-toggle.is-active.status-toggle-not_started { background: var(--warning); border-color: var(--warning); color: var(--content-fixed-content-dark-fixed); }
-.status-toggle.is-active.status-toggle-in_progress { background: var(--info); border-color: var(--info); color: var(--white); }
+.status-toggle.is-active.status-toggle-in_progress { background: color-mix(in srgb, var(--danger) 40%, var(--warning) 60%); border-color: color-mix(in srgb, var(--danger) 40%, var(--warning) 60%); color: var(--white); }
 .status-toggle.is-active.status-toggle-delayed { background: var(--danger); border-color: var(--danger); color: var(--white); }
 .status-toggle.is-active.status-toggle-done { background: var(--success); border-color: var(--success); color: var(--white); }
 
@@ -1746,6 +2602,51 @@ th {
     background: var(--success-soft);
 }
 
+.webook-link-block {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    margin-top: var(--space-4);
+}
+
+.webook-link-form {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.webook-link-form .field-group {
+    min-width: 280px;
+}
+
+.release-delay-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 220px;
+    margin-top: var(--space-2);
+}
+
+.release-delay-form select,
+.release-delay-form textarea {
+    font-size: 12px;
+}
+
+/* "Add Reason"/"Edit Reason" collapses the 3-field form behind one button
+   until needed - showing it open on every delayed row made the table read
+   as cluttered when most rows share the same empty state. */
+.delay-reason-editor > summary {
+    display: inline-flex;
+    cursor: pointer;
+    list-style: none;
+}
+
+.delay-reason-editor > summary::-webkit-details-marker {
+    display: none;
+}
+
 .match-status-send-row {
     margin-top: var(--space-5);
     display: flex;
@@ -1754,10 +2655,44 @@ th {
     flex-wrap: wrap;
 }
 
-.cms-control {
-    margin-top: var(--space-6);
-    padding-top: var(--space-6);
-    border-top: 1px solid var(--border);
+/* Law of Common Region: Match Status (what IS the status) and CMS Status
+   Control (what DECIDES it) are now two separate .card.panel elements
+   inside this stack, not one box with an internal divider - two different
+   decisions get two visually distinct containers. */
+.match-status-stack {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--space-6);
+}
+
+@media (max-width: 900px) {
+    .match-status-stack {
+        grid-template-columns: 1fr;
+    }
+}
+
+.cms-control-warning {
+    margin: var(--space-4) 0 0;
+    padding: var(--space-3) var(--space-4);
+    border-inline-start: 3px solid var(--warning);
+    background: var(--warning-soft);
+    border-radius: var(--radius-sm);
+    color: var(--warning);
+}
+
+/* Von Restorff: once Published is the value actually selected, the submit
+   button itself needs to look different from every other routine
+   .btn-primary on the page - not just the warning paragraph beside it. */
+.btn-cms-publish-warning.btn-cms-publish-warning {
+    background: var(--warning);
+    border-color: var(--warning);
+    color: var(--white);
+}
+
+.btn-cms-publish-warning.btn-cms-publish-warning:hover {
+    background: color-mix(in srgb, var(--warning) 85%, black);
+    border-color: color-mix(in srgb, var(--warning) 85%, black);
 }
 
 .cms-control-head {
@@ -2066,6 +3001,7 @@ th {
 .live-hero-badge {
     display: inline-flex;
     align-items: center;
+    gap: 6px;
     padding: 8px 14px;
     border-radius: var(--radius-pill);
     background: var(--live);
@@ -2081,10 +3017,66 @@ th {
 }
 
 .live-meta-item {
+    /* Same radius as .summary-tile/.meta-box/.card elsewhere on this page -
+       was --radius-sm, the one inconsistent corner-radius on the page. */
     padding: var(--space-4) var(--space-5);
     border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius);
     background: var(--surface-2);
+}
+
+/* Von Restorff: the live "Needs Attention" count needs to look nothing
+   like the neutral Kickoff/Gates/Source tiles beside it once it's nonzero -
+   it's the one figure on this page that means "go look at something now". */
+.live-meta-item--alert {
+    border-color: var(--danger);
+    background: var(--danger-soft);
+}
+
+.live-meta-item--alert .meta-value {
+    color: var(--danger);
+    font-weight: 800;
+}
+
+/* The "Needs Attention While Live" card itself, same isolation-effect
+   treatment as the tile above - a plain gray card here was easy to miss
+   while scanning a live match's page. */
+.attention-panel--alert {
+    border-color: var(--danger);
+    border-inline-start-width: 3px;
+    background: var(--danger-soft);
+}
+
+/* Peak-End Rule: the last thing on Overview is a single clear verdict
+   (all ready / still needs attention), not a neutral data table. */
+.peak-end-summary {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-4);
+}
+
+.peak-end-summary-icon {
+    flex: 0 0 auto;
+    font-size: 24px;
+    margin-top: 2px;
+}
+
+.peak-end-summary--positive {
+    border-color: var(--success);
+    background: var(--success-soft);
+}
+
+.peak-end-summary--positive .peak-end-summary-icon {
+    color: var(--success);
+}
+
+.peak-end-summary--warning {
+    border-color: var(--danger);
+    background: var(--danger-soft);
+}
+
+.peak-end-summary--warning .peak-end-summary-icon {
+    color: var(--danger);
 }
 
 .empty-state {
@@ -2124,6 +3116,15 @@ th {
 .pagination-link:hover {
     background: var(--surface-2);
     text-decoration: none;
+}
+
+/* Kept visible but inert on the edge pages, so the control's shape stays
+   constant instead of buttons appearing/disappearing as you page through -
+   a stable layout is easier to predict and click into than one that
+   reflows every time you hit an edge. */
+.pagination-link-disabled {
+    opacity: 0.35;
+    pointer-events: none;
 }
 
 .pagination-current {
@@ -2205,8 +3206,12 @@ th {
     opacity: 0.6;
 }
 
+/* Changed from --primary-soft (blue) to --warning-soft (amber) so "today"
+   on the calendar grid reads as visually distinct from the new green
+   "happening today" match marker below - both being blue/green would blur
+   together. */
 .calendar-day-today {
-    background: var(--primary-soft);
+    background: var(--warning-soft);
 }
 
 .calendar-day-number {
@@ -2216,7 +3221,7 @@ th {
 }
 
 .calendar-day-today .calendar-day-number {
-    color: var(--primary);
+    color: var(--warning);
 }
 
 .calendar-day-matches {
@@ -2280,9 +3285,70 @@ th {
     opacity: 1;
 }
 
+/* A match happening today, not live yet - takes over the chip's whole
+   background (like --live and --finished do) rather than just the round
+   badge, so it's obvious while scanning the month at a glance. */
+.calendar-match-chip--today {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.calendar-match-chip--today:hover {
+    background: var(--success);
+    color: var(--white);
+}
+
 .calendar-match-chip-round {
     flex: 0 0 auto;
-    font-weight: 800;
+    font-size: 9px;
+    font-weight: 600;
+    opacity: 0.75;
+}
+
+/* Legend swatches pull their colors from the same variables as the chips
+   above (--info/--live/--neutral-*), so if a chip's color ever changes the
+   legend stays correct automatically instead of needing a manual update. */
+.calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-3);
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.calendar-legend-label {
+    font-weight: 700;
+    color: var(--neutral-text);
+}
+
+.calendar-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.calendar-legend-swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex: 0 0 auto;
+}
+
+.calendar-legend-swatch--scheduled {
+    background: var(--info-soft);
+    border: 1px solid var(--info);
+}
+
+.calendar-legend-swatch--live {
+    background: var(--live);
+}
+
+.calendar-legend-swatch--finished {
+    background: var(--neutral-soft);
+    border: 1px solid var(--neutral-text);
 }
 
 .calendar-match-chip-teams {
@@ -2344,6 +3410,32 @@ th {
     }
 }
 
+/* Calendar fullscreen/focus mode - the Fullscreen API already hides the
+   sidebar and page chrome by only painting the target element, these
+   rules just make the card itself lay out nicely at full screen size. */
+#calendar-fullscreen-target:fullscreen {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    padding: var(--space-6);
+    overflow: auto;
+}
+
+#calendar-fullscreen-target:fullscreen .calendar-grid {
+    flex: 1 1 auto;
+}
+
+#calendar-fullscreen-target:fullscreen .calendar-day {
+    min-height: 15vh;
+}
+
+/* Simple/advanced view toggle on the SPL viewer dashboard - simple mode
+   (the default) hides the heavier sections/columns so the page reads as
+   light at a glance. */
+html[data-density="simple"] .viewer-advanced-only {
+    display: none !important;
+}
+
 /* Login */
 .login-wrap {
     min-height: 80vh;
@@ -2382,11 +3474,23 @@ th {
     .round-preview-matches {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+
+    .round-preview-matches-3col {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 1200px) {
     .round-preview-matches {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .round-preview-layout {
+        flex-direction: column;
+    }
+
+    .round-stats-card {
+        flex-basis: auto;
     }
 }
 
@@ -2407,7 +3511,8 @@ th {
     .dashboard-grid-4,
     .dashboard-stats-grid,
     .meta-grid,
-    .round-preview-matches {
+    .round-preview-matches,
+    .round-preview-matches-3col {
         grid-template-columns: 1fr;
     }
 
@@ -2498,6 +3603,8 @@ th {
 .stat-card-icon-primary { background: var(--primary-soft); color: var(--primary); }
 .stat-card-icon-info { background: var(--info-soft); color: var(--info); }
 .stat-card-icon-success { background: var(--success-soft); color: var(--success); }
+.stat-card-icon-live { background: var(--live); color: var(--white); }
+.stat-card-icon-neutral { background: var(--neutral-soft); color: var(--neutral-text); }
 
 /* Compact footer: one definition only to avoid cascade conflicts. */
 .system-footer {

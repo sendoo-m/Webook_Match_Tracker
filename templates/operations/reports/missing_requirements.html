@@ -22,42 +22,22 @@
 </div>
 
 <div class="card panel">
-    <form method="get" class="filters" data-autosubmit>
+    <form method="get" class="filters filter-toolbar" data-autosubmit>
         <input type="hidden" name="filter" value="{{ selected_filter }}">
 
         <div class="field-group">
-            <label>{% trans "Home Team" %}</label>
-            <select name="home_club">
+            <label>{% trans "Club" %}</label>
+            <select name="club" data-searchable>
                 <option value="">{% trans "All" %}</option>
                 {% for club in clubs %}
-                    <option value="{{ club.id }}" {% if selected_home_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="field-group">
-            <label>{% trans "Away Team" %}</label>
-            <select name="away_club">
-                <option value="">{% trans "All" %}</option>
-                {% for club in clubs %}
-                    <option value="{{ club.id }}" {% if selected_away_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="field-group">
-            <label>{% trans "Competition" %}</label>
-            <select name="competition">
-                <option value="">{% trans "All" %}</option>
-                {% for competition in competitions %}
-                    <option value="{{ competition.id }}" {% if selected_competition == competition.id|stringformat:"s" %}selected{% endif %}>{{ competition|localized_name }}</option>
+                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="field-group">
             <label>{% trans "Round" %}</label>
-            <select name="round">
+            <select name="round" data-searchable>
                 <option value="">{% trans "All" %}</option>
                 {% for r in rounds %}
                     <option value="{{ r }}" {% if selected_round == r|stringformat:"s" %}selected{% endif %}>{{ r }}</option>
@@ -78,27 +58,44 @@
         {% endif %}
 
         <div class="field-group">
-            <label>{% trans "SPL Approval" %}</label>
-            <select name="spl_approval">
-                <option value="">{% trans "All" %}</option>
-                <option value="approved" {% if selected_spl_approval == "approved" %}selected{% endif %}>{% trans "Approved" %}</option>
-                <option value="not_approved" {% if selected_spl_approval == "not_approved" %}selected{% endif %}>{% trans "Not Approved" %}</option>
-            </select>
-        </div>
-
-        <div class="field-group">
-            <label>{% trans "KVs" %}</label>
-            <select name="kv_status">
-                <option value="">{% trans "All" %}</option>
-                <option value="ready" {% if selected_kv_status == "ready" %}selected{% endif %}>{% trans "Available" %}</option>
-                <option value="not_ready" {% if selected_kv_status == "not_ready" %}selected{% endif %}>{% trans "Not Available" %}</option>
-            </select>
-        </div>
-
-        <div class="field-group">
             <label>&nbsp;</label>
-            <button type="submit">{% trans "Apply Filters" %}</button>
+            <button type="submit" class="btn-apply-filters"><i class="ti ti-filter"></i> {% trans "Apply Filters" %}</button>
         </div>
+
+        <details class="more-filters"{% if selected_competition or selected_spl_approval or selected_kv_status %} open{% endif %}>
+            <summary class="btn btn-ghost btn-sm">
+                <i class="ti ti-adjustments-horizontal"></i> {% trans "More filters" %}
+            </summary>
+            <div class="more-filters-body">
+                <div class="field-group">
+                    <label>{% trans "Competition" %}</label>
+                    <select name="competition">
+                        <option value="">{% trans "All" %}</option>
+                        {% for competition in competitions %}
+                            <option value="{{ competition.id }}" {% if selected_competition == competition.id|stringformat:"s" %}selected{% endif %}>{{ competition|localized_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field-group">
+                    <label>{% trans "SPL Approval" %}</label>
+                    <select name="spl_approval">
+                        <option value="">{% trans "All" %}</option>
+                        <option value="approved" {% if selected_spl_approval == "approved" %}selected{% endif %}>{% trans "Approved" %}</option>
+                        <option value="not_approved" {% if selected_spl_approval == "not_approved" %}selected{% endif %}>{% trans "Not Approved" %}</option>
+                    </select>
+                </div>
+
+                <div class="field-group">
+                    <label>{% trans "KVs" %}</label>
+                    <select name="kv_status">
+                        <option value="">{% trans "All" %}</option>
+                        <option value="ready" {% if selected_kv_status == "ready" %}selected{% endif %}>{% trans "Available" %}</option>
+                        <option value="not_ready" {% if selected_kv_status == "not_ready" %}selected{% endif %}>{% trans "Not Available" %}</option>
+                    </select>
+                </div>
+            </div>
+        </details>
     </form>
 </div>
 
@@ -109,4 +106,5 @@
 
 {% block extra_js %}
     <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
+    <script src="{% static 'operations/js/searchable-select.js' %}"></script>
 {% endblock %}

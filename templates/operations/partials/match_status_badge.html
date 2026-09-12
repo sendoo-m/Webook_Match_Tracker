@@ -1,72 +1,106 @@
 {# templates/operations/partials/match_status_badge.html #}
 {% load i18n %}
-<div id="match-status-box" class="card panel match-status-panel" hx-swap-oob="true">
-    <div class="match-status-head">
-        <div>
-            <h2 class="panel-title">{% trans "Match Status" %}</h2>
-            <p class="help-text">{% trans "Status is updated automatically based on active required checklist items." %}</p>
+<div id="match-status-box" hx-swap-oob="true" class="match-status-stack">
+    {# Match Status + tickets - what IS the status right now (Law of Common Region: kept apart from the CMS control below, which DECIDES it - two different decisions, two containers). #}
+    <div class="card panel match-status-panel">
+        <div class="match-status-head">
+            <div>
+                <h2 class="panel-title">{% trans "Match Status" %}</h2>
+                <p class="help-text">{% trans "Status is updated automatically based on active required checklist items." %}</p>
+            </div>
+            {% if match.event_date == today and not is_live_now and match.cms_status != match_status.PUBLISHED %}
+                <span class="badge badge-lg badge-today"><i class="ti ti-point-filled"></i> {% trans "Today" %}</span>
+            {% else %}
+                <span class="badge badge-lg badge-{{ match.cms_status|slugify }}">
+                    {{ match.get_cms_status_display }}
+                </span>
+            {% endif %}
         </div>
-        <span class="badge badge-lg badge-{{ match.cms_status|slugify }}">
-            {{ match.get_cms_status_display }}
-        </span>
-    </div>
 
-    {% if match.cms_status == match_status.PUBLISHED %}
-        <div class="match-status-live-banner">
-            <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
-            <span class="help-text">{% trans "Published matches are shown as live on the dashboard." %}</span>
-        </div>
-    {% endif %}
-
-    {% if can_edit and match.cms_status == match_status.READY_FOR_CMS %}
-        <div class="match-status-send-row">
-            <form
-                method="post"
-                hx-post="{% url 'operations:send-to-cms' match.pk %}"
-                hx-swap="none"
-                hx-disabled-elt="find button"
-                hx-indicator="#send-to-cms-loading"
-            >
-                {% csrf_token %}
-                <button type="submit" class="btn btn-primary">
-                    <i class="ti ti-send"></i> {% trans "Send to CMS" %}
-                </button>
-                <span id="send-to-cms-loading" class="inline-indicator">{% trans "Sending..." %}</span>
-            </form>
-        </div>
-    {% elif match.cms_status == match_status.SENT_TO_CMS %}
-        <div class="match-status-send-row">
-            <span class="help-text">
-                <i class="ti ti-circle-check"></i> {% trans "Sent" %}
-                {% if match.sent_to_cms_at %} {% blocktrans with sent_at=match.sent_to_cms_at %}at {{ sent_at }}{% endblocktrans %}{% endif %}
-                {% if match.sent_to_cms_by %} {% blocktrans with sent_by=match.sent_to_cms_by %}by {{ sent_by }}{% endblocktrans %}{% endif %}
-            </span>
-        </div>
-    {% endif %}
-
-    {% if can_edit %}
-        <div class="cms-control">
-            <div class="cms-control-head">
-                <i class="ti ti-adjustments-alt cms-control-icon"></i>
-                <div>
-                    <div class="block-title">{% trans "CMS Status Control" %}</div>
-                    <p class="help-text">
-                        {% blocktrans %}Choosing <strong>Published</strong> here will make the match appear live on the dashboard immediately.{% endblocktrans %}
-                    </p>
-                </div>
+        {% if match.cms_status == match_status.PUBLISHED %}
+            <div class="match-status-live-banner">
+                <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
+                <span class="help-text">{% trans "Published matches are shown as live on the dashboard." %}</span>
             </div>
 
+            <div class="webook-link-block">
+                {% if match.webook_purchase_url %}
+                    <a href="{{ match.webook_purchase_url }}" target="_blank" rel="noopener" class="btn btn-primary">
+                        <i class="ti ti-ticket"></i> {% trans "Buy Tickets on Webook" %}
+                    </a>
+                {% endif %}
+
+                {% if can_edit %}
+                    <form
+                        method="post"
+                        hx-post="{% url 'operations:match-webook-link-update' match.pk %}"
+                        hx-swap="none"
+                        class="webook-link-form"
+                    >
+                        {% csrf_token %}
+                        <div class="field-group">
+                            <label for="webook_purchase_url">{% trans "Webook Purchase Link" %}</label>
+                            <input
+                                type="url"
+                                id="webook_purchase_url"
+                                name="webook_purchase_url"
+                                value="{{ match.webook_purchase_url }}"
+                                placeholder="https://webook.com/..."
+                            >
+                        </div>
+                        <button type="submit" class="btn btn-secondary btn-sm">{% trans "Save Link" %}</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if can_edit and match.cms_status == match_status.READY_FOR_CMS %}
+            <div class="match-status-send-row">
+                <form
+                    method="post"
+                    hx-post="{% url 'operations:send-to-cms' match.pk %}"
+                    hx-swap="none"
+                    hx-disabled-elt="find button"
+                    hx-indicator="#send-to-cms-loading"
+                >
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-send"></i> {% trans "Send to CMS" %}
+                    </button>
+                    <span id="send-to-cms-loading" class="inline-indicator">{% trans "Sending..." %}</span>
+                </form>
+            </div>
+        {% elif match.cms_status == match_status.SENT_TO_CMS %}
+            <div class="match-status-send-row">
+                <span class="help-text">
+                    <i class="ti ti-circle-check"></i> {% trans "Sent" %}
+                    {% if match.sent_to_cms_at %} {% blocktrans with sent_at=match.sent_to_cms_at %}at {{ sent_at }}{% endblocktrans %}{% endif %}
+                    {% if match.sent_to_cms_by %} {% blocktrans with sent_by=match.sent_to_cms_by %}by {{ sent_by }}{% endblocktrans %}{% endif %}
+                </span>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if can_edit %}
+        <div class="card panel cms-control-card">
+            <div class="cms-control-head">
+                <i class="ti ti-adjustments-alt cms-control-icon"></i>
+                <div class="block-title">{% trans "CMS Status Control" %}</div>
+            </div>
+
+            {% trans "This will make the match visible on the public dashboard immediately. Continue?" as publish_confirm_text %}
             <form
                 hx-post="{% url 'operations:match-cms-status-update' match.pk %}"
                 hx-swap="none"
                 class="cms-control-form"
+                data-publish-confirm="{{ publish_confirm_text }}"
             >
                 {% csrf_token %}
 
                 <div class="cms-control-row">
                     <div class="field-group">
                         <label for="cms_status">{% trans "CMS Status" %}</label>
-                        <select name="cms_status" id="cms_status">
+                        <select name="cms_status" id="cms_status" data-cms-status-select data-publish-value="{{ match_status.PUBLISHED }}">
                             {% for value, label in match_status.choices %}
                                 <option value="{{ value }}" {% if match.cms_status == value %}selected{% endif %}>
                                     {{ label }}
@@ -75,10 +109,20 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        data-cms-submit
+                        {% if match.cms_status == match_status.PUBLISHED %}data-is-publish-selected{% endif %}
+                    >
                         {% trans "Update CMS Status" %}
                     </button>
                 </div>
+
+                <p class="help-text cms-control-warning" {% if match.cms_status != match_status.PUBLISHED %}hidden{% endif %}>
+                    <i class="ti ti-alert-triangle"></i>
+                    {% blocktrans %}Choosing <strong>Published</strong> here will make the match appear live on the dashboard immediately.{% endblocktrans %}
+                </p>
             </form>
         </div>
     {% endif %}

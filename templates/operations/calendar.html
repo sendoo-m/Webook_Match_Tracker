@@ -28,21 +28,45 @@
         </div>
 
         <div class="filter-bar">
-            <a class="btn btn-secondary" href="?year={{ prev_year }}&month={{ prev_month }}&coordinator={{ selected_coordinator }}">
+            <a class="btn btn-secondary" href="?year={{ prev_year }}&month={{ prev_month }}&club={{ selected_club }}&coordinator={{ selected_coordinator }}">
                 <i class="ti ti-chevron-left"></i> {% trans "Prev" %}
             </a>
-            <a class="btn btn-secondary" href="?year={{ today.year }}&month={{ today.month }}&coordinator={{ selected_coordinator }}">{% trans "Today" %}</a>
-            <a class="btn btn-secondary" href="?year={{ next_year }}&month={{ next_month }}&coordinator={{ selected_coordinator }}">
+            <a class="btn btn-secondary" href="?year={{ today.year }}&month={{ today.month }}&club={{ selected_club }}&coordinator={{ selected_coordinator }}">{% trans "Today" %}</a>
+            <a class="btn btn-secondary" href="?year={{ next_year }}&month={{ next_month }}&club={{ selected_club }}&coordinator={{ selected_coordinator }}">
                 {% trans "Next" %} <i class="ti ti-chevron-right"></i>
             </a>
+            {% trans "Full screen" as fullscreen_enter_label %}
+            {% trans "Exit full screen" as fullscreen_exit_label %}
+            <button
+                type="button"
+                id="calendar-fullscreen-toggle"
+                class="icon-btn"
+                aria-pressed="false"
+                title="{{ fullscreen_enter_label }}"
+                aria-label="{{ fullscreen_enter_label }}"
+                data-enter-label="{{ fullscreen_enter_label }}"
+                data-exit-label="{{ fullscreen_exit_label }}"
+            >
+                <i class="ti ti-arrows-maximize"></i>
+            </button>
         </div>
     </div>
 </div>
 
 <div class="card panel">
-    <form method="get" class="filters" data-autosubmit>
+    <form method="get" class="filters filter-toolbar" data-autosubmit>
         <input type="hidden" name="year" value="{{ year }}">
         <input type="hidden" name="month" value="{{ month }}">
+
+        <div class="field-group">
+            <label>{% trans "Club" %}</label>
+            <select name="club" data-searchable>
+                <option value="">{% trans "All" %}</option>
+                {% for club in clubs %}
+                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
 
         <div class="field-group">
             <label>{% trans "Coordinator" %}</label>
@@ -56,12 +80,27 @@
 
         <div class="field-group">
             <label>&nbsp;</label>
-            <button type="submit">{% trans "Apply Filter" %}</button>
+            <button type="submit" class="btn-apply-filters"><i class="ti ti-filter"></i> {% trans "Apply Filter" %}</button>
         </div>
     </form>
 </div>
 
-<div class="card panel">
+<div class="card panel" id="calendar-fullscreen-target">
+    <div class="calendar-legend">
+        <span class="calendar-legend-label">{% trans "Legend" %}:</span>
+        <span class="calendar-legend-item">
+            <span class="calendar-legend-swatch calendar-legend-swatch--scheduled"></span>
+            {% trans "Upcoming" %}
+        </span>
+        <span class="calendar-legend-item">
+            <span class="calendar-legend-swatch calendar-legend-swatch--live"></span>
+            {% trans "Live" %}
+        </span>
+        <span class="calendar-legend-item">
+            <span class="calendar-legend-swatch calendar-legend-swatch--finished"></span>
+            {% trans "Finished" %}
+        </span>
+    </div>
     <div class="calendar-grid">
         <div class="calendar-weekday">{% trans "Sun" %}</div>
         <div class="calendar-weekday">{% trans "Mon" %}</div>
@@ -79,7 +118,7 @@
                         {% for card in day.matches %}
                             <button
                                 type="button"
-                                class="calendar-match-chip{% if card.is_live_now %} calendar-match-chip--live{% elif card.is_finished %} calendar-match-chip--finished{% endif %}"
+                                class="calendar-match-chip{% if card.is_live_now %} calendar-match-chip--live{% elif card.is_finished %} calendar-match-chip--finished{% elif card.is_today %} calendar-match-chip--today{% endif %}"
                                 data-modal-trigger
                                 onclick="OperationsModal.open('match-modal-overlay')"
                                 hx-get="{% url 'operations:match-quick-view' card.match.pk %}"
@@ -91,12 +130,15 @@
                                     <span class="live-dot"></span>
                                 {% elif card.is_finished %}
                                     <i class="ti ti-flag-2"></i>
-                                {% else %}
-                                    <span class="calendar-match-chip-round">R{{ card.match.round_number|default:"—" }}</span>
+                                {% elif card.is_today %}
+                                    <i class="ti ti-point-filled"></i>
                                 {% endif %}
                                 <span class="calendar-match-chip-teams">
                                     {{ card.match.home_club.short_name|default:card.match.home_club.name_ar }} vs {{ card.match.away_club.short_name|default:card.match.away_club.name_ar }}
                                 </span>
+                                {% if card.match.round_number is not None %}
+                                    <span class="calendar-match-chip-round">R{{ card.match.round_number }}</span>
+                                {% endif %}
                             </button>
                         {% endfor %}
                         {% if day.extra_count %}
@@ -122,4 +164,6 @@
 
 {% block extra_js %}
     <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
+    <script src="{% static 'operations/js/calendar-fullscreen.js' %}"></script>
+    <script src="{% static 'operations/js/searchable-select.js' %}"></script>
 {% endblock %}

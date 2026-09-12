@@ -1,0 +1,172 @@
+{% extends "operations/base.html" %}
+{% load static %}
+{% load display_helpers %}
+{% load i18n %}
+
+{% block title %}{% trans "SPL Finished Matches" %}{% endblock %}
+
+{% block page_help %}
+    <p>
+        {% blocktrans %}A read-only history of finished matches - whether the ticketing plan was
+        approved (and when), when the approval file was uploaded, and whether complimentary
+        tickets were confirmed sent. Finished matches don't need any more action, so there are no
+        buttons here - just the record.{% endblocktrans %}
+    </p>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">{% trans "SPL Finished Matches" %}</h1>
+            <p class="page-subtitle">{% trans "Approval history for matches that have already been played." %}</p>
+        </div>
+
+        <div class="filter-bar">
+            <a class="btn btn-secondary" href="{% url 'operations:spl-approvals' %}">
+                <i class="ti ti-checks"></i> {% trans "SPL Approvals" %}
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card panel">
+    <form method="get" class="filters filter-toolbar" data-autosubmit>
+        <div class="field-group">
+            <label>{% trans "Club" %}</label>
+            <select name="club" data-searchable>
+                <option value="">{% trans "All" %}</option>
+                {% for club in clubs %}
+                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>{% trans "Coordinator" %}</label>
+            <select name="coordinator">
+                <option value="">{% trans "All" %}</option>
+                {% for coordinator in coordinators %}
+                    <option value="{{ coordinator.id }}" {% if selected_coordinator == coordinator.id|stringformat:"s" %}selected{% endif %}>{{ coordinator|display_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>{% trans "Round" %}</label>
+            <select name="round" data-searchable>
+                <option value="">{% trans "All" %}</option>
+                {% for r in rounds %}
+                    <option value="{{ r }}" {% if selected_round == r|stringformat:"s" %}selected{% endif %}>{{ r }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn-apply-filters"><i class="ti ti-filter"></i> {% trans "Apply Filters" %}</button>
+        </div>
+    </form>
+</div>
+
+<div class="card panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>{% trans "Round" %}</th>
+                    <th>{% trans "Match" %}</th>
+                    <th>{% trans "Match Date" %}</th>
+                    <th>{% trans "Ticketing Plan Status" %}</th>
+                    <th>{% trans "Approval File" %}</th>
+                    <th>{% trans "SPL Complimentary Tickets" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row.match.round_number|default:"—" }}</td>
+                    <td>
+                        <a href="{% url 'operations:match-detail' row.match.pk %}" class="match-row-link match-row-link-stacked">
+                            <span class="match-row-team" title="{{ row.match.home_club|localized_name }}">
+                                <i class="ti ti-home"></i> {{ row.match.home_club|localized_name }}
+                            </span>
+                            <span class="match-row-team" title="{{ row.match.away_club|localized_name }}">
+                                <i class="ti ti-plane-departure"></i> {{ row.match.away_club|localized_name }}
+                            </span>
+                        </a>
+                    </td>
+                    <td>{{ row.match.event_date }}</td>
+                    <td>
+                        <span class="mini-badge mini-badge-{% if row.match.ticketing_plan_approved %}success{% else %}neutral{% endif %}">
+                            {% if row.match.ticketing_plan_approved %}{% trans "Approved" %}{% else %}{% trans "Not Approved" %}{% endif %}
+                        </span>
+                        {% if row.match.ticketing_plan_approved_at %}
+                            <div class="help-text">{% blocktrans with when=row.match.ticketing_plan_approved_at %}on {{ when }}{% endblocktrans %}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if row.match.plan_approval_file %}
+                            <div class="spl-plan-file-link">
+                                <i class="ti ti-paperclip"></i>
+                                <a href="{{ row.match.plan_approval_file.url }}" target="_blank" rel="noopener">
+                                    {{ row.match.plan_approval_file.name|cut:"spl_plan_approvals/" }}
+                                </a>
+                            </div>
+                            {% if row.match.plan_approval_file_uploaded_at %}
+                                <div class="help-text">{% blocktrans with when=row.match.plan_approval_file_uploaded_at %}uploaded {{ when }}{% endblocktrans %}</div>
+                            {% endif %}
+                        {% else %}
+                            <span class="help-text">{% trans "No File Uploaded" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="mini-badge mini-badge-{% if row.match.spl_tickets_sent %}success{% else %}neutral{% endif %}">
+                            {% if row.match.spl_tickets_sent %}{% trans "Sent" %}{% else %}{% trans "Not Sent" %}{% endif %}
+                        </span>
+                        {% if row.match.spl_tickets_sent_at %}
+                            <div class="help-text">{% blocktrans with when=row.match.spl_tickets_sent_at %}on {{ when }}{% endblocktrans %}</div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6">{% trans "No finished matches found for this filter." %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+        {% with qs="&club="|add:selected_club|add:"&coordinator="|add:selected_coordinator|add:"&round="|add:selected_round %}
+        <div class="pagination-wrap">
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a class="pagination-link" href="?page=1{{ qs }}">{% trans "First" %}</a>
+                    <a class="pagination-link" href="?page={{ page_obj.previous_page_number }}{{ qs }}">{% trans "Previous" %}</a>
+                {% else %}
+                    <span class="pagination-link pagination-link-disabled">{% trans "First" %}</span>
+                    <span class="pagination-link pagination-link-disabled">{% trans "Previous" %}</span>
+                {% endif %}
+
+                <span class="pagination-current">
+                    {% blocktrans with number=page_obj.number total=page_obj.paginator.num_pages %}Page {{ number }} of {{ total }}{% endblocktrans %}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a class="pagination-link" href="?page={{ page_obj.next_page_number }}{{ qs }}">{% trans "Next" %}</a>
+                    <a class="pagination-link" href="?page={{ page_obj.paginator.num_pages }}{{ qs }}">{% trans "Last" %}</a>
+                {% else %}
+                    <span class="pagination-link pagination-link-disabled">{% trans "Next" %}</span>
+                    <span class="pagination-link pagination-link-disabled">{% trans "Last" %}</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endwith %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
+    <script src="{% static 'operations/js/searchable-select.js' %}"></script>
+{% endblock %}

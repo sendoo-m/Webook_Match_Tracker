@@ -1,9 +1,9 @@
 
-from .activity_log import MatchActivityLogListView
+from .activity_log import MatchActivityLogListView, MatchActivityView
 from .calendar import CalendarDayMatchesView, MatchCalendarView
 from .changelog import ChangelogView
 from .checklist import ChecklistItemNoteEditView, ChecklistItemUpdateView
-from .cms import MatchCMSStatusUpdateView, SendToCMSView
+from .cms import MatchCMSStatusUpdateView, MatchWebookLinkUpdateView, SendToCMSView
 from .dashboard import OperationsDashboardView
 from .delayed_details import MatchDelayedDetailsView
 from .discount import MatchDiscountEditView, MatchDiscountUpdateView
@@ -15,8 +15,11 @@ from .match_quick_view import MatchQuickViewView
 from .missing_requirements import MissingRequirementsReportView
 from .missing_requirements_popup import MissingRequirementsPopupView
 from .outstanding import MatchOutstandingItemsView
+from .release_schedule import MatchReleaseDelayUpdateView, MatchReleaseScheduleView
 from .slug import MatchSlugEditView, MatchSlugUpdateView
-from .spl_confirm import SPLPlanConfirmView, SPLTicketsConfirmView
+from .spl_approvals import SPLApprovalsView
+from .spl_finished_matches import SPLFinishedMatchesView
+from .spl_confirm import SPLPlanApprovalUploadView, SPLPlanConfirmView, SPLTicketsConfirmView
 from .spl_info import MatchSPLInfoEditView, MatchSPLInfoUpdateView
 from .spl_report import SPLReportExportView, SPLReportView
 from .team_quick_view import TeamQuickViewView
@@ -31,7 +34,9 @@ __all__ = [
     "ChecklistItemUpdateView",
     "CoordinatorWorkloadReportView",
     "MatchActivityLogListView",
+    "MatchActivityView",
     "MatchCMSStatusUpdateView",
+    "MatchWebookLinkUpdateView",
     "MatchDelayedDetailsView",
     "MatchDetailView",
     "MatchDiscountEditView",
@@ -41,6 +46,8 @@ __all__ = [
     "MatchListView",
     "MatchLiveView",
     "MatchOutstandingItemsView",
+    "MatchReleaseDelayUpdateView",
+    "MatchReleaseScheduleView",
     "MatchQuickViewView",
     "MatchSPLInfoEditView",
     "MatchSPLInfoUpdateView",
@@ -49,6 +56,9 @@ __all__ = [
     "MissingRequirementsPopupView",
     "MissingRequirementsReportView",
     "OperationsDashboardView",
+    "SPLApprovalsView",
+    "SPLFinishedMatchesView",
+    "SPLPlanApprovalUploadView",
     "SPLPlanConfirmView",
     "SPLTicketsConfirmView",
     "SPLReportExportView",

@@ -2,7 +2,7 @@
 {% load i18n %}
 <div id="missing-requirements-results">
     <div class="card dashboard-filterbar">
-        {% with base_qs="&home_club="|add:selected_home_club|add:"&away_club="|add:selected_away_club|add:"&competition="|add:selected_competition|add:"&round="|add:selected_round|add:"&user="|add:selected_user|add:"&spl_approval="|add:selected_spl_approval|add:"&kv_status="|add:selected_kv_status %}
+        {% with base_qs="&club="|add:selected_club|add:"&competition="|add:selected_competition|add:"&round="|add:selected_round|add:"&user="|add:selected_user|add:"&spl_approval="|add:selected_spl_approval|add:"&kv_status="|add:selected_kv_status %}
         <a
             href="{% url 'operations:missing-requirements-report' %}?filter=all{{ base_qs }}"
             class="filter-chip {% if selected_filter == 'all' %}is-active{% endif %}"
@@ -78,6 +78,12 @@
                                 <span class="help-text">{% trans "vs" %}</span>
                                 {% include "operations/partials/club_chip.html" with club=row.match.away_club role="away" %}
                             </div>
+                            <div class="progress-with-label missing-req-progress">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar" style="width:{% widthratio row.done_items row.total_items 100 %}%"></div>
+                                </div>
+                                <span class="progress-label">{% blocktrans with done=row.done_items total=row.total_items %}{{ done }}/{{ total }} complete{% endblocktrans %}</span>
+                            </div>
                             {% if row.pending_categories %}
                                 <div class="missing-categories">
                                     {% for category in row.pending_categories %}
@@ -119,7 +125,7 @@
         </div>
 
         {% if page_obj.has_other_pages %}
-            {% with page_qs="&home_club="|add:selected_home_club|add:"&away_club="|add:selected_away_club|add:"&competition="|add:selected_competition|add:"&round="|add:selected_round|add:"&user="|add:selected_user|add:"&spl_approval="|add:selected_spl_approval|add:"&kv_status="|add:selected_kv_status %}
+            {% with page_qs="&club="|add:selected_club|add:"&competition="|add:selected_competition|add:"&round="|add:selected_round|add:"&user="|add:selected_user|add:"&spl_approval="|add:selected_spl_approval|add:"&kv_status="|add:selected_kv_status %}
             <div class="pagination-wrap">
                 <div class="pagination">
                     {% if page_obj.has_previous %}
@@ -143,6 +149,9 @@
                         >
                             {% trans "Previous" %}
                         </a>
+                    {% else %}
+                        <span class="pagination-link pagination-link-disabled">{% trans "First" %}</span>
+                        <span class="pagination-link pagination-link-disabled">{% trans "Previous" %}</span>
                     {% endif %}
 
                     <span class="pagination-current">
@@ -170,6 +179,9 @@
                         >
                             {% trans "Last" %}
                         </a>
+                    {% else %}
+                        <span class="pagination-link pagination-link-disabled">{% trans "Next" %}</span>
+                        <span class="pagination-link pagination-link-disabled">{% trans "Last" %}</span>
                     {% endif %}
                 </div>
             {% endwith %}

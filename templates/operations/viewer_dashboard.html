@@ -14,15 +14,32 @@
     <p>
         {% blocktrans %}The Upcoming & Live Matches table shows everything ahead, filterable by club,
         coordinator, round, SPL approval status, and Live/Upcoming. Click a team to see its next
-        home matches, or a round to preview every match in it. Use the export buttons to download
-        the schedule as a spreadsheet - the whole season, one round, or a single match.{% endblocktrans %}
+        home matches, or a round to preview every match in it along with that round's readiness
+        stats. Use the export buttons to download the schedule as a spreadsheet - the whole season,
+        one round, or a single match.{% endblocktrans %}
     </p>
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1 class="page-title">{% trans "Dashboard" %}</h1>
-    <p class="page-subtitle">{% trans "Roshan League" as roshan_league_label %}{% blocktrans with competition_name=roshan_competition.name_ar|default:roshan_league_label %}{{ competition_name }} match schedule and readiness.{% endblocktrans %}</p>
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">{% trans "Dashboard" %}</h1>
+            <p class="page-subtitle">{% trans "Roshan League" as roshan_league_label %}{% blocktrans with competition_name=roshan_competition.name_ar|default:roshan_league_label %}{{ competition_name }} match schedule and readiness.{% endblocktrans %}</p>
+        </div>
+        {% trans "Simple View" as density_simple_label %}
+        {% trans "Advanced View" as density_advanced_label %}
+        <button
+            type="button"
+            id="viewer-density-toggle"
+            class="btn btn-secondary"
+            aria-pressed="false"
+            data-simple-label="{{ density_simple_label }}"
+            data-advanced-label="{{ density_advanced_label }}"
+        >
+            <i class="ti ti-adjustments"></i><span>{{ density_advanced_label }}</span>
+        </button>
+    </div>
 </div>
 
 <div class="quick-actions">
@@ -38,29 +55,70 @@
     >
         <i class="ti ti-file-spreadsheet"></i><span>{% trans "Export Full Schedule" %}</span>
     </a>
-    {% if selected_round %}
-        <a
-            href="{% url 'operations:spl-report-export' %}?round={{ selected_round }}{% if roshan_competition %}&competition={{ roshan_competition.pk }}{% endif %}"
-            class="quick-action"
-        >
-            <i class="ti ti-file-spreadsheet"></i><span>{% blocktrans with number=selected_round %}Export Round {{ number }}{% endblocktrans %}</span>
-        </a>
-    {% endif %}
 </div>
 
 <div class="card panel dashboard-section">
     <div class="dashboard-section-head">
-        <h2 class="panel-title"><i class="ti ti-shirt-sport"></i> {% trans "Teams" %}</h2>
-        <span class="help-text">{% trans "Click a team to preview their next home matches" %}</span>
+        <h2 class="panel-title"><i class="ti ti-chart-bar"></i> {% trans "League Stats" %}</h2>
     </div>
 
-    <div class="team-scroll-strip">
+    <div class="dashboard-stats-grid">
+        <a class="card stat-card" href="?status=live&round=#matches-table-panel">
+            <span class="stat-card-icon stat-card-icon-live"><i class="ti ti-broadcast"></i></span>
+            <div class="stat-value">{{ stats.live_count }}</div>
+            <div class="stat-label">{% trans "Live" %}</div>
+        </a>
+        <a class="card stat-card" href="?status=in_progress&round=#matches-table-panel">
+            <span class="stat-card-icon stat-card-icon-warning"><i class="ti ti-progress"></i></span>
+            <div class="stat-value">{{ stats.in_progress_count }}</div>
+            <div class="stat-label">{% trans "In Progress" %}</div>
+        </a>
+        <a class="card stat-card" href="?status=upcoming&round=#matches-table-panel">
+            <span class="stat-card-icon stat-card-icon-primary"><i class="ti ti-calendar-time"></i></span>
+            <div class="stat-value">{{ stats.upcoming_count }}</div>
+            <div class="stat-label">{% trans "Upcoming" %}</div>
+        </a>
+        <a class="card stat-card" href="?status=finished&round=#matches-table-panel">
+            <span class="stat-card-icon stat-card-icon-neutral"><i class="ti ti-flag-2"></i></span>
+            <div class="stat-value">{{ stats.finished_count }}</div>
+            <div class="stat-label">{% trans "Finished" %}</div>
+        </a>
+    </div>
+</div>
+
+<div class="card panel dashboard-section viewer-advanced-only">
+    <div class="dashboard-section-head">
+        <div>
+            <h2 class="panel-title"><i class="ti ti-shirt-sport"></i> {% trans "Teams" %}</h2>
+            <span class="help-text">{% trans "Click a team to preview their next home matches" %}</span>
+        </div>
+        <div class="scroll-strip-arrows">
+            <button type="button" class="scroll-arrow-btn" data-scroll-dir="-1" aria-label="{% trans 'Scroll left' %}">
+                <i class="ti ti-chevron-left"></i>
+            </button>
+            <button type="button" class="scroll-arrow-btn" data-scroll-dir="1" aria-label="{% trans 'Scroll right' %}">
+                <i class="ti ti-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    {% trans "Search teams..." as team_search_placeholder %}
+    <input
+        type="search"
+        class="team-search-input"
+        placeholder="{{ team_search_placeholder }}"
+        aria-label="{{ team_search_placeholder }}"
+        data-team-search="#team-scroll-strip"
+    >
+
+    <div class="team-scroll-strip" id="team-scroll-strip">
         {% for club in all_clubs %}
             <div
                 class="team-chip"
                 role="button"
                 tabindex="0"
                 data-modal-trigger
+                data-search-text="{{ club.name_en|lower }} {{ club.name_ar }}"
                 onclick="OperationsModal.open('match-modal-overlay')"
                 hx-get="{% url 'operations:team-quick-view' club.pk %}"
                 hx-target="#match-modal-body"
@@ -76,27 +134,48 @@
             <p class="help-text">{% trans "No teams found." %}</p>
         {% endfor %}
     </div>
+    <p class="help-text team-search-empty" hidden>{% trans "No teams match your search." %}</p>
 </div>
 
-<div class="card panel dashboard-section">
+<div class="card panel dashboard-section viewer-advanced-only">
     <div class="dashboard-section-head">
         <h2 class="panel-title"><i class="ti ti-list-numbers"></i> {% trans "Rounds" %}</h2>
-        <span class="help-text">{% trans "Click a round to preview its matches" %}</span>
+        {% with current_range=round_date_ranges|get_item:current_round_number %}
+            {% if current_round_number and current_range %}
+                <span class="help-text">
+                    {% blocktrans with number=current_round_number start=current_range.0 end=current_range.1 %}Today falls under Round {{ number }} ({{ start }} – {{ end }}) - opened below automatically.{% endblocktrans %}
+                </span>
+            {% else %}
+                <span class="help-text">{% trans "Click a round to preview its matches" %}</span>
+            {% endif %}
+        {% endwith %}
     </div>
 
-    <div class="round-scroll-strip">
+    <div class="round-scroll-strip" id="round-strip" data-expanded="window">
         {% for r in available_rounds %}
-            <a
-                href="?round={{ r }}"
-                class="round-chip {% if selected_round == r|stringformat:'s' %}is-active{% endif %}"
-                hx-get="{% url 'operations:dashboard' %}?round={{ r }}"
-                hx-target="#round-preview-panel"
-                hx-swap="innerHTML"
-                hx-push-url="true"
-            >
-                {{ r }}
-            </a>
+            {% with range=round_date_ranges|get_item:r %}
+                <a
+                    href="?round={{ r }}"
+                    class="round-chip {% if selected_round == r|stringformat:'s' %}is-active{% endif %}"
+                    hx-get="{% url 'operations:dashboard' %}?round={{ r }}"
+                    hx-target="#round-preview-panel"
+                    hx-swap="innerHTML"
+                    hx-push-url="true"
+                    data-in-window="{% if r in round_window %}true{% else %}false{% endif %}"
+                    data-half="{% if r <= 17 %}1{% else %}2{% endif %}"
+                    {% if range %}title="{{ range.0 }} – {{ range.1 }}"{% endif %}
+                >
+                    {{ r }}
+                </a>
+            {% endwith %}
         {% endfor %}
+    </div>
+
+    <div class="round-strip-toggles">
+        <button type="button" class="filter-chip" data-round-expand="half1">{% trans "1–17" %}</button>
+        <button type="button" class="filter-chip" data-round-expand="half2">{% trans "18–34" %}</button>
+        <button type="button" class="filter-chip" data-round-expand="all">{% trans "Show all rounds" %}</button>
+        <button type="button" class="filter-chip" data-round-expand="window" hidden>{% trans "Show fewer rounds" %}</button>
     </div>
 
     <div id="round-preview-panel">
@@ -104,16 +183,16 @@
     </div>
 </div>
 
-<div class="card panel dashboard-section">
+<div class="card panel dashboard-section" id="matches-table-panel">
     <div class="dashboard-section-head">
         <h2 class="panel-title"><i class="ti ti-table"></i> {% trans "Upcoming & Live Matches" %}</h2>
         <span class="help-text">{% blocktrans count counter=table_match_count %}{{ counter }} match{% plural %}{{ counter }} matches{% endblocktrans %}</span>
     </div>
 
-    <form method="get" class="filters" data-autosubmit>
+    <form method="get" class="filters filter-toolbar dashboard-table-filters" data-autosubmit>
         <div class="field-group">
             <label>{% trans "Club" %}</label>
-            <select name="club">
+            <select name="club" data-searchable>
                 <option value="">{% trans "All" %}</option>
                 {% for club in table_clubs %}
                     <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
@@ -121,7 +200,7 @@
             </select>
         </div>
 
-        <div class="field-group">
+        <div class="field-group viewer-advanced-only">
             <label>{% trans "Coordinator" %}</label>
             <select name="coordinator">
                 <option value="">{% trans "All" %}</option>
@@ -131,9 +210,9 @@
             </select>
         </div>
 
-        <div class="field-group">
+        <div class="field-group viewer-advanced-only">
             <label>{% trans "Round" %}</label>
-            <select name="round">
+            <select name="round" data-searchable>
                 <option value="">{% trans "All" %}</option>
                 {% for r in available_rounds %}
                     <option value="{{ r }}" {% if selected_round == r|stringformat:"s" %}selected{% endif %}>{% blocktrans with number=r %}Round {{ number }}{% endblocktrans %}</option>
@@ -141,7 +220,7 @@
             </select>
         </div>
 
-        <div class="field-group">
+        <div class="field-group viewer-advanced-only">
             <label>{% trans "SPL Approval" %}</label>
             <select name="spl_approval">
                 <option value="">{% trans "All" %}</option>
@@ -150,18 +229,20 @@
             </select>
         </div>
 
-        <div class="field-group">
+        <div class="field-group viewer-advanced-only">
             <label>{% trans "Status" %}</label>
             <select name="status">
                 <option value="">{% trans "All" %}</option>
                 <option value="live" {% if selected_status == "live" %}selected{% endif %}>{% trans "Live" %}</option>
                 <option value="upcoming" {% if selected_status == "upcoming" %}selected{% endif %}>{% trans "Upcoming" %}</option>
+                <option value="in_progress" {% if selected_status == "in_progress" %}selected{% endif %}>{% trans "In Progress" %}</option>
+                <option value="finished" {% if selected_status == "finished" %}selected{% endif %}>{% trans "Finished" %}</option>
             </select>
         </div>
 
         <div class="field-group">
             <label>&nbsp;</label>
-            <button type="submit">{% trans "Apply Filters" %}</button>
+            <button type="submit" class="btn-apply-filters"><i class="ti ti-filter"></i> {% trans "Apply Filters" %}</button>
         </div>
     </form>
 
@@ -169,19 +250,21 @@
         <table>
             <thead>
                 <tr>
-                    <th>{% trans "Round" %}</th>
+                    <th class="viewer-advanced-only">{% trans "Round" %}</th>
                     <th>{% trans "Match" %}</th>
+                    <th class="viewer-advanced-only">{% trans "Actual Release Date" %}</th>
                     <th>{% trans "Date" %}</th>
-                    <th>{% trans "Time" %}</th>
-                    <th>{% trans "Days Remaining" %}</th>
+                    <th class="viewer-advanced-only">{% trans "Time" %}</th>
+                    <th class="viewer-advanced-only">{% trans "Days Remaining" %}</th>
                     <th>{% trans "Status" %}</th>
+                    <th>{% trans "Ticket Link" %}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for card in table_cards %}
-                    <tr>
-                        <td>{{ card.match.round_number|default:"—" }}</td>
-                        <td>
+                    <tr{% if card|match_lifecycle_status == "live" and not card.match.webook_purchase_url %} class="row-action-needed"{% endif %}>
+                        <td class="viewer-advanced-only">{{ card.match.round_number|default:"—" }}</td>
+                        <td{% if card|match_lifecycle_status == "live" and not card.match.webook_purchase_url %} class="row-action-accent"{% endif %}>
                             <div
                                 class="match-row-link"
                                 role="button"
@@ -197,29 +280,55 @@
                                 {% include "operations/partials/club_chip.html" with club=card.match.away_club role="away" %}
                             </div>
                         </td>
+                        <td class="viewer-advanced-only">{{ card.match.actual_release_at|default:"—" }}</td>
                         <td>{% trans "TBC" as tbc_label %}{{ card.match.event_date|default:tbc_label }}</td>
-                        <td>{% if card.match.match_start_time %}{{ card.match.match_start_time|time:"H:i" }}{% else %}—{% endif %}</td>
-                        <td>
+                        <td class="viewer-advanced-only">{% if card.match.match_start_time %}{{ card.match.match_start_time|time:"H:i" }}{% else %}—{% endif %}</td>
+                        <td class="viewer-advanced-only">
                             {% if card.days_to_match == 0 %}
                                 {% trans "Today" %}
                             {% elif card.days_to_match == 1 %}
                                 {% trans "Tomorrow" %}
-                            {% elif card.days_to_match is not None %}
+                            {% elif card.days_to_match == -1 %}
+                                {% trans "Yesterday" %}
+                            {% elif card.days_to_match is not None and card.days_to_match > 0 %}
                                 {% blocktrans count counter=card.days_to_match %}In {{ counter }} day{% plural %}In {{ counter }} days{% endblocktrans %}
+                            {% elif card.days_to_match is not None %}
+                                {% with days_ago=card.days_to_match|abs_value %}
+                                    {% blocktrans count counter=days_ago %}{{ counter }} day ago{% plural %}{{ counter }} days ago{% endblocktrans %}
+                                {% endwith %}
                             {% else %}
                                 —
                             {% endif %}
                         </td>
                         <td>
-                            {% if card.is_live_now %}
-                                <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
+                            {% with status=card|match_lifecycle_status %}
+                                {% if status == "live" %}
+                                    <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
+                                {% elif status == "past" %}
+                                    <span class="mini-badge mini-badge-neutral"><i class="ti ti-flag-2"></i> {% trans "Past" %}</span>
+                                {% elif status == "happening" %}
+                                    <span class="mini-badge mini-badge-warning"><i class="ti ti-player-play"></i> {% trans "Happening" %}</span>
+                                {% elif status == "tbc" %}
+                                    <span class="mini-badge mini-badge-neutral"><i class="ti ti-help-circle"></i> {% trans "TBC" %}</span>
+                                {% else %}
+                                    <span class="mini-badge mini-badge-info"><i class="ti ti-calendar-time"></i> {% trans "Upcoming" %}</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>
+                            {% if card.match.webook_purchase_url %}
+                                <a href="{{ card.match.webook_purchase_url }}" target="_blank" rel="noopener" class="mini-badge mini-badge-success">
+                                    <i class="ti ti-ticket"></i> {% trans "Buy Tickets on Webook" %}
+                                </a>
                             {% else %}
-                                <span class="badge badge-{{ card.match.cms_status|slugify }}">{{ card.match.get_cms_status_display }}</span>
+                                <span class="mini-badge mini-badge-neutral">
+                                    <i class="ti ti-ticket-off"></i> {% trans "Tickets Not Live Yet" %}
+                                </span>
                             {% endif %}
                         </td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="6">{% trans "No upcoming or live matches found for this filter." %}</td></tr>
+                    <tr><td colspan="8">{% trans "No upcoming or live matches found for this filter." %}</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -251,5 +360,9 @@
 
 {% block extra_js %}
     <script src="{% static 'operations/js/round-strip.js' %}"></script>
+    <script src="{% static 'operations/js/round-strip-collapse.js' %}"></script>
+    <script src="{% static 'operations/js/scroll-strip-arrows.js' %}"></script>
     <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
+    <script src="{% static 'operations/js/searchable-select.js' %}"></script>
+    <script src="{% static 'operations/js/team-search.js' %}"></script>
 {% endblock %}

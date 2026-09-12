@@ -63,6 +63,10 @@
             <label>&nbsp;</label>
             <a class="btn btn-secondary" href="{% url 'control_panel:match-template' %}"><i class="ti ti-file-download"></i> {% trans "Download Template" %}</a>
         </div>
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <a class="btn btn-secondary" href="{% url 'control_panel:match-sync-calendar' %}"><i class="ti ti-calendar-event"></i> {% trans "Update Roshan League Schedule" %}</a>
+        </div>
     </form>
 </div>
 {% endblock %}
@@ -89,9 +93,13 @@
             <td>{{ match.round_number|default:"—" }}</td>
             <td>{{ match.event_date|default:"TBC" }} {{ match.match_start_time }}</td>
             <td>
-                <span class="badge badge-{{ match.cms_status|slugify }}">
-                    {{ match.get_cms_status_display }}
-                </span>
+                {% if match.event_date == today %}
+                    <span class="badge badge-today"><i class="ti ti-point-filled"></i> {% trans "Today" %}</span>
+                {% else %}
+                    <span class="badge badge-{{ match.cms_status|slugify }}">
+                        {{ match.get_cms_status_display }}
+                    </span>
+                {% endif %}
             </td>
             <td>
                 {% if match.has_discount %}

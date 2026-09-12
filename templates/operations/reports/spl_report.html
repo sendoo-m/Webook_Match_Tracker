@@ -11,6 +11,11 @@
         needs for every match: release dates, ticketing plan status, and complimentary tickets.{% endblocktrans %}
     </p>
     <p>{% blocktrans %}Use "Export XLSX" to download the current filtered view as a spreadsheet.{% endblocktrans %}</p>
+    <p>
+        {% url 'operations:spl-approvals' as spl_approvals_url %}
+        {% blocktrans %}To confirm the ticketing plan or complimentary tickets, use
+        <a href="{{ spl_approvals_url }}">SPL Approvals</a> instead - this report is read-only.{% endblocktrans %}
+    </p>
 {% endblock %}
 
 {% block content %}
@@ -22,6 +27,9 @@
         </div>
 
         <div class="filter-bar">
+            <a class="btn btn-secondary" href="{% url 'operations:spl-approvals' %}">
+                <i class="ti ti-checkbox"></i> {% trans "SPL Approvals" %}
+            </a>
             <a class="btn btn-primary" href="{% url 'operations:spl-report-export' %}?club={{ selected_club }}&round={{ selected_round }}&coordinator={{ selected_coordinator }}">
                 <i class="ti ti-file-spreadsheet"></i> {% trans "Export XLSX" %}
             </a>
@@ -29,8 +37,17 @@
     </div>
 </div>
 
+{% if round_default_applied and current_round_number %}
+    <p class="help-text">
+        {% blocktrans with number=current_round_number %}Showing from Round {{ number }} onward (the current round) - pick "All" in the Round filter to include past rounds too.{% endblocktrans %}
+    </p>
+{% endif %}
+
+{% include "operations/partials/round_navigator.html" %}
+
 <div class="card panel">
-    <form method="get" class="filters" data-autosubmit>
+    <form method="get" class="filters filter-toolbar" data-autosubmit>
+        <input type="hidden" name="round" value="{{ selected_round }}">
         <div class="field-group">
             <label>{% trans "Competition" %}</label>
             <div class="spl-fixed-filter">{% if roshan_competition %}{{ roshan_competition|localized_name }}{% else %}{% trans "Roshan League" %}{% endif %}</div>
@@ -38,7 +55,7 @@
 
         <div class="field-group">
             <label>{% trans "Club" %}</label>
-            <select name="club">
+            <select name="club" data-searchable>
                 <option value="">{% trans "All" %}</option>
                 {% for club in clubs %}
                     <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
@@ -57,23 +74,30 @@
         </div>
 
         <div class="field-group">
-            <label>{% trans "Round" %}</label>
-            <select name="round">
-                <option value="">{% trans "All" %}</option>
-                {% for r in rounds %}
-                    <option value="{{ r }}" {% if selected_round == r|stringformat:"s" %}selected{% endif %}>{{ r }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="field-group">
             <label>&nbsp;</label>
-            <button type="submit">{% trans "Apply Filters" %}</button>
+            <button type="submit" class="btn-apply-filters"><i class="ti ti-filter"></i> {% trans "Apply Filters" %}</button>
         </div>
     </form>
 </div>
 
 <div class="card panel">
+    {% with qs="&club="|add:selected_club|add:"&coordinator="|add:selected_coordinator|add:"&round="|add:selected_round %}
+    <div class="triage-bar">
+        <a class="filter-chip{% if not selected_action %} is-active{% endif %}" href="?action={{ qs }}">
+            {% trans "All" %} ({{ action_counts.all }})
+        </a>
+        <a class="filter-chip filter-chip-warning{% if selected_action == "not_approved" %} is-active{% endif %}" href="?action=not_approved{{ qs }}">
+            <i class="ti ti-clipboard-x"></i> {% trans "Not Approved" %} ({{ action_counts.not_approved }})
+        </a>
+        <a class="filter-chip filter-chip-warning{% if selected_action == "not_ready" %} is-active{% endif %}" href="?action=not_ready{{ qs }}">
+            <i class="ti ti-photo-off"></i> {% trans "Not Ready" %} ({{ action_counts.not_ready }})
+        </a>
+        <a class="filter-chip filter-chip-warning{% if selected_action == "not_sent" %} is-active{% endif %}" href="?action=not_sent{{ qs }}">
+            <i class="ti ti-ticket-off"></i> {% trans "Not Sent" %} ({{ action_counts.not_sent }})
+        </a>
+    </div>
+    {% endwith %}
+
     <div class="table-wrap">
         <table>
             <thead>
@@ -86,11 +110,15 @@
                     <th>{% trans "Release Date" %}</th>
                     <th>{% trans "Actual Release Date" %}</th>
                     <th>{% trans "Match Readiness" %}</th>
-                    <th>{% trans "Ticketing Plan Status" %}</th>
+                    <th>
+                        {% trans "Confirms the SPL team has approved the match's ticketing release plan." as plan_status_help %}
+                        {% trans "Ticketing Plan Status" %}
+                        <i class="ti ti-info-circle" title="{{ plan_status_help }}"></i>
+                    </th>
                     <th>{% trans "KV / Webook Images" %}</th>
                     <th>{% trans "Webook Readiness" %}</th>
                     <th>{% trans "SPL Complimentary Tickets" %}</th>
-                    <th>{% trans "Comments" %}</th>
+                    <th>{% trans "Match Status" %}</th>
                     <th>{% trans "Coordinator (Webook)" %}</th>
                 </tr>
             </thead>
@@ -99,8 +127,8 @@
                 <tr>
                     <td>{{ row.match.round_number|default:"—" }}</td>
                     <td><a href="{% url 'operations:match-detail' row.match.pk %}">{% if row.match.event_date %}{{ row.match.event_date }}{% else %}{% trans "TBC" %}{% endif %}</a></td>
-                    <td>{% include "operations/partials/club_chip.html" with club=row.match.home_club role="home" %}</td>
-                    <td>{% include "operations/partials/club_chip.html" with club=row.match.away_club role="away" %}</td>
+                    <td class="spl-report-team-cell">{% include "operations/partials/club_chip.html" with club=row.match.home_club role="home" %}</td>
+                    <td class="spl-report-team-cell">{% include "operations/partials/club_chip.html" with club=row.match.away_club role="away" %}</td>
                     <td>{{ row.match.venue|default:"—" }}</td>
                     <td>{{ row.match.sale_starts_at|default:"—" }}</td>
                     <td>{{ row.match.actual_release_at|default:"—" }}</td>
@@ -113,38 +141,50 @@
                         </div>
                     </td>
                     <td>
-                        <span class="mini-badge mini-badge-{% if row.match.ticketing_plan_approved %}success{% else %}neutral{% endif %}">
+                        <span class="mini-badge mini-badge-{{ row.match.ticketing_plan_approved|urgency_badge_class:row.days_to_match }}">
                             {% if row.match.ticketing_plan_approved %}{% trans "Approved" %}{% else %}{% trans "Not Approved" %}{% endif %}
                         </span>
-                        {% if not row.match.ticketing_plan_approved and can_confirm_spl_plan %}
-                            <form method="post" action="{% url 'operations:spl-plan-confirm' row.match.pk %}" class="logout-form spl-confirm-form">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-secondary btn-sm">{% trans "Confirm" %}</button>
-                            </form>
+                        {% if row.match.plan_approval_file %}
+                            <div class="spl-plan-file-link">
+                                <i class="ti ti-paperclip"></i>
+                                <a href="{{ row.match.plan_approval_file.url }}" target="_blank" rel="noopener">
+                                    {{ row.match.plan_approval_file.name|cut:"spl_plan_approvals/" }}
+                                </a>
+                            </div>
                         {% endif %}
                     </td>
                     <td>
-                        <span class="mini-badge mini-badge-{% if row.kv_ready %}success{% else %}neutral{% endif %}">
-                            {% if row.kv_ready %}{% trans "Ready" %}{% else %}{% trans "Not Ready" %}{% endif %}
+                        <span class="mini-badge mini-badge-{% if row.kv_ready %}success{% else %}warning{% endif %}">
+                            {% if row.kv_ready %}{% trans "Received" %}{% else %}{% trans "Not Received" %}{% endif %}
                         </span>
                     </td>
                     <td>
-                        <span class="mini-badge mini-badge-{% if row.webook_ready %}success{% else %}neutral{% endif %}">
+                        <span class="mini-badge mini-badge-{% if row.webook_ready %}success{% else %}warning{% endif %}">
                             {% if row.webook_ready %}{% trans "Ready" %}{% else %}{% trans "Not Ready" %}{% endif %}
                         </span>
                     </td>
                     <td>
-                        <span class="mini-badge mini-badge-{% if row.match.spl_tickets_sent %}success{% else %}neutral{% endif %}">
+                        <span class="mini-badge mini-badge-{{ row.match.spl_tickets_sent|urgency_badge_class:row.days_to_match }}">
                             {% if row.match.spl_tickets_sent %}{% trans "Sent" %}{% else %}{% trans "Not Sent" %}{% endif %}
                         </span>
-                        {% if not row.match.spl_tickets_sent and can_confirm_spl_tickets %}
-                            <form method="post" action="{% url 'operations:spl-tickets-confirm' row.match.pk %}" class="logout-form spl-confirm-form">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-secondary btn-sm">{% trans "Confirm" %}</button>
-                            </form>
+                    </td>
+                    <td>
+                        {% if row.is_live_now %}
+                            <a href="{% url 'operations:match-detail' row.match.pk %}" class="mini-badge mini-badge-live">
+                                <span class="live-dot"></span>{% trans "Live" %}
+                            </a>
+                        {% elif row.match_finished %}
+                            <span class="mini-badge mini-badge-neutral"><i class="ti ti-flag-2"></i> {% trans "Finished" %}</span>
+                        {% elif row.is_today %}
+                            <span class="mini-badge mini-badge-success"><i class="ti ti-point-filled"></i> {% trans "Today" %}</span>
+                        {% elif row.match.cms_status == match_status.PUBLISHED %}
+                            <a href="{% url 'operations:match-detail' row.match.pk %}" class="badge badge-{{ row.match.cms_status|slugify }}">
+                                {{ row.match.get_cms_status_display }}
+                            </a>
+                        {% else %}
+                            <span class="badge badge-{{ row.match.cms_status|slugify }}">{{ row.match.get_cms_status_display }}</span>
                         {% endif %}
                     </td>
-                    <td>{{ row.match.spl_comments|default:"—" }}</td>
                     <td>{{ row.match.home_club.owner|display_name }}</td>
                 </tr>
                 {% empty %}
@@ -158,4 +198,5 @@
 
 {% block extra_js %}
     <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
+    <script src="{% static 'operations/js/searchable-select.js' %}"></script>
 {% endblock %}

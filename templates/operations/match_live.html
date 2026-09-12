@@ -1,22 +1,11 @@
 {% extends "operations/base.html" %}
+{% load static %}
 {% load i18n %}
 
 {% block title %}{% blocktrans with title=match.title_en %}Live · {{ title }}{% endblocktrans %}{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">{{ match.title_en }}</h1>
-            <p class="page-subtitle">{{ match.title_ar }}</p>
-        </div>
-
-        <div class="filter-bar">
-            <a class="btn btn-secondary" href="{% url 'operations:match-detail' match.pk %}">{% trans "Full Checklist" %}</a>
-            <a class="btn btn-secondary" href="{% url 'operations:match-outstanding' match.pk %}">{% trans "Outstanding Items" %}</a>
-        </div>
-    </div>
-</div>
+{% include "operations/partials/match_detail_header.html" %}
 
 <div class="card live-hero">
     <div class="live-hero-top">
@@ -50,7 +39,7 @@
             </div>
         </div>
 
-        <div class="live-meta-item">
+        <div class="live-meta-item{% if attention_items %} live-meta-item--alert{% endif %}">
             <div class="help-text">{% trans "Needs Attention" %}</div>
             <div class="meta-value">{{ attention_items|length }}</div>
         </div>
@@ -59,7 +48,7 @@
 
 {% include "operations/partials/match_status_badge.html" %}
 
-<div class="card panel">
+<div class="card panel attention-panel{% if attention_items %} attention-panel--alert{% endif %}">
     <div class="dashboard-section-head">
         <h2 class="panel-title">{% trans "Needs Attention While Live" %}</h2>
         <span class="help-text">{% trans "Delayed items and post-match tasks" %}</span>
@@ -74,5 +63,9 @@
     {% endif %}
 </div>
 
-{% include "operations/partials/activity_log_timeline.html" %}
+{% include "operations/partials/activity_log_mini.html" %}
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'operations/js/cms-status-control.js' %}"></script>
 {% endblock %}

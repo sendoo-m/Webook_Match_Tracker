@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load display_helpers %}
 <div class="calendar-day-popup">
     <p class="help-text calendar-day-popup-date">{{ target_date|date:"l, F j, Y" }}</p>
 
@@ -15,15 +16,23 @@
                 hx-swap="innerHTML"
             >
                 <div class="round-preview-card-head">
-                    <span class="round-preview-round-tag">{% blocktrans with number=card.match.round_number|default:"—" %}Round {{ number }}{% endblocktrans %}</span>
+                    {% if card.match.round_number is not None %}
+                        <span class="round-preview-round-tag">{% blocktrans with number=card.match.round_number %}Round {{ number }}{% endblocktrans %}</span>
+                    {% endif %}
                     <span class="round-preview-status">
-                        {% if card.is_live_now %}
-                            <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
-                        {% elif card.match_finished %}
-                            <span class="mini-badge mini-badge-neutral"><i class="ti ti-flag-2"></i> {% trans "Finished" %}</span>
-                        {% else %}
-                            <span class="badge badge-{{ card.match.cms_status|slugify }}">{{ card.match.get_cms_status_display }}</span>
-                        {% endif %}
+                        {% with status=card|match_lifecycle_status %}
+                            {% if status == "live" %}
+                                <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
+                            {% elif status == "past" %}
+                                <span class="mini-badge mini-badge-neutral"><i class="ti ti-flag-2"></i> {% trans "Past" %}</span>
+                            {% elif status == "happening" %}
+                                <span class="mini-badge mini-badge-warning"><i class="ti ti-player-play"></i> {% trans "Happening" %}</span>
+                            {% elif status == "tbc" %}
+                                <span class="mini-badge mini-badge-neutral"><i class="ti ti-help-circle"></i> {% trans "TBC" %}</span>
+                            {% else %}
+                                <span class="mini-badge mini-badge-info"><i class="ti ti-calendar-time"></i> {% trans "Upcoming" %}</span>
+                            {% endif %}
+                        {% endwith %}
                     </span>
                 </div>
                 <div class="round-preview-teams">

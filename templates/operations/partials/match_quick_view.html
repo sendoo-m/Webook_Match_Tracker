@@ -30,12 +30,19 @@
     </div>
 
     <div class="match-quick-view-badges">
-        {% if card.is_live_now %}
-            <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
-        {% else %}
-            <span class="badge badge-{{ match.cms_status|slugify }}">{{ match.get_cms_status_display }}</span>
-        {% endif %}
-        <span class="mini-badge mini-badge-{{ card.alert_level|default:'neutral' }}">{{ card.alert_text }}</span>
+        {% with status=card|match_lifecycle_status %}
+            {% if status == "live" %}
+                <span class="mini-badge mini-badge-live"><span class="live-dot"></span>LIVE</span>
+            {% elif status == "past" %}
+                <span class="mini-badge mini-badge-neutral"><i class="ti ti-flag-2"></i> {% trans "Past" %}</span>
+            {% elif status == "happening" %}
+                <span class="mini-badge mini-badge-warning"><i class="ti ti-player-play"></i> {% trans "Happening" %}</span>
+            {% elif status == "tbc" %}
+                <span class="mini-badge mini-badge-neutral"><i class="ti ti-help-circle"></i> {% trans "TBC" %}</span>
+            {% else %}
+                <span class="mini-badge mini-badge-info"><i class="ti ti-calendar-time"></i> {% trans "Upcoming" %}</span>
+            {% endif %}
+        {% endwith %}
         {% if match.has_discount %}
             <span class="mini-badge mini-badge-success">
                 <i class="ti ti-discount-2"></i> {{ match.discount_code }} -{{ match.discount_percentage }}%
@@ -52,9 +59,24 @@
                 <div class="progress-bar" style="width:{% widthratio card.non_post_match_done card.non_post_match_total 100 %}%"></div>
             </div>
             {% widthratio card.non_post_match_done card.non_post_match_total 100 as ready_percent %}
-            <span class="progress-label">{% blocktrans with percent=ready_percent %}{{ percent }}% ready{% endblocktrans %}</span>
+            {% if card.needs_reports %}
+                <span class="progress-label">{% blocktrans with percent=ready_percent %}{{ percent }}% pre-match ready{% endblocktrans %}</span>
+            {% else %}
+                <span class="progress-label">{% blocktrans with percent=ready_percent %}{{ percent }}% ready{% endblocktrans %}</span>
+            {% endif %}
         </div>
+        {% if card.needs_reports %}
+            <span class="mini-badge mini-badge-danger" title="{% blocktrans count counter=card.post_match_pending %}{{ counter }} post-match item still pending{% plural %}{{ counter }} post-match items still pending{% endblocktrans %}">
+                <i class="ti ti-file-alert"></i> {% trans "Reports Pending" %}
+            </span>
+        {% endif %}
     </div>
+
+    {% if match.webook_purchase_url %}
+        <a href="{{ match.webook_purchase_url }}" target="_blank" rel="noopener" class="btn btn-secondary match-quick-view-link">
+            <i class="ti ti-ticket"></i> {% trans "Buy Tickets on Webook" %}
+        </a>
+    {% endif %}
 
     {% if is_viewer_only %}
         {% comment %}The SPL team's whole "full match page" folds in here instead - one fast card, no extra navigation.{% endcomment %}

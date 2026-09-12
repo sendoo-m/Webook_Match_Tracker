@@ -19,7 +19,18 @@
                 {% if user.get_full_name %}<span class="help-text">({{ user.get_full_name }})</span>{% endif %}
                 {% if user.is_superuser %} <span class="mini-badge mini-badge-info">{% trans "Superuser" %}</span>{% endif %}
             </td>
-            <td>{% for group in user.groups.all %}{{ group.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+            <td>
+                {% for group in user.groups.all %}{{ group.name }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    {% if user.is_active %}
+                        <span class="mini-badge mini-badge-warning" title="{% trans 'Active account with no assigned role - a permissions-hygiene gap worth reviewing.' %}">
+                            <i class="ti ti-alert-circle"></i> {% trans "No role" %}
+                        </span>
+                    {% else %}
+                        —
+                    {% endif %}
+                {% endfor %}
+            </td>
             <td>{{ user.owned_clubs.count }}</td>
             <td>
                 <span class="badge {% if user.is_active %}badge-published{% else %}badge-draft{% endif %}">
@@ -35,10 +46,16 @@
                         {% include "control_panel/_toggle_active_button.html" with obj=user toggle_url_name="control_panel:user-toggle-active" %}
                     {% endif %}
                     {% if can_impersonate and user.pk != request.user.pk and not user|is_admin_account %}
-                        <form method="post" action="{% url 'control_panel:user-login-as' user.pk %}" class="logout-form">
+                        {% blocktrans with name=user|display_name asvar impersonate_confirm %}You'll be logged in as {{ name }} and see the app exactly as they do, until you log back out. Continue?{% endblocktrans %}
+                        <form
+                            method="post"
+                            action="{% url 'control_panel:user-login-as' user.pk %}"
+                            class="logout-form"
+                            onsubmit="return confirm('{{ impersonate_confirm|escapejs }}')"
+                        >
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-secondary btn-sm" title="{% blocktrans with name=user|display_name %}Log in as {{ name }}{% endblocktrans %}">
-                                <i class="ti ti-user-check"></i> {% trans "Login as" %}
+                            <button type="submit" class="btn btn-sm btn-impersonate" title="{% blocktrans with name=user|display_name %}Log in as {{ name }}{% endblocktrans %}">
+                                <i class="ti ti-user-shield"></i> {% trans "Login as" %}
                             </button>
                         </form>
                     {% endif %}
@@ -49,40 +66,3 @@
         <tr><td colspan="5">{% trans "No users found." %}</td></tr>
     {% endfor %}
 {% endblock %}
-
-{% comment %} {% extends "control_panel/list.html" %}
-
-{% block table_head %}
-    <th>Username</th>
-    <th>Role</th>
-    <th>Owned Clubs</th>
-    <th>Status</th>
-    <th></th>
-{% endblock %}
-
-{% block table_body %}
-    {% for user in users %}
-        <tr>
-            <td>
-                {{ user.username }}
-                {% if user.get_full_name %}<span class="help-text">({{ user.get_full_name }})</span>{% endif %}
-                {% if user.is_superuser %} <span class="mini-badge mini-badge-info">Superuser</span>{% endif %}
-            </td>
-            <td>{% for group in user.groups.all %}{{ group.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
-            <td>{{ user.owned_clubs.count }}</td>
-            <td>
-                <span class="badge {% if user.is_active %}badge-published{% else %}badge-draft{% endif %}">
-                    {% if user.is_active %}Active{% else %}Inactive{% endif %}
-                </span>
-            </td>
-            <td>
-                <div style="display:flex; gap:8px;">
-                    <a class="btn btn-secondary" style="padding:6px 10px; font-size:12px;" href="{% url 'control_panel:user-update' user.pk %}">Edit</a>
-                    {% include "control_panel/_toggle_active_button.html" with obj=user toggle_url_name="control_panel:user-toggle-active" %}
-                </div>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="5">No users found.</td></tr>
-    {% endfor %}
-{% endblock %} {% endcomment %}

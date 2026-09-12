@@ -14,7 +14,7 @@ from django.views.generic import TemplateView
 from matches.models import Match
 from operations.permissions import MatchScopedQuerysetMixin
 
-from .helpers import build_dashboard_match_state, get_coordinators_for_matches, get_dashboard_prefetch
+from .helpers import build_dashboard_match_state, get_coordinators_for_matches, get_dashboard_prefetch, get_selectable_clubs
 
 DAY_MATCH_LIMIT = 3
 
@@ -38,6 +38,7 @@ class MatchCalendarView(LoginRequiredMixin, MatchScopedQuerysetMixin, TemplateVi
         elif month > 12:
             month, year = 1, year + 1
 
+        selected_club = self.request.GET.get("club", "")
         selected_coordinator = self.request.GET.get("coordinator", "")
 
         # Sunday-first week, matching the region this app is built for.
@@ -52,6 +53,8 @@ class MatchCalendarView(LoginRequiredMixin, MatchScopedQuerysetMixin, TemplateVi
             .prefetch_related(get_dashboard_prefetch())
             .order_by("event_date", "match_start_time")
         )
+        if selected_club:
+            matches = matches.filter(home_club_id=selected_club)
         if selected_coordinator:
             matches = matches.filter(home_club__owner_id=selected_coordinator)
         matches_by_day = {}
@@ -70,6 +73,7 @@ class MatchCalendarView(LoginRequiredMixin, MatchScopedQuerysetMixin, TemplateVi
                         "match": m,
                         "is_live_now": state["is_live_now"],
                         "is_finished": state["match_finished"],
+                        "is_today": state["is_today"],
                     })
                 week_days.append({
                     "date": day,
@@ -83,8 +87,9 @@ class MatchCalendarView(LoginRequiredMixin, MatchScopedQuerysetMixin, TemplateVi
         prev_month, prev_year = (12, year - 1) if month == 1 else (month - 1, year)
         next_month, next_year = (1, year + 1) if month == 12 else (month + 1, year)
 
-        # Coordinator options reflect everything this user can ever see, not
-        # just this month, so the dropdown stays stable while navigating.
+        # Club/Coordinator options reflect everything this user can ever
+        # see, not just this month, so the dropdowns stay stable while
+        # navigating.
         scoped_matches = self.filter_matches_queryset(Match.objects.all())
 
         context.update({
@@ -97,7 +102,9 @@ class MatchCalendarView(LoginRequiredMixin, MatchScopedQuerysetMixin, TemplateVi
             "prev_month": prev_month,
             "next_year": next_year,
             "next_month": next_month,
+            "clubs": get_selectable_clubs(scoped_matches),
             "coordinators": get_coordinators_for_matches(scoped_matches),
+            "selected_club": selected_club,
             "selected_coordinator": selected_coordinator,
         })
         return context
