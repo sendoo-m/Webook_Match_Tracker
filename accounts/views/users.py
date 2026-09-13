@@ -4,10 +4,17 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext as _eager
 from django.utils.translation import gettext_lazy as _
 
-from control_panel.forms import UserForm
+# accounts/views/users.py
+
+from control_panel.views.base import (
+    PanelCreateView,
+    PanelListView,
+    PanelToggleActiveView,
+    PanelUpdateView,
+)
 from core.permissions import is_super_admin
 
-from .base import PanelCreateView, PanelListView, PanelToggleActiveView, PanelUpdateView
+from ..forms import UserForm
 
 User = get_user_model()
 

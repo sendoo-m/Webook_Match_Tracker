@@ -16,7 +16,6 @@ from .competitions import (
 )
 from .feedback import FeedbackEntryCreateView, FeedbackEntryListView, FeedbackEntryUpdateView
 from .home import PanelHomeView
-from .impersonate import ImpersonateUserView, StopImpersonatingView
 from .matches import (
     MatchAdminCreateView,
     MatchAdminListView,
@@ -27,12 +26,24 @@ from .matches import (
     MatchTemplateView,
 )
 from .release_notes import ReleaseNoteCreateView, ReleaseNoteListView, ReleaseNoteUpdateView
-from .users import UserCreateView, UserListView, UserToggleActiveView, UserUpdateView
 from .venues import (
     StadiumCreateView,
     StadiumListView,
     StadiumToggleActiveView,
     StadiumUpdateView,
+)
+
+# User management and impersonation now live in the accounts app
+# (modular-monolith restructuring). Re-exported here unchanged so
+# control_panel/urls.py's `views.UserListView`/`views.ImpersonateUserView`
+# (etc.) keep working without changes.
+from accounts.views import (  # noqa: F401 - re-exported for backward compatibility
+    ImpersonateUserView,
+    StopImpersonatingView,
+    UserCreateView,
+    UserListView,
+    UserToggleActiveView,
+    UserUpdateView,
 )
 
 __all__ = [

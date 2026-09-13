@@ -1,4 +1,4 @@
-# control_panel/views/impersonate.py
+# accounts/views/impersonate.py
 
 import logging
 
@@ -10,8 +10,9 @@ from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import gettext as _
 from django.views import View
 
-from control_panel.permissions import SuperAdminAccessMixin
 from core.permissions import is_super_admin
+
+from ..permissions import SuperAdminAccessMixin
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
