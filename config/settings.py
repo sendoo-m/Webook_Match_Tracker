@@ -70,7 +70,11 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        # Every template now lives inside its owning app's own templates/
+        # directory (APP_DIRS below) - matches the convention control_panel
+        # and events already used, so there's one convention project-wide
+        # instead of two. No root-level templates/ directory exists anymore.
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
