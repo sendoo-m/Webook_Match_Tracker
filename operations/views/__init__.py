@@ -1,5 +1,4 @@
 
-from .activity_log import MatchActivityLogListView, MatchActivityView
 from .calendar import CalendarDayMatchesView, MatchCalendarView
 from .changelog import ChangelogView
 from .checklist import ChecklistItemNoteEditView, ChecklistItemUpdateView
@@ -45,6 +44,10 @@ from reports.views import (  # noqa: F401 - re-exported for backward compatibili
     CoordinatorWorkloadReportView,
     MissingRequirementsPopupView,
     MissingRequirementsReportView,
+)
+from audit.views import (  # noqa: F401 - re-exported for backward compatibility
+    MatchActivityLogListView,
+    MatchActivityView,
 )
 from .auth_views import HtmxLoginView  # <- new import
 

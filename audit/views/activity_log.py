@@ -1,3 +1,4 @@
+# audit/views/activity_log.py
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -10,8 +11,7 @@ from django.views.generic import DetailView
 
 from matches.models import Match
 from operations.permissions import MatchScopedQuerysetMixin
-
-from .helpers import build_match_progress_context, get_match_activity_page_context
+from operations.views.helpers import build_match_progress_context, get_match_activity_page_context
 
 ACTIVITY_FULL_PAGE_SIZE = 20
 
