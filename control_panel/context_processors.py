@@ -1,7 +1,7 @@
 # control_panel/context_processors.py
 
 from events.permissions import can_manage_events_panel, can_view_events_hub
-from operations.permissions import can_manage_control_panel, is_viewer_only
+from operations.permissions import can_manage_control_panel, can_view_own_club_dashboard, is_viewer_only
 
 from .design_tokens import LIGHT_TOKENS
 from .models import ReleaseNote
@@ -13,6 +13,7 @@ def panel_nav_flag(request):
     return {
         "can_view_control_panel": can_manage_control_panel(user),
         "is_viewer_only": is_viewer_only(user),
+        "can_view_own_club_dashboard": can_view_own_club_dashboard(user),
         "latest_release_version": latest_release.version if latest_release else None,
         "can_view_events_hub": can_view_events_hub(user),
         "can_manage_events_panel": can_manage_events_panel(user),

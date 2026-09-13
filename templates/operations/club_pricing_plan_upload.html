@@ -1,0 +1,59 @@
+{% extends "operations/base.html" %}
+{% load static %}
+{% load display_helpers %}
+{% load i18n %}
+<!-- File: templates/operations/club_pricing_plan_upload.html -->
+<!-- Path: config/templates/operations/club_pricing_plan_upload.html -->
+
+{% block title %}{% trans "Upload Pricing Plan" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">{% trans "Upload Pricing Plan" %}</h1>
+    <p class="page-subtitle">
+        {{ match.home_club|localized_name }} {% trans "vs" %} {{ match.away_club|localized_name }} —
+        <a href="{% url 'operations:club-dashboard-match-detail' match.pk %}">{% trans "Back to match details" %}</a>
+    </p>
+</div>
+
+<div class="card panel alert-card alert-info">
+    <div class="alert-head">
+        <div>
+            <div class="alert-title"><i class="ti ti-info-circle"></i> {% trans "This is not an approval." %}</div>
+            <p class="help-text">
+                {% trans "Uploading a pricing plan only saves your document here. It does not approve the plan, does not submit it to SPL, does not publish the match, and does not change its CMS or ticketing status - those remain separate steps." %}
+            </p>
+        </div>
+    </div>
+</div>
+
+{% if current_plan %}
+    <div class="card panel">
+        <h2 class="panel-title">{% trans "Current File" %}</h2>
+        <p>
+            <a href="{% url 'operations:club-pricing-plan-download' current_plan.pk %}">
+                {{ current_plan.file.name|cut:"club_pricing_plans/" }}
+            </a>
+            <span class="help-text">(v{{ current_plan.version }} — {{ current_plan.uploaded_at }})</span>
+        </p>
+    </div>
+{% endif %}
+
+<div class="card panel">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="field-group">
+            <label for="{{ form.file.id_for_label }}">
+                {% if current_plan %}{% trans "Upload a New Version" %}{% else %}{% trans "Pricing Plan File" %}{% endif %}
+            </label>
+            {{ form.file }}
+            {% if form.file.errors %}
+                <p class="help-text" style="color: var(--danger);">{{ form.file.errors|join:", " }}</p>
+            {% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top: var(--space-4);">
+            <i class="ti ti-upload"></i> {% trans "Upload" %}
+        </button>
+    </form>
+</div>
+{% endblock %}

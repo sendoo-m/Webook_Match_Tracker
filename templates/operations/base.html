@@ -25,6 +25,7 @@
 <body>
 
 {% url 'operations:dashboard' as dashboard_url %}
+{% url 'operations:club-dashboard' as club_dashboard_url %}
 {% url 'operations:match-list' as match_list_url %}
 {% url 'operations:calendar' as calendar_url %}
 {% url 'operations:release-schedule' as release_schedule_url %}
@@ -65,6 +66,11 @@
                 <a href="{{ dashboard_url }}" title="{% trans 'Dashboard' %}" class="sidebar-link{% if request.path == dashboard_url %} is-active{% endif %}">
                     <i class="ti ti-layout-dashboard"></i><span>{% trans "Dashboard" %}</span>
                 </a>
+                {% if can_view_own_club_dashboard %}
+                <a href="{{ club_dashboard_url }}" title="{% trans 'Club Dashboard' %}" class="sidebar-link{% if request.path == club_dashboard_url %} is-active{% endif %}">
+                    <i class="ti ti-shield-check"></i><span>{% trans "Club Dashboard" %}</span>
+                </a>
+                {% endif %}
                 {% if not is_viewer_only %}
                 <a href="{{ match_list_url }}" title="{% trans 'Events' %}" class="sidebar-link{% if request.path == match_list_url %} is-active{% endif %}">
                     <i class="ti ti-calendar-event"></i><span>{% trans "Events" %}</span>

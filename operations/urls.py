@@ -52,6 +52,32 @@ urlpatterns = [
         views.SPLPlanApprovalUploadView.as_view(),
         name="spl-plan-approval-upload",
     ),
+    path("club-dashboard/", views.ClubDashboardView.as_view(), name="club-dashboard"),
+    path(
+        "club-dashboard/matches/<int:pk>/",
+        views.ClubDashboardMatchDetailView.as_view(),
+        name="club-dashboard-match-detail",
+    ),
+    path(
+        "club-dashboard/matches/<int:pk>/pricing-plan/upload/",
+        views.ClubPricingPlanUploadView.as_view(),
+        name="club-pricing-plan-upload",
+    ),
+    path(
+        "club-dashboard/pricing-plan/<int:pk>/download/",
+        views.ClubPricingPlanDownloadView.as_view(),
+        name="club-pricing-plan-download",
+    ),
+    path(
+        "club-dashboard/pricing-plan/<int:pk>/submit/",
+        views.ClubPricingPlanSubmitView.as_view(),
+        name="club-pricing-plan-submit",
+    ),
+    path(
+        "club-dashboard/pricing-plan/<int:pk>/confirm-submission/",
+        views.ClubPricingPlanConfirmSubmissionView.as_view(),
+        name="club-pricing-plan-confirm-submission",
+    ),
     path("feedback/", views.FeedbackPageView.as_view(), name="feedback"),
     path("feedback/submit/", views.FeedbackSubmitView.as_view(), name="feedback-submit"),
     path("whats-new/", views.ChangelogView.as_view(), name="changelog"),

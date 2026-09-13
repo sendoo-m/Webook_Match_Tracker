@@ -3,6 +3,14 @@ from .activity_log import MatchActivityLogListView, MatchActivityView
 from .calendar import CalendarDayMatchesView, MatchCalendarView
 from .changelog import ChangelogView
 from .checklist import ChecklistItemNoteEditView, ChecklistItemUpdateView
+from .club_dashboard import (
+    ClubDashboardMatchDetailView,
+    ClubDashboardView,
+    ClubPricingPlanConfirmSubmissionView,
+    ClubPricingPlanDownloadView,
+    ClubPricingPlanSubmitView,
+    ClubPricingPlanUploadView,
+)
 from .cms import MatchCMSStatusUpdateView, MatchWebookLinkUpdateView, SendToCMSView
 from .dashboard import OperationsDashboardView
 from .delayed_details import MatchDelayedDetailsView
@@ -32,6 +40,12 @@ __all__ = [
     "MatchCalendarView",
     "ChecklistItemNoteEditView",
     "ChecklistItemUpdateView",
+    "ClubDashboardMatchDetailView",
+    "ClubDashboardView",
+    "ClubPricingPlanConfirmSubmissionView",
+    "ClubPricingPlanDownloadView",
+    "ClubPricingPlanSubmitView",
+    "ClubPricingPlanUploadView",
     "CoordinatorWorkloadReportView",
     "MatchActivityLogListView",
     "MatchActivityView",

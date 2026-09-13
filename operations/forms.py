@@ -7,6 +7,8 @@ from django import forms
 from control_panel.models import FeedbackEntry
 from matches.models import Match
 
+from .models import ClubPricingPlan
+
 RIYADH_TZ = ZoneInfo("Asia/Riyadh")
 
 
@@ -60,6 +62,16 @@ class SPLPlanApprovalUploadForm(forms.ModelForm):
     class Meta:
         model = Match
         fields = ["plan_approval_file"]
+
+
+class ClubPricingPlanUploadForm(forms.ModelForm):
+    """Only the file is user input - match/club/version/status/uploaded_by
+    are all set server-side by ClubPricingPlanUploadView, never from this
+    form's data (see operations/views/club_dashboard.py)."""
+
+    class Meta:
+        model = ClubPricingPlan
+        fields = ["file"]
 
 
 class WebookPurchaseLinkForm(forms.ModelForm):

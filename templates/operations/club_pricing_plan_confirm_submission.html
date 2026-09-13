@@ -1,0 +1,55 @@
+{% extends "operations/base.html" %}
+{% load static %}
+{% load display_helpers %}
+{% load i18n %}
+<!-- File: templates/operations/club_pricing_plan_confirm_submission.html -->
+<!-- Path: config/templates/operations/club_pricing_plan_confirm_submission.html -->
+
+{% block title %}{% trans "Confirm Pricing Plan Submission" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">{% trans "Confirm Pricing Plan Submission" %}</h1>
+    <p class="page-subtitle">
+        <a href="{% url 'operations:club-dashboard-match-detail' match.pk %}">{% trans "Back to match details" %}</a>
+    </p>
+</div>
+
+<div class="card panel">
+    <h2 class="panel-title">{% trans "Summary" %}</h2>
+    <div class="meta-grid">
+        <div class="card panel">
+            <div class="help-text">{% trans "Match" %}</div>
+            <div class="summary-tile-value">{{ match.home_club|localized_name }} {% trans "vs" %} {{ match.away_club|localized_name }}</div>
+        </div>
+        <div class="card panel">
+            <div class="help-text">{% trans "Plan Version" %}</div>
+            <div class="summary-tile-value">v{{ plan.version }}</div>
+        </div>
+        <div class="card panel">
+            <div class="help-text">{% trans "Submitted On" %}</div>
+            <div class="summary-tile-value">{{ plan.submitted_at }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card panel alert-card alert-warning">
+    <div class="alert-head">
+        <div>
+            <div class="alert-title"><i class="ti ti-alert-triangle"></i> {% trans "Are you sure you want to confirm this submission to SPL?" %}</div>
+            <p class="help-text">
+                {% trans "This action will be recorded under your account and date, and cannot be undone. This is NOT an SPL approval and does NOT publish the match." %}
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="card panel">
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">
+            <i class="ti ti-circle-check"></i> {% trans "Confirm Submission to SPL" %}
+        </button>
+    </form>
+</div>
+{% endblock %}

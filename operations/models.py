@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 
-from matches.models import Match
+from matches.models import Club, Match, validate_plan_approval_file
 
 
 class MatchActivityLog(models.Model):
@@ -36,3 +36,105 @@ class MatchActivityLog(models.Model):
 
     def __str__(self):
         return f"{self.match} - {self.get_action_display()}"
+
+
+class ClubPricingPlan(models.Model):
+    """The home club's own pricing-plan document for one of its matches -
+    entirely separate from Match.plan_approval_file/ticketing_plan_approved
+    (SPL's side of ticketing approval) and from cms_status/spl_tickets_sent.
+    Those fields keep their existing meaning untouched; this model exists
+    so "the club uploaded a plan", "SPL approved a plan", and "the match
+    went live" can never be collapsed into one flag by accident.
+
+    Append-only versioning: every upload creates a new row with the next
+    version number for that match rather than overwriting the previous
+    one, so nothing is silently replaced - see
+    operations/views/club_dashboard.py's upload view for how `version` is
+    computed. The current plan for a match is simply the highest version
+    row (Meta.ordering already puts it first).
+    """
+
+    class Status(models.TextChoices):
+        # A strictly linear, one-way lifecycle for THIS specific plan
+        # version - no branching, no SPL decision states (approved/
+        # rejected/needs-changes) here on purpose: that's SPL's own call,
+        # tracked entirely by the existing Match.ticketing_plan_approved,
+        # never by this field. This model only ever tracks what the CLUB
+        # did: uploaded it, sent it, confirmed the send.
+        UPLOADED = "uploaded", "Uploaded"
+        SUBMITTED_TO_SPL = "submitted_to_spl", "Submitted to SPL"
+        SUBMISSION_CONFIRMED = "submission_confirmed", "Submission Confirmed"
+
+    match = models.ForeignKey(
+        Match,
+        related_name="club_pricing_plans",
+        on_delete=models.CASCADE,
+    )
+    # Always the match's home club - set server-side from match.home_club
+    # at creation (see the upload view), never from request data. Kept as
+    # its own column (rather than always joining through match.home_club)
+    # so a plan's ownership survives even if a match's home_club were ever
+    # reassigned, and so "all of this club's plans" is a direct filter.
+    club = models.ForeignKey(
+        Club,
+        related_name="pricing_plans",
+        on_delete=models.PROTECT,
+    )
+    file = models.FileField(
+        upload_to="club_pricing_plans/",
+        validators=[validate_plan_approval_file],
+        help_text="Pricing plan document uploaded by the home club (same allowed types/size as the SPL plan approval file).",
+    )
+    version = models.PositiveIntegerField(
+        help_text="1 for a match's first upload, incrementing per match - never reused or edited after creation.",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.UPLOADED,
+    )
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="uploaded_pricing_plans",
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    # "Club submitted" - deliberately its own pair of fields, never
+    # confused with Match.sent_to_cms_at/sent_to_cms_by (the CMS
+    # submission, a different action entirely) or with SPL's own
+    # ticketing_plan_approved/ticketing_plan_approved_at.
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="submitted_pricing_plans",
+    )
+
+    # "Club confirmed the submission" - a separate club-side acknowledgement
+    # that the send happened, still not an SPL decision of any kind.
+    confirmed_at = models.DateTimeField(null=True, blank=True)
+    confirmed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="confirmed_pricing_plans",
+    )
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-version",)
+        constraints = [
+            models.UniqueConstraint(fields=["match", "version"], name="unique_club_pricing_plan_version_per_match"),
+        ]
+        verbose_name = "Club Pricing Plan"
+        verbose_name_plural = "Club Pricing Plans"
+
+    def __str__(self):
+        return f"{self.match} - v{self.version} ({self.club})"

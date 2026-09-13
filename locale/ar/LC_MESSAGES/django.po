@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 16:48+0300\n"
+"POT-Creation-Date: 2026-09-13 20:44+0300\n"
 "PO-Revision-Date: 2026-08-25 17:16+0300\n"
 "Last-Translator: Webook\n"
 "Language-Team: Arabic\n"
@@ -883,6 +883,31 @@ msgstr ""
 msgid "Invalid date."
 msgstr "تاريخ غير صالح."
 
+msgid "Could not upload the file."
+msgstr "تعذّر رفع الملف."
+
+msgid ""
+"Pricing plan uploaded. This does not approve it - SPL review still applies."
+msgstr "تم رفع خطة الأسعار. هذا لا يعني اعتمادها - مراجعة SPL لا تزال مطلوبة."
+
+msgid "This pricing plan has already been submitted to SPL."
+msgstr "تم إرسال خطة الأسعار هذه إلى SPL بالفعل."
+
+msgid ""
+"Pricing plan submitted to SPL. This is not an SPL approval and does not "
+"publish the match."
+msgstr ""
+"تم إرسال خطة الأسعار إلى SPL. هذا لا يعني موافقة SPL ولا ينشر المباراة."
+
+msgid ""
+"This pricing plan submission has already been confirmed, or was never "
+"submitted."
+msgstr ""
+"تم تأكيد إرسال هذه الخطة بالفعل، أو لم يتم إرسالها من الأساس."
+
+msgid "Pricing plan submission confirmed."
+msgstr "تم تأكيد إرسال خطة الأسعار."
+
 msgid "Match is not ready for CMS."
 msgstr "المباراة غير جاهزة لإرسالها إلى نظام إدارة المحتوى."
 
@@ -915,9 +940,6 @@ msgid "SPL complimentary tickets confirmed."
 msgstr "تم تأكيد التذاكر المجانية لـ SPL."
 
 msgid "Plan approval file uploaded."
-msgstr ""
-
-msgid "Could not upload the file."
 msgstr ""
 
 msgid "Sync checklist templates"
@@ -1091,6 +1113,9 @@ msgstr "التنقل الرئيسي"
 
 msgid "Dashboard"
 msgstr "لوحة القيادة"
+
+msgid "Club Dashboard"
+msgstr "لوحة النادي"
 
 msgid "Calendar"
 msgstr "التقويم"
@@ -1316,6 +1341,251 @@ msgid "No releases logged yet."
 msgstr "لا توجد إصدارات مسجلة بعد."
 
 msgid ""
+"This is your <strong>Club Dashboard</strong> — every match your club is part "
+"of, across\n"
+"        every competition, whether your club is hosting or visiting."
+msgstr ""
+"هذه هي <strong>لوحة النادي</strong> الخاصة بك — كل مباراة يشارك فيها ناديك، "
+"في كل البطولات، سواء كان ناديك مضيفًا أو ضيفًا."
+
+msgid ""
+"Matches on your own ground are marked \"Responsible for execution\" - you "
+"can prepare and submit their tickets and pricing plan. Matches away from "
+"your ground are \"Follow-up only\": the host club handles preparation, and "
+"you can only track their status here."
+msgstr ""
+
+msgid "Club Summary"
+msgstr "ملخص النادي"
+
+msgid "Past Matches"
+msgstr "المباريات السابقة"
+
+msgid "Home Matches"
+msgstr "مباريات الأرض"
+
+msgid "Away Matches"
+msgstr "مباريات خارج الأرض"
+
+msgid "Live Now"
+msgstr "مباشر الآن"
+
+msgid "Match Type"
+msgstr "نوع المباراة"
+
+msgid "On our ground"
+msgstr "على أرضنا"
+
+msgid "Away from our ground"
+msgstr "خارج أرضنا"
+
+msgid "Match Status"
+msgstr "حالة المباراة"
+
+msgid "Period"
+msgstr "الفترة"
+
+msgid "Home Team"
+msgstr "الفريق المضيف"
+
+msgid "Away Team"
+msgstr "الفريق الضيف"
+
+msgid "Club Responsibility"
+msgstr "مسؤولية النادي"
+
+msgid "Match Date"
+msgstr "تاريخ المباراة"
+
+msgid "Ticket Status"
+msgstr "حالة التذاكر"
+
+msgid "Details"
+msgstr "التفاصيل"
+
+msgid "On our ground - responsible for execution"
+msgstr "على أرضنا - مسؤول عن التنفيذ"
+
+msgid "Away from our ground - follow-up only"
+msgstr "خارج أرضنا - للمتابعة فقط"
+
+msgid "Tickets Live"
+msgstr "التذاكر متاحة الآن"
+
+msgid "Not Live Yet"
+msgstr "لم يبدأ البث المباشر بعد"
+
+msgid "View"
+msgstr "عرض"
+
+msgid "No matches found for this filter."
+msgstr "لا توجد مباريات مطابقة لهذا الفلتر."
+
+msgid "First"
+msgstr "الأولى"
+
+msgid "Last"
+msgstr "الأخيرة"
+
+msgid "vs"
+msgstr "ضد"
+
+msgid "Back to Club Dashboard"
+msgstr "العودة للوحة النادي"
+
+msgid "Away Match"
+msgstr "مباراة خارج الأرض"
+
+msgid ""
+"This match is away from your club's ground. The host club is responsible for "
+"preparing tickets, the pricing plan, and submitting them to SPL - you can "
+"only follow the status here."
+msgstr ""
+"هذه المباراة خارج ملعب ناديك. النادي المضيف هو المسؤول عن تجهيز التذاكر وخطة "
+"الأسعار وإرسالها إلى SPL - يمكنك متابعة الحالة هنا فقط."
+
+msgid "Ticket Sale Status"
+msgstr "حالة بيع التذاكر"
+
+msgid "Went Live On"
+msgstr "تاريخ الطرح المباشر"
+
+msgid "SPL Ticketing Plan Status"
+msgstr "حالة خطة تذاكر SPL"
+
+msgid "Approved"
+msgstr "معتمد"
+
+msgid "Pending SPL Review"
+msgstr "قيد مراجعة SPL"
+
+msgid "Not Submitted Yet"
+msgstr "لم تُرسل بعد"
+
+msgid "Submitting tickets to SPL will be available here in a later phase."
+msgstr "إرسال التذاكر إلى SPL هيكون متاح هنا في مرحلة لاحقة."
+
+msgid "Recent Activity"
+msgstr "آخر النشاطات"
+
+msgid "Club Pricing Plan"
+msgstr "خطة أسعار النادي"
+
+msgid ""
+"Your own pricing plan document for this match - separate from SPL's "
+"ticketing plan approval above. Uploading a plan does not approve it, does "
+"not publish the match, and does not change its CMS or ticketing status."
+msgstr ""
+"هذا هو ملف خطة الأسعار الخاص بناديك لهذه المباراة - منفصل عن حالة اعتماد SPL "
+"لخطة التذاكر أعلاه. رفع الخطة لا يعني اعتمادها، ولا ينشر المباراة، ولا يغيّر "
+"حالتها في CMS أو حالة التذاكر."
+
+msgid "Current File"
+msgstr "الملف الحالي"
+
+msgid "Uploaded On"
+msgstr "تاريخ الرفع"
+
+#, python-format
+msgid "Submitted to SPL on %(date)s by %(user)s"
+msgstr ""
+
+#, python-format
+msgid "Submission confirmed on %(date)s by %(user)s"
+msgstr ""
+
+msgid "No pricing plan uploaded yet."
+msgstr "لم يتم رفع خطة أسعار بعد."
+
+msgid "Upload a New Version"
+msgstr "رفع نسخة جديدة"
+
+msgid "Upload Pricing Plan"
+msgstr "رفع خطة الأسعار"
+
+msgid ""
+"SPL has already approved the ticketing plan - uploading a new version is no "
+"longer available."
+msgstr "SPL اعتمدت خطة التذاكر بالفعل - رفع نسخة جديدة لم يعد متاحًا."
+
+msgid "Submit to SPL"
+msgstr "إرسال إلى SPL"
+
+msgid "Confirm Submission to SPL"
+msgstr "تأكيد الإرسال إلى SPL"
+
+msgid ""
+"Submitting and confirming are club-side steps only - SPL's own approval and "
+"the match going live remain separate and are not affected by them."
+msgstr ""
+"الإرسال والتأكيد خطوتان من جانب النادي فقط - موافقة SPL ونشر المباراة "
+"يبقيان منفصلين ولا يتأثران بهما."
+
+msgid ""
+"The host club is responsible for uploading the pricing plan for this match."
+msgstr "النادي المضيف هو المسؤول عن رفع خطة الأسعار لهذه المباراة."
+
+msgid "Confirm Pricing Plan Submission"
+msgstr "تأكيد إرسال خطة الأسعار"
+
+msgid "Back to match details"
+msgstr "العودة لتفاصيل المباراة"
+
+msgid "Summary"
+msgstr "الملخص"
+
+msgid "Plan Version"
+msgstr "رقم نسخة الخطة"
+
+msgid "Submitted On"
+msgstr "تاريخ الإرسال"
+
+msgid "Are you sure you want to confirm this submission to SPL?"
+msgstr "هل أنت متأكد من تأكيد إرسال هذه الخطة إلى SPL؟"
+
+msgid ""
+"This action will be recorded under your account and date, and cannot be "
+"undone. This is NOT an SPL approval and does NOT publish the match."
+msgstr ""
+"سيتم تسجيل هذا الإجراء باسمك وتاريخه، ولا يمكن التراجع عنه. هذا لا يعني "
+"موافقة SPL ولا ينشر المباراة."
+
+msgid "Submit Pricing Plan to SPL"
+msgstr "إرسال خطة الأسعار إلى SPL"
+
+msgid "File"
+msgstr "الملف"
+
+msgid "This will be recorded."
+msgstr "سيتم تسجيل هذا."
+
+msgid ""
+"Submitting will be logged under your account and cannot be undone. This is "
+"NOT an SPL approval, and it does NOT publish the match live - those remain "
+"separate steps handled by SPL and by operations."
+msgstr ""
+"الإرسال سيتم تسجيله باسمك ولا يمكن التراجع عنه. هذا ليس موافقة من SPL، ولا "
+"ينشر المباراة مباشرة - كل ده خطوات منفصلة تتم من قبل SPL والعمليات."
+
+msgid "This is not an approval."
+msgstr "هذا ليس اعتمادًا."
+
+msgid ""
+"Uploading a pricing plan only saves your document here. It does not approve "
+"the plan, does not submit it to SPL, does not publish the match, and does "
+"not change its CMS or ticketing status - those remain separate steps."
+msgstr ""
+"رفع خطة الأسعار يحفظ ملفك هنا فقط. هذا لا يعني اعتماد الخطة، ولا إرسالها إلى "
+"SPL، ولا نشر المباراة، ولا تغيير حالتها في CMS أو حالة التذاكر - كل ده خطوات "
+"منفصلة."
+
+msgid "Pricing Plan File"
+msgstr "ملف خطة الأسعار"
+
+msgid "Upload"
+msgstr ""
+
+msgid ""
 "This is the <strong>Operations Dashboard</strong> — a live snapshot of every "
 "match: what's\n"
 "        live right now and what needs attention (Alerts & Deadlines)."
@@ -1348,14 +1618,8 @@ msgstr "العناصر الناقصة"
 msgid "Volume"
 msgstr "الحجم"
 
-msgid "Past Matches"
-msgstr "المباريات السابقة"
-
 msgid "Live Ops"
 msgstr "العمليات المباشرة"
-
-msgid "Live Now"
-msgstr "مباشر الآن"
 
 msgid "Starting in 48h"
 msgstr "تبدأ خلال 48 ساعة"
@@ -1521,12 +1785,6 @@ msgstr "النوع"
 msgid "No activity found for this filter."
 msgstr "لا يوجد نشاط مطابق لهذا الفلتر."
 
-msgid "First"
-msgstr "الأولى"
-
-msgid "Last"
-msgstr "الأخيرة"
-
 msgid ""
 "This is a single <strong>match's detail page</strong> — its checklist, "
 "discount code,\n"
@@ -1546,9 +1804,6 @@ msgstr ""
 
 msgid "Home / Away"
 msgstr "المضيف / الضيف"
-
-msgid "vs"
-msgstr "ضد"
 
 msgid "Open Only"
 msgstr "المفتوحة فقط"
@@ -1621,9 +1876,6 @@ msgstr ""
 "تصفح قوائم التحقق لكل مباراة، وصفّها، وافتحها. المباريات السابقة مخفية "
 "افتراضيًا."
 
-msgid "Period"
-msgstr "الفترة"
-
 msgid "SPL Plan Approved"
 msgstr "خطة SPL معتمدة"
 
@@ -1636,9 +1888,6 @@ msgstr "التفاصيل الكاملة"
 #, python-format
 msgid "Live · %(title)s"
 msgstr "مباشر · %(title)s"
-
-msgid "Not Live Yet"
-msgstr "لم يبدأ البث المباشر بعد"
 
 msgid "Kickoff"
 msgstr "انطلاق المباراة"
@@ -1683,9 +1932,6 @@ msgstr "لا توجد مهام معلقة — كل شيء تم إنجازه."
 
 msgid "System"
 msgstr "النظام"
-
-msgid "Recent Activity"
-msgstr "آخر النشاطات"
 
 msgid "View full activity log"
 msgstr "عرض سجل النشاط كامل"
@@ -1831,9 +2077,6 @@ msgstr ""
 msgid "Add Ticket Link"
 msgstr "إضافة رابط التذاكر"
 
-msgid "No matches found for this filter."
-msgstr "لا توجد مباريات مطابقة لهذا الفلتر."
-
 #, fuzzy
 #| msgid "SPL Tickets"
 msgid "Buy Tickets"
@@ -1845,9 +2088,6 @@ msgstr "لا توجد مباريات للجولة %(number)s."
 
 msgid "Round Statistics"
 msgstr ""
-
-msgid "Match Status"
-msgstr "حالة المباراة"
 
 msgid ""
 "Currently live - published on the CMS, or auto-detected live by the match "
@@ -2021,9 +2261,6 @@ msgstr "معلومات تقرير SPL"
 
 msgid "Ticketing Plan"
 msgstr "خطة التذاكر"
-
-msgid "Approved"
-msgstr "معتمد"
 
 msgid "Not Approved"
 msgstr "غير معتمد"
@@ -2227,9 +2464,6 @@ msgstr[3] "%(counter)s مباريات"
 msgstr[4] "%(counter)s مباراة"
 msgstr[5] "%(counter)s مباراة"
 
-msgid "Match Date"
-msgstr "تاريخ المباراة"
-
 #, fuzzy
 #| msgid "Release Date"
 msgid "Planned Release Date"
@@ -2415,12 +2649,6 @@ msgstr "دوري روشن"
 
 msgid "Matchweek"
 msgstr "الجولة"
-
-msgid "Home Team"
-msgstr "الفريق المضيف"
-
-msgid "Away Team"
-msgstr "الفريق الضيف"
 
 msgid "Confirms the SPL team has approved the match's ticketing release plan."
 msgstr ""
@@ -2711,9 +2939,6 @@ msgstr "تحقق من اسم المستخدم وكلمة المرور وحاول
 msgid "Password"
 msgstr "كلمة المرور"
 
-#~ msgid "Filed"
-#~ msgstr "تم الإرسال"
-
 #~ msgid "All core requirements are ready."
 #~ msgstr "كل المتطلبات الأساسية جاهزة."
 
@@ -2733,9 +2958,6 @@ msgstr "كلمة المرور"
 
 #~ msgid "Match Readiness"
 #~ msgstr "جاهزية المباراة"
-
-#~ msgid "Live View"
-#~ msgstr "العرض المباشر"
 
 #~ msgid "Full Checklist"
 #~ msgstr "قائمة التحقق الكاملة"

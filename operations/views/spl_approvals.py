@@ -23,11 +23,12 @@
 # the SPL Report page's own read-only status badges.
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.views.generic import TemplateView
 
 from matches.models import Match
-from operations.permissions import can_manage_control_panel, is_viewer_only
+from operations.permissions import can_access_spl_approval_area, can_manage_control_panel, is_viewer_only
 
 from .helpers import (
     build_spl_report_row,
@@ -41,7 +42,25 @@ from .spl_report import SPLReportFilterMixin
 
 
 class SPLApprovalsView(LoginRequiredMixin, SPLReportFilterMixin, TemplateView):
+    """SPL approval data (ticketing plan status, approval file, complimentary
+    tickets) is Viewer/manager territory only - a Club Manager account (or
+    anyone else without one of those two roles) has never been meant to see
+    this page, even read-only. LoginRequiredMixin alone only checked they
+    were logged in, not that they held one of those roles, so a club user
+    could open this page directly (writes were already blocked, but the page
+    itself wasn't). can_access_spl_approval_area is the same check
+    SPLPlanConfirmView/SPLTicketsConfirmView/SPLPlanApprovalUploadView already
+    perform inline for their own POST actions - centralizing it here doesn't
+    change what those views do, it just closes the read-side gap on this one
+    page. Runs before get_context_data, so an unauthorized request never
+    reaches the query that builds the row data."""
+
     template_name = "operations/spl_approvals.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and not can_access_spl_approval_area(request.user):
+            raise PermissionDenied("This page isn't available to your account.")
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
