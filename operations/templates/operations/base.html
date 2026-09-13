@@ -26,7 +26,6 @@
 
 {% url 'operations:dashboard' as dashboard_url %}
 {% url 'operations:club-dashboard' as club_dashboard_url %}
-{% if is_club_manager %}{% url 'operations:club-dashboard' as home_url %}{% else %}{% url 'operations:dashboard' as home_url %}{% endif %}
 {% url 'operations:match-list' as match_list_url %}
 {% url 'operations:calendar' as calendar_url %}
 {% url 'operations:release-schedule' as release_schedule_url %}
@@ -54,27 +53,25 @@
                 <i class="ti ti-chevron-left"></i>
             </button>
 
-            <a class="sidebar-logo" href="{{ home_url }}">
+            <a class="sidebar-logo" href="{{ dashboard_url }}">
                 <img src="{% static 'images/Webook_logo.png' %}" alt="Webook" class="sidebar-logo-img">
 
             </a>
-            <a class="sidebar-logo sidebar-logo-secondary" href="{{ home_url }}">
+            <a class="sidebar-logo sidebar-logo-secondary" href="{{ dashboard_url }}">
 
                 <span class="sidebar-logo-text" style="font-weight: bold;">{% trans "Event Tracker" %}</span>
             </a>
 
             <nav class="sidebar-nav" id="sidebar-nav" aria-label="{% trans 'Main navigation' %}">
-                {% if not is_club_manager %}
                 <a href="{{ dashboard_url }}" title="{% trans 'Dashboard' %}" class="sidebar-link{% if request.path == dashboard_url %} is-active{% endif %}">
                     <i class="ti ti-layout-dashboard"></i><span>{% trans "Dashboard" %}</span>
                 </a>
-                {% endif %}
                 {% if can_view_own_club_dashboard %}
                 <a href="{{ club_dashboard_url }}" title="{% trans 'Club Dashboard' %}" class="sidebar-link{% if request.path == club_dashboard_url %} is-active{% endif %}">
                     <i class="ti ti-shield-check"></i><span>{% trans "Club Dashboard" %}</span>
                 </a>
                 {% endif %}
-                {% if not is_viewer_only and not is_club_manager %}
+                {% if not is_viewer_only %}
                 <a href="{{ match_list_url }}" title="{% trans 'Events' %}" class="sidebar-link{% if request.path == match_list_url %} is-active{% endif %}">
                     <i class="ti ti-calendar-event"></i><span>{% trans "Events" %}</span>
                 </a>
@@ -93,7 +90,7 @@
                     <i class="ti ti-checkbox"></i><span>{% trans "SPL Approvals" %}</span>
                 </a>
                 {% endif %}
-                {% if not is_viewer_only and not is_club_manager %}
+                {% if not is_viewer_only %}
                 <a href="{{ missing_url }}" title="{% trans 'Missing items' %}" class="sidebar-link{% if request.path == missing_url %} is-active{% endif %}">
                     <i class="ti ti-alert-triangle"></i><span>{% trans "Missing items" %}</span>
                 </a>
