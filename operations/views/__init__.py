@@ -1,7 +1,6 @@
 
 from .calendar import CalendarDayMatchesView, MatchCalendarView
 from .changelog import ChangelogView
-from .checklist import ChecklistItemNoteEditView, ChecklistItemUpdateView
 from .cms import MatchCMSStatusUpdateView, MatchWebookLinkUpdateView, SendToCMSView
 from .dashboard import OperationsDashboardView
 from .delayed_details import MatchDelayedDetailsView
@@ -48,6 +47,10 @@ from reports.views import (  # noqa: F401 - re-exported for backward compatibili
 from audit.views import (  # noqa: F401 - re-exported for backward compatibility
     MatchActivityLogListView,
     MatchActivityView,
+)
+from checklists.views import (  # noqa: F401 - re-exported for backward compatibility
+    ChecklistItemNoteEditView,
+    ChecklistItemUpdateView,
 )
 from .auth_views import HtmxLoginView  # <- new import
 
