@@ -1,4 +1,4 @@
-# operations/views/spl_finished_matches.py
+# spl/views/finished_matches.py
 #
 # "SPL Finished Matches" - a read-only history view for matches SPL
 # Approvals no longer shows (it drops finished matches entirely, per
@@ -24,8 +24,9 @@ from django.views.generic import TemplateView
 
 from matches.models import Match
 
-from .helpers import build_spl_report_row, get_coordinators_for_matches, get_selectable_clubs
-from .spl_report import SPLReportFilterMixin
+from operations.views.helpers import build_spl_report_row, get_coordinators_for_matches, get_selectable_clubs
+
+from .report import SPLReportFilterMixin
 
 
 class SPLFinishedMatchesView(LoginRequiredMixin, SPLReportFilterMixin, TemplateView):

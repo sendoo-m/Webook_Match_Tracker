@@ -1,4 +1,4 @@
-# operations/views/spl_confirm.py
+# spl/views/confirm.py
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -9,11 +9,11 @@ from django.utils.translation import gettext as _
 from django.views import View
 
 from matches.models import Match
-from operations.forms import SPLPlanApprovalUploadForm
 from operations.models import MatchActivityLog
 from operations.permissions import MatchScopedQuerysetMixin, can_manage_control_panel, is_viewer_only
+from operations.views.helpers import log_match_activity
 
-from .helpers import log_match_activity
+from ..forms import SPLPlanApprovalUploadForm
 
 
 class SPLPlanConfirmView(LoginRequiredMixin, MatchScopedQuerysetMixin, View):

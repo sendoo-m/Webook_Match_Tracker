@@ -1,4 +1,4 @@
-# operations/views/spl_approvals.py
+# spl/views/approvals.py
 #
 # "SPL Approvals" - a dedicated page for the two SPL-team write actions
 # (confirm the ticketing plan + upload its approval file, confirm
@@ -30,7 +30,7 @@ from django.views.generic import TemplateView
 from matches.models import Match
 from operations.permissions import can_access_spl_approval_area, can_manage_control_panel, is_viewer_only
 
-from .helpers import (
+from operations.views.helpers import (
     build_spl_report_row,
     get_coordinators_for_matches,
     get_current_round_number,
@@ -38,7 +38,8 @@ from .helpers import (
     get_roshan_league_competition,
     get_selectable_clubs,
 )
-from .spl_report import SPLReportFilterMixin
+
+from .report import SPLReportFilterMixin
 
 
 class SPLApprovalsView(LoginRequiredMixin, SPLReportFilterMixin, TemplateView):

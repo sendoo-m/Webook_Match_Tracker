@@ -1,4 +1,4 @@
-# operations/views/spl_report.py
+# spl/views/report.py
 
 from datetime import date
 
@@ -12,8 +12,7 @@ from django.views.generic import TemplateView
 from matches.import_export import export_spl_report_xlsx
 from matches.models import Match
 from operations.permissions import MatchScopedQuerysetMixin
-
-from .helpers import (
+from operations.views.helpers import (
     build_spl_report_row,
     get_coordinators_for_matches,
     get_current_round_number,

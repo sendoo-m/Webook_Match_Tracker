@@ -1,4 +1,4 @@
-# operations/views/spl_info.py
+# spl/views/info.py
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
@@ -8,9 +8,10 @@ from django.utils import timezone
 from django.views import View
 
 from matches.models import Match
-from operations.forms import MatchSPLInfoForm
 from operations.permissions import MatchScopedQuerysetMixin, require_match_access
 from operations.views.helpers import build_spl_report_row
+
+from ..forms import MatchSPLInfoForm
 
 
 class MatchSPLInfoEditView(LoginRequiredMixin, MatchScopedQuerysetMixin, View):
