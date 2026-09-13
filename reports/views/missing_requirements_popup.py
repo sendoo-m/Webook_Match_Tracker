@@ -7,11 +7,21 @@ from django.template.loader import render_to_string
 from django.views import View
 
 from matches.models import Match
-from operations.permissions import ExcludeViewerAccessMixin, MatchScopedQuerysetMixin
+from operations.permissions import (
+    ExcludeClubManagerAccessMixin,
+    ExcludeViewerAccessMixin,
+    MatchScopedQuerysetMixin,
+)
 from operations.views.helpers import get_missing_requirements_pending_items
 
 
-class MissingRequirementsPopupView(LoginRequiredMixin, ExcludeViewerAccessMixin, MatchScopedQuerysetMixin, View):
+class MissingRequirementsPopupView(
+    LoginRequiredMixin,
+    ExcludeViewerAccessMixin,
+    ExcludeClubManagerAccessMixin,
+    MatchScopedQuerysetMixin,
+    View,
+):
     """Renders the pending-items breakdown for one match, shown in a popup
     when its teams are clicked on the Missing Operational Requirements
     report - the same items that used to sit in an inline "Details" table."""

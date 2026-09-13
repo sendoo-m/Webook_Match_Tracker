@@ -11,6 +11,7 @@ from core.permissions import (  # noqa: F401 - re-exported for backward compatib
     MANAGER_GROUPS,
     VIEWER_GROUPS,
     can_manage_control_panel,
+    is_club_manager,
     is_super_admin,
     is_viewer_only,
 )
@@ -48,6 +49,23 @@ class ExcludeViewerAccessMixin:
 
     def dispatch(self, request, *args, **kwargs):
         if is_viewer_only(request.user):
+            from django.core.exceptions import PermissionDenied
+
+            raise PermissionDenied(self.permission_denied_message)
+        return super().dispatch(request, *args, **kwargs)
+
+
+class ExcludeClubManagerAccessMixin:
+    """Blocks accounts in the "Club Manager" group from a view entirely -
+    the Operations Dashboard, the full Events/match list, and the Missing
+    Requirements report are operations-internal pages, not meant for the
+    club-facing audience, who have their own dedicated Club Dashboard
+    instead. Everyone else passes through unchanged."""
+
+    permission_denied_message = "This page isn't available to Club Manager accounts - see the Club Dashboard instead."
+
+    def dispatch(self, request, *args, **kwargs):
+        if is_club_manager(request.user):
             from django.core.exceptions import PermissionDenied
 
             raise PermissionDenied(self.permission_denied_message)

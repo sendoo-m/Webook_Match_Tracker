@@ -52,6 +52,27 @@ def is_super_admin(user):
     return user.is_superuser or user.groups.filter(name="Super Admin").exists()
 
 
+def is_club_manager(user):
+    """
+    True for any account in the "Club Manager" group specifically, checked
+    on group membership alone - regardless of is_superuser or any other
+    group the account might also carry. Used to block a handful of
+    operations-internal pages (Operations Dashboard, Events/match list,
+    Missing Requirements) that aren't meant for the club-facing audience,
+    who have their own dedicated Club Dashboard instead.
+
+    Note this is unrelated to a user's actual home-match management
+    rights, which come entirely from owned Club/UserCompetitionAccess
+    rows (see operations.permissions.can_manage_home_match) - the "Club
+    Manager" group itself carries no access on its own anywhere else in
+    the codebase.
+    """
+    if not getattr(user, "is_authenticated", False):
+        return False
+
+    return user.groups.filter(name="Club Manager").exists()
+
+
 def is_viewer_only(user):
     """
     True for accounts whose ENTIRE access is the read-only Viewer role (the

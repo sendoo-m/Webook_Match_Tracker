@@ -384,13 +384,15 @@ class ClubDashboardMatchListTests(ClubDashboardPermissionsTestBase):
         self.assertNotIn(self.match, get_visible_matches(self.user_b, Match.objects.all()))
 
     def test_old_pages_do_not_show_away_matches(self):
-        """The existing Matches list (MatchListView) must still be
-        home-only for the away club - untouched by this phase."""
+        """The existing Matches list (MatchListView) is now blocked
+        entirely for Club Manager accounts (see
+        ClubManagerAccessRestrictionTests) - a stronger guarantee than the
+        original home-only filtering this test used to check, since the
+        page no longer renders for this role at all."""
         client = Client()
         client.login(username="_test_club_b", password="pw")
         response = client.get("/operations/matches/")
-        matches = list(response.context["matches"])
-        self.assertNotIn(self.match, matches)
+        self.assertEqual(response.status_code, 302)
 
 
 class ClubDashboardActionTests(ClubDashboardPermissionsTestBase):
@@ -476,13 +478,79 @@ class ClubDashboardUITests(ClubDashboardPermissionsTestBase):
     def test_sidebar_link_only_shown_to_club_users(self):
         client = Client()
         client.login(username="_test_club_a", password="pw")
-        response = client.get("/operations/")
+        # Club Manager accounts are blocked from the Operations Dashboard
+        # itself (see ClubManagerAccessRestrictionTests below) - the Club
+        # Dashboard page is the one page this account can reach that
+        # renders the same shared sidebar, so it's what proves the link.
+        response = client.get("/operations/club-dashboard/")
         self.assertContains(response, "/operations/club-dashboard/")
 
         client2 = Client()
         client2.login(username="_test_ops_manager", password="pw")
         response2 = client2.get("/operations/")
         self.assertNotContains(response2, "/operations/club-dashboard/")
+
+
+class ClubManagerAccessRestrictionTests(ClubDashboardPermissionsTestBase):
+    """The Operations Dashboard, the full Events/match list, and the
+    Missing Requirements report are blocked entirely for accounts in the
+    "Club Manager" group - they have their own dedicated Club Dashboard
+    instead. Release Schedule is a deliberate exception (see
+    operations/views/release_schedule.py's own header comment) and stays
+    open to everyone, Club Manager included."""
+
+    def test_club_manager_blocked_from_dashboard(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/operations/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_club_manager_blocked_from_match_list(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/operations/matches/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_club_manager_blocked_from_missing_requirements_report(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/operations/reports/missing-requirements/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_club_manager_not_blocked_from_release_schedule(self):
+        """Explicit exception - see the class docstring."""
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/operations/release-schedule/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_club_manager_not_blocked_from_own_club_dashboard(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/operations/club-dashboard/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_operations_manager_not_blocked_from_any_of_these_pages(self):
+        """Regression check - the restriction is specific to the "Club
+        Manager" group, not a general lockdown."""
+        client = Client()
+        client.login(username="_test_ops_manager", password="pw")
+        for path in (
+            "/operations/",
+            "/operations/matches/",
+            "/operations/reports/missing-requirements/",
+        ):
+            response = client.get(path)
+            self.assertEqual(response.status_code, 200, path)
+
+    def test_login_redirects_club_manager_to_club_dashboard(self):
+        """Landing a Club Manager on the (now-blocked) Operations Dashboard
+        right after login would just bounce them straight back out - see
+        HtmxLoginView.get_default_redirect_url."""
+        client = Client()
+        response = client.post("/login/", {"username": "_test_club_a", "password": "pw"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/operations/club-dashboard/")
 
 
 # --- Phase 4: Club Pricing Plan tests -------------------------------------

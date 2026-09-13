@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.views.generic import TemplateView
 
 from matches.models import Match
-from operations.permissions import MatchScopedQuerysetMixin, is_viewer_only
+from operations.permissions import ExcludeClubManagerAccessMixin, MatchScopedQuerysetMixin, is_viewer_only
 
 from .helpers import (
     PREP_WINDOW_DAYS,
@@ -22,7 +22,7 @@ from .helpers import (
 )
 
 
-class OperationsDashboardView(LoginRequiredMixin, MatchScopedQuerysetMixin, TemplateView):
+class OperationsDashboardView(LoginRequiredMixin, ExcludeClubManagerAccessMixin, MatchScopedQuerysetMixin, TemplateView):
     template_name = "operations/dashboard.html"
     viewer_template_name = "operations/viewer_dashboard.html"
     TABLE_PAGE_SIZE = 15

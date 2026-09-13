@@ -7,12 +7,12 @@ from django.views.generic import ListView
 
 from checklists.models import MatchChecklistItem
 from matches.models import Competition, Match
-from operations.permissions import MatchScopedQuerysetMixin
+from operations.permissions import ExcludeClubManagerAccessMixin, MatchScopedQuerysetMixin
 
 from .helpers import get_selectable_clubs
 
 
-class MatchListView(LoginRequiredMixin, MatchScopedQuerysetMixin, ListView):
+class MatchListView(LoginRequiredMixin, ExcludeClubManagerAccessMixin, MatchScopedQuerysetMixin, ListView):
     model = Match
     template_name = "operations/match_list.html"
     context_object_name = "matches"
