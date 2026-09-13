@@ -1,4 +1,4 @@
-# operations/views/missing_requirements_popup.py
+# reports/views/missing_requirements_popup.py
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
@@ -8,8 +8,7 @@ from django.views import View
 
 from matches.models import Match
 from operations.permissions import ExcludeViewerAccessMixin, MatchScopedQuerysetMixin
-
-from .helpers import get_missing_requirements_pending_items
+from operations.views.helpers import get_missing_requirements_pending_items
 
 
 class MissingRequirementsPopupView(LoginRequiredMixin, ExcludeViewerAccessMixin, MatchScopedQuerysetMixin, View):

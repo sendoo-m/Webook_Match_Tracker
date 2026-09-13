@@ -1,3 +1,4 @@
+# reports/views/missing_requirements.py
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,7 +12,7 @@ from matches.models import Competition, Match
 from matches.utils import combine_match_datetime
 from operations.permissions import ExcludeViewerAccessMixin, MatchScopedQuerysetMixin, can_view_all_matches
 
-from .helpers import (
+from operations.views.helpers import (
     get_match_detail_prefetch,
     get_missing_requirements_eligible_items_count,
     get_missing_requirements_pending_items,
