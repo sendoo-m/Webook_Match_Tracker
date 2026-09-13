@@ -12,8 +12,6 @@ from .match_detail import MatchDetailView
 from .match_list import MatchListView
 from .match_live import MatchLiveView
 from .match_quick_view import MatchQuickViewView
-from .missing_requirements import MissingRequirementsReportView
-from .missing_requirements_popup import MissingRequirementsPopupView
 from .outstanding import MatchOutstandingItemsView
 from .release_schedule import MatchReleaseDelayUpdateView, MatchReleaseScheduleView
 from .slug import MatchSlugEditView, MatchSlugUpdateView
@@ -43,7 +41,11 @@ from clubs.views import (  # noqa: F401 - re-exported for backward compatibility
     ClubPricingPlanSubmitView,
     ClubPricingPlanUploadView,
 )
-from .workload import CoordinatorWorkloadReportView
+from reports.views import (  # noqa: F401 - re-exported for backward compatibility
+    CoordinatorWorkloadReportView,
+    MissingRequirementsPopupView,
+    MissingRequirementsReportView,
+)
 from .auth_views import HtmxLoginView  # <- new import
 
 __all__ = [

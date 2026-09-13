@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'checklists',
     'spl',
     'clubs',
+    'reports',
     'operations',
     'control_panel',
     'events',
