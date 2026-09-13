@@ -161,10 +161,46 @@ def _get_active_items(match):
     )
 
 
-def build_dashboard_match_state(match, now):
-    match_dt = combine_match_datetime(match)
-    active_items = _get_active_items(match)
+def auto_complete_non_post_match_items(match, user):
+    """Once a match is Published with its Webook ticket link set, every
+    pre-match checklist item is effectively confirmed done by that action
+    itself - marking each one by hand afterward is pure busywork. Post
+    Match items are the one exception, left untouched, since those
+    genuinely can't be done until the match has actually been played.
 
+    Only touches items not already Done (so it never clobbers an existing
+    completed_by/completed_at), and only ever runs from the two call sites
+    that already confirmed both conditions (Published status + a Webook
+    link) are true. Returns the list of items that were actually changed,
+    so the caller can decide whether anything needs logging/refreshing.
+    """
+    from django.utils import timezone
+
+    items = list(
+        match.checklist_items.select_related("template_item__category")
+        .filter(is_active=True)
+        .exclude(template_item__category__name=POST_MATCH_CATEGORY_NAME)
+        .exclude(status=MatchChecklistItem.Status.DONE)
+    )
+    if not items:
+        return items
+
+    now = timezone.now()
+    for item in items:
+        item.status = MatchChecklistItem.Status.DONE
+        item.completed_by = user if getattr(user, "is_authenticated", False) else None
+        item.completed_at = now
+    MatchChecklistItem.objects.bulk_update(items, ["status", "completed_by", "completed_at"])
+    return items
+
+
+def _split_by_post_match(active_items):
+    """Every "is this match ready" computation in the app needs to treat
+    Post Match items separately - they can't legitimately be Done until
+    the match has actually been played, so they're excluded from anything
+    framed as pre-match readiness. Centralized here so the three call
+    sites (dashboard state, SPL report row, match-detail progress) can't
+    drift on the definition of "post match" vs. everything else."""
     post_match_items = [
         item for item in active_items
         if item.template_item.category.name == POST_MATCH_CATEGORY_NAME
@@ -173,6 +209,14 @@ def build_dashboard_match_state(match, now):
         item for item in active_items
         if item.template_item.category.name != POST_MATCH_CATEGORY_NAME
     ]
+    return non_post_match_items, post_match_items
+
+
+def build_dashboard_match_state(match, now):
+    match_dt = combine_match_datetime(match)
+    active_items = _get_active_items(match)
+
+    non_post_match_items, post_match_items = _split_by_post_match(active_items)
 
     total_items = len(active_items)
     done_items = sum(1 for item in active_items if item.status == MatchChecklistItem.Status.DONE)
@@ -367,10 +411,7 @@ def is_kv_ready(match):
 
 def build_spl_report_row(match, now):
     active_items = _get_active_items(match)
-    non_post_match_items = [
-        item for item in active_items
-        if item.template_item.category.name != POST_MATCH_CATEGORY_NAME
-    ]
+    non_post_match_items, post_match_items = _split_by_post_match(active_items)
 
     kv_ready = is_kv_ready(match)
     webook_ready = bool(non_post_match_items) and all(
@@ -380,6 +421,9 @@ def build_spl_report_row(match, now):
     non_post_match_total = len(non_post_match_items)
     non_post_match_done = sum(1 for item in non_post_match_items if item.status == MatchChecklistItem.Status.DONE)
     readiness_percent = round((non_post_match_done / non_post_match_total) * 100) if non_post_match_total > 0 else 0
+
+    post_match_total = len(post_match_items)
+    post_match_done = sum(1 for item in post_match_items if item.status == MatchChecklistItem.Status.DONE)
 
     # Reuses the same live/finished computation as every other match view
     # (dashboard, calendar) so the report's "Match Status" column always
@@ -391,6 +435,9 @@ def build_spl_report_row(match, now):
         "kv_ready": kv_ready,
         "webook_ready": webook_ready,
         "readiness_percent": readiness_percent,
+        "post_match_total": post_match_total,
+        "post_match_done": post_match_done,
+        "needs_reports": match_state["needs_reports"],
         "is_live_now": match_state["is_live_now"],
         "match_finished": match_state["match_finished"],
         "is_today": match_state["is_today"],
@@ -534,6 +581,7 @@ def compute_spl_home_stats(match_cards):
 def build_match_progress_context(match):
     active_items = _get_active_items(match)
     required_items = [item for item in active_items if item.template_item.is_required]
+    non_post_match_items, post_match_items = _split_by_post_match(active_items)
 
     total_items = len(active_items)
     done_items = sum(1 for item in active_items if item.status == MatchChecklistItem.Status.DONE)
@@ -547,6 +595,19 @@ def build_match_progress_context(match):
 
     progress_percent = round((done_items / total_items) * 100) if total_items > 0 else 0
 
+    # Split out from progress_percent (which blends Post Match in with
+    # everything else) so the UI can show "Admin Setup" completion - the
+    # part that's actually done before kickoff - separately from the
+    # post-match result/report, which can't be filed until after the
+    # match is played. See auto_complete_non_post_match_items.
+    non_post_match_total = len(non_post_match_items)
+    non_post_match_done = sum(1 for item in non_post_match_items if item.status == MatchChecklistItem.Status.DONE)
+    non_post_match_percent = round((non_post_match_done / non_post_match_total) * 100) if non_post_match_total > 0 else 0
+
+    post_match_total = len(post_match_items)
+    post_match_done = sum(1 for item in post_match_items if item.status == MatchChecklistItem.Status.DONE)
+    post_match_percent = round((post_match_done / post_match_total) * 100) if post_match_total > 0 else 0
+
     return {
         "match": match,
         "total_items": total_items,
@@ -558,6 +619,12 @@ def build_match_progress_context(match):
         "required_done": required_done,
         "required_delayed": required_delayed,
         "progress_percent": progress_percent,
+        "non_post_match_total": non_post_match_total,
+        "non_post_match_done": non_post_match_done,
+        "non_post_match_percent": non_post_match_percent,
+        "post_match_total": post_match_total,
+        "post_match_done": post_match_done,
+        "post_match_percent": post_match_percent,
     }
 
 

@@ -21,7 +21,7 @@
 <div
     id="dashboard-content-root"
     hx-get="{% url 'operations:dashboard' %}?view={{ selected_view }}&round={{ selected_round }}"
-    hx-trigger="every 180s"
+    hx-trigger="auto-refresh-tick"
     hx-target="#dashboard-content-root"
     hx-swap="outerHTML"
     hx-select="#dashboard-content-root"
@@ -31,7 +31,7 @@
     <h1 class="page-title">{% trans "Operations Dashboard" %}</h1>
     <p class="page-subtitle">
         {% trans "Readiness, live visibility, ticket-sale readiness, alerts, and post-match follow-up." %}
-        <span class="help-text">{% trans "Auto-refreshes every 3 minutes." %}</span>
+        <span class="help-text">{% trans "Auto-refreshes automatically - adjust the interval from the sidebar." %}</span>
     </p>
 </div>
 
@@ -61,50 +61,50 @@
 <div class="dashboard-kpi-wrap">
     <div class="round-stats-group">
         <span class="round-stats-group-title">{% trans "Volume" %}</span>
-        <div class="dashboard-stats-grid dashboard-stats-grid-flex">
-            <a class="card stat-card stat-card-neutral" href="{% url 'operations:match-list' %}">
-                <div class="stat-label">{% trans "Total Matches" %}</div>
-                <div class="stat-value">{{ stats.total_matches }}</div>
+        <div class="stat-strip">
+            <a class="stat-strip-item" href="{% url 'operations:match-list' %}">
+                <span class="stat-strip-label">{% trans "Total Matches" %}</span>
+                <span class="stat-strip-value">{{ stats.total_matches }}</span>
             </a>
-            <a class="card stat-card stat-card-upcoming" href="{% url 'operations:dashboard' %}?view=upcoming#filtered-matches-panel">
-                <div class="stat-label">{% trans "Upcoming" %}</div>
-                <div class="stat-value">{{ stats.upcoming_matches }}</div>
+            <a class="stat-strip-item" href="{% url 'operations:dashboard' %}?view=upcoming#filtered-matches-panel">
+                <span class="stat-strip-label">{% trans "Upcoming" %}</span>
+                <span class="stat-strip-value">{{ stats.upcoming_matches }}</span>
             </a>
-            <a class="card stat-card stat-card-past" href="{% url 'operations:dashboard' %}?view=past#filtered-matches-panel">
-                <div class="stat-label">{% trans "Past Matches" %}</div>
-                <div class="stat-value">{{ stats.past_matches }}</div>
+            <a class="stat-strip-item" href="{% url 'operations:dashboard' %}?view=past#filtered-matches-panel">
+                <span class="stat-strip-label">{% trans "Past Matches" %}</span>
+                <span class="stat-strip-value">{{ stats.past_matches }}</span>
             </a>
         </div>
     </div>
 
     <div class="round-stats-group">
         <span class="round-stats-group-title">{% trans "Live Ops" %}</span>
-        <div class="dashboard-stats-grid dashboard-stats-grid-flex">
-            <a class="card stat-card stat-card-live" href="{% url 'operations:dashboard' %}?view=live#filtered-matches-panel">
-                <div class="stat-label">{% trans "Live Now" %}</div>
-                <div class="stat-value">{{ stats.live_matches }}</div>
+        <div class="stat-strip">
+            <a class="stat-strip-item" href="{% url 'operations:dashboard' %}?view=live#filtered-matches-panel">
+                <span class="stat-strip-label"><span class="stat-strip-dot stat-strip-dot-live"></span>{% trans "Live Now" %}</span>
+                <span class="stat-strip-value">{{ stats.live_matches }}</span>
             </a>
-            <a class="card stat-card stat-card-info" href="{% url 'operations:dashboard' %}?view=starting_soon#filtered-matches-panel">
-                <div class="stat-label">{% trans "Starting in 48h" %}</div>
-                <div class="stat-value">{{ stats.starting_soon_matches }}</div>
+            <a class="stat-strip-item" href="{% url 'operations:dashboard' %}?view=starting_soon#filtered-matches-panel">
+                <span class="stat-strip-label"><span class="stat-strip-dot stat-strip-dot-info"></span>{% trans "Starting in 48h" %}</span>
+                <span class="stat-strip-value">{{ stats.starting_soon_matches }}</span>
             </a>
-            <a class="card stat-card stat-card-success" href="{% url 'operations:dashboard' %}?view=ready#filtered-matches-panel">
-                <div class="stat-label">{% trans "Ready for Ticket Sale" %}</div>
-                <div class="stat-value">{{ stats.ready_for_ticket_sale_matches }}</div>
+            <a class="stat-strip-item" href="{% url 'operations:dashboard' %}?view=ready#filtered-matches-panel">
+                <span class="stat-strip-label"><span class="stat-strip-dot stat-strip-dot-success"></span>{% trans "Ready for Ticket Sale" %}</span>
+                <span class="stat-strip-value">{{ stats.ready_for_ticket_sale_matches }}</span>
             </a>
         </div>
     </div>
 
     <div class="round-stats-group">
         <span class="round-stats-group-title">{% trans "Needs Attention" %}</span>
-        <div class="dashboard-stats-grid dashboard-stats-grid-flex">
-            <a class="card stat-card stat-card-warning" href="{% url 'operations:dashboard' %}?view=alerts#filtered-matches-panel">
-                <div class="stat-label">{% trans "Prep Alerts" %}</div>
-                <div class="stat-value">{{ stats.prep_alert_matches }}</div>
+        <div class="stat-strip">
+            <a class="stat-strip-item" href="{% url 'operations:dashboard' %}?view=alerts#filtered-matches-panel">
+                <span class="stat-strip-label"><span class="stat-strip-dot stat-strip-dot-warning"></span>{% trans "Prep Alerts" %}</span>
+                <span class="stat-strip-value">{{ stats.prep_alert_matches }}</span>
             </a>
-            <a class="card stat-card stat-card-danger" href="{% url 'operations:dashboard' %}?view=reports#filtered-matches-panel">
-                <div class="stat-label">{% trans "Needs Reports" %}</div>
-                <div class="stat-value">{{ stats.matches_needing_reports }}</div>
+            <a class="stat-strip-item" href="{% url 'operations:dashboard' %}?view=reports#filtered-matches-panel">
+                <span class="stat-strip-label"><span class="stat-strip-dot stat-strip-dot-danger"></span>{% trans "Needs Reports" %}</span>
+                <span class="stat-strip-value">{{ stats.matches_needing_reports }}</span>
             </a>
         </div>
     </div>

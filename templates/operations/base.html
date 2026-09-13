@@ -13,8 +13,11 @@
     <script src="{% static 'operations/js/density-init.js' %}"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:ital,wght@0,200..900;1,200..900&display=swap">
     <link rel="stylesheet" href="{% static 'design_tokens.css' %}">
-    <link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=58">
+    <link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=63">
 
     <meta name="htmx-config" content='{"includeIndicatorStyles": true}'>
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
@@ -128,6 +131,21 @@
                     <i class="ti ti-moon" aria-hidden="true"></i>
                     <span>{% trans "Dark mode" %}</span>
                 </button>
+
+                <div class="refresh-interval-control" title="{% trans 'Applies to the Admin, Coordinator, and SPL dashboards.' %}">
+                    <label for="refresh-interval-select" class="refresh-interval-label">
+                        <i class="ti ti-refresh" aria-hidden="true"></i>
+                        <span>{% trans "Dashboard refresh" %}</span>
+                    </label>
+                    <select id="refresh-interval-select" class="refresh-interval-select" aria-label="{% trans 'Dashboard auto-refresh interval' %}">
+                        <option value="0">{% trans "Off" %}</option>
+                        <option value="60">{% trans "Every 1 minute" %}</option>
+                        <option value="120">{% trans "Every 2 minutes" %}</option>
+                        <option value="180">{% trans "Every 3 minutes" %}</option>
+                        <option value="300">{% trans "Every 5 minutes" %}</option>
+                        <option value="600">{% trans "Every 10 minutes" %}</option>
+                    </select>
+                </div>
 
                 <form method="post" action="{% url 'set_language' %}" class="logout-form">
                     {% csrf_token %}
@@ -261,7 +279,9 @@
 {% endif %}
 
 <script src="{% static 'operations/js/modal.js' %}"></script>
+<script src="{% static 'operations/js/toast-dismiss.js' %}"></script>
 <script src="{% static 'operations/js/theme-toggle.js' %}"></script>
+<script src="{% static 'operations/js/dashboard-refresh.js' %}"></script>
 <script src="{% static 'operations/js/sidebar-toggle.js' %}"></script>
 <script src="{% static 'operations/js/density-toggle.js' %}"></script>
 <script src="{% static 'operations/js/training-panel.js' %}"></script>

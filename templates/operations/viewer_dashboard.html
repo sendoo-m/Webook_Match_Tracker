@@ -21,11 +21,22 @@
 {% endblock %}
 
 {% block content %}
+<div
+    id="dashboard-content-root"
+    hx-get="{{ request.get_full_path }}"
+    hx-trigger="auto-refresh-tick"
+    hx-target="#dashboard-content-root"
+    hx-swap="outerHTML"
+    hx-select="#dashboard-content-root"
+    hx-disinherit="*"
+>
 <div class="page-header">
     <div class="page-header-row">
         <div>
             <h1 class="page-title">{% trans "Dashboard" %}</h1>
-            <p class="page-subtitle">{% trans "Roshan League" as roshan_league_label %}{% blocktrans with competition_name=roshan_competition.name_ar|default:roshan_league_label %}{{ competition_name }} match schedule and readiness.{% endblocktrans %}</p>
+            <p class="page-subtitle">{% trans "Roshan League" as roshan_league_label %}{% blocktrans with competition_name=roshan_competition.name_ar|default:roshan_league_label %}{{ competition_name }} match schedule and readiness.{% endblocktrans %}
+                <span class="help-text">{% trans "Auto-refreshes automatically - adjust the interval from the sidebar." %}</span>
+            </p>
         </div>
         {% trans "Simple View" as density_simple_label %}
         {% trans "Advanced View" as density_advanced_label %}
@@ -62,26 +73,22 @@
         <h2 class="panel-title"><i class="ti ti-chart-bar"></i> {% trans "League Stats" %}</h2>
     </div>
 
-    <div class="dashboard-stats-grid">
-        <a class="card stat-card" href="?status=live&round=#matches-table-panel">
-            <span class="stat-card-icon stat-card-icon-live"><i class="ti ti-broadcast"></i></span>
-            <div class="stat-value">{{ stats.live_count }}</div>
-            <div class="stat-label">{% trans "Live" %}</div>
+    <div class="stat-strip">
+        <a class="stat-strip-item" href="?status=live&round=#matches-table-panel">
+            <span class="stat-strip-label"><span class="stat-strip-dot stat-strip-dot-live"></span>{% trans "Live" %}</span>
+            <span class="stat-strip-value">{{ stats.live_count }}</span>
         </a>
-        <a class="card stat-card" href="?status=in_progress&round=#matches-table-panel">
-            <span class="stat-card-icon stat-card-icon-warning"><i class="ti ti-progress"></i></span>
-            <div class="stat-value">{{ stats.in_progress_count }}</div>
-            <div class="stat-label">{% trans "In Progress" %}</div>
+        <a class="stat-strip-item" href="?status=in_progress&round=#matches-table-panel">
+            <span class="stat-strip-label"><span class="stat-strip-dot stat-strip-dot-warning"></span>{% trans "In Progress" %}</span>
+            <span class="stat-strip-value">{{ stats.in_progress_count }}</span>
         </a>
-        <a class="card stat-card" href="?status=upcoming&round=#matches-table-panel">
-            <span class="stat-card-icon stat-card-icon-primary"><i class="ti ti-calendar-time"></i></span>
-            <div class="stat-value">{{ stats.upcoming_count }}</div>
-            <div class="stat-label">{% trans "Upcoming" %}</div>
+        <a class="stat-strip-item" href="?status=upcoming&round=#matches-table-panel">
+            <span class="stat-strip-label">{% trans "Upcoming" %}</span>
+            <span class="stat-strip-value">{{ stats.upcoming_count }}</span>
         </a>
-        <a class="card stat-card" href="?status=finished&round=#matches-table-panel">
-            <span class="stat-card-icon stat-card-icon-neutral"><i class="ti ti-flag-2"></i></span>
-            <div class="stat-value">{{ stats.finished_count }}</div>
-            <div class="stat-label">{% trans "Finished" %}</div>
+        <a class="stat-strip-item" href="?status=finished&round=#matches-table-panel">
+            <span class="stat-strip-label">{% trans "Finished" %}</span>
+            <span class="stat-strip-value">{{ stats.finished_count }}</span>
         </a>
     </div>
 </div>
@@ -355,6 +362,7 @@
         </div>
         {% endwith %}
     {% endif %}
+</div>
 </div>
 {% endblock %}
 

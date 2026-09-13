@@ -117,8 +117,12 @@
                     <th>{% trans "Date" %}</th>
                     <th>{% trans "Timing" %}</th>
                     <th>{% trans "Readiness" %}</th>
-                    <th>{% trans "Pre-match" %}</th>
-                    {% comment %} <th>Post-match</th> {% endcomment %}
+                    <th>
+                        {% trans "Admin setup completed before kickoff. The match result and report are tracked separately, after the match ends." as admin_setup_help %}
+                        {% trans "Admin Setup" %}
+                        <i class="ti ti-info-circle" title="{{ admin_setup_help }}"></i>
+                    </th>
+                    <th>{% trans "Match Report" %}</th>
                     <th>{% trans "Delayed" %}</th>
                     <th>{% trans "Ticket Link" %}</th>
                     <th>{% trans "Discount" %}</th>
@@ -175,14 +179,14 @@
                                 <span class="progress-label">{% widthratio card.non_post_match_done card.non_post_match_total 100 %}%</span>
                             </div>
                         </td>
-                        {% comment %} <td>
+                        <td>
                             <div class="progress-with-label">
                                 <div class="progress">
                                     <div class="progress-bar" style="width:{% widthratio card.post_match_done card.post_match_total 100 %}%"></div>
                                 </div>
                                 <span class="progress-label">{% widthratio card.post_match_done card.post_match_total 100 %}%</span>
                             </div>
-                        </td> {% endcomment %}
+                        </td>
 
                         <td>
                             {% if card.delayed_items %}

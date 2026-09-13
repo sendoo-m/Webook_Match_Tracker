@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 00:09+0300\n"
+"POT-Creation-Date: 2026-09-13 16:48+0300\n"
 "PO-Revision-Date: 2026-08-25 17:16+0300\n"
 "Last-Translator: Webook\n"
 "Language-Team: Arabic\n"
@@ -1123,6 +1123,33 @@ msgstr "تبديل نمط الألوان"
 msgid "Dark mode"
 msgstr "الوضع الداكن"
 
+msgid "Applies to the Admin, Coordinator, and SPL dashboards."
+msgstr "يُطبَّق على لوحات تحكم الأدمن والمنسقين وSPL."
+
+msgid "Dashboard refresh"
+msgstr "تحديث لوحة التحكم"
+
+msgid "Dashboard auto-refresh interval"
+msgstr "مدة التحديث التلقائي للوحة التحكم"
+
+msgid "Off"
+msgstr ""
+
+msgid "Every 1 minute"
+msgstr "كل دقيقة"
+
+msgid "Every 2 minutes"
+msgstr "كل دقيقتين"
+
+msgid "Every 3 minutes"
+msgstr "كل 3 دقائق"
+
+msgid "Every 5 minutes"
+msgstr "كل 5 دقائق"
+
+msgid "Every 10 minutes"
+msgstr "كل 10 دقائق"
+
 msgid "Switch to English"
 msgstr "التبديل إلى الإنجليزية"
 
@@ -1312,8 +1339,8 @@ msgstr ""
 "الجاهزية، والرؤية المباشرة، وجاهزية بيع التذاكر، والتنبيهات، ومتابعة ما بعد "
 "المباراة."
 
-msgid "Auto-refreshes every 3 minutes."
-msgstr "يُحدَّث تلقائيًا كل 3 دقائق."
+msgid "Auto-refreshes automatically - adjust the interval from the sidebar."
+msgstr "يتم التحديث تلقائيًا - يمكنك تعديل المدة من الشريط الجانبي."
 
 msgid "Missing Items"
 msgstr "العناصر الناقصة"
@@ -1532,8 +1559,16 @@ msgstr "لم يبدأ"
 msgid "No checklist items found for this match."
 msgstr "لا توجد عناصر في قائمة التحقق لهذه المباراة."
 
-msgid "All core requirements are ready."
-msgstr "كل المتطلبات الأساسية جاهزة."
+#, python-format
+msgid "Admin setup is 100%% complete."
+msgstr "اكتمل الإعداد الإداري بنسبة 100%%."
+
+msgid ""
+"The match result and post-match report are still pending and will be "
+"completed after the match ends."
+msgstr ""
+"نتيجة المباراة وتقرير ما بعد المباراة لا يزالان معلّقين، وسيتم استكمالهما بعد "
+"انتهاء المباراة."
 
 #, python-format
 msgid "%(done_items)s of %(total_items)s checklist items complete."
@@ -1553,8 +1588,8 @@ msgstr[4] "%(counter)s عنصرًا متأخرًا"
 msgstr[5] "%(counter)s عنصر متأخر"
 
 #, python-format
-msgid "%(done)s of %(total)s required items done"
-msgstr "%(done)s من %(total)s من البنود الإلزامية منجز"
+msgid "%(done)s of %(total)s admin setup items done"
+msgstr "%(done)s من %(total)s من عناصر الإعداد الإداري منجز"
 
 msgid ""
 "This is the <strong>Matches</strong> list — every match you have access to, "
@@ -1752,8 +1787,18 @@ msgstr "التوقيت"
 msgid "Readiness"
 msgstr "الجاهزية"
 
-msgid "Pre-match"
-msgstr "ما قبل المباراة"
+msgid ""
+"Admin setup completed before kickoff. The match result and report are "
+"tracked separately, after the match ends."
+msgstr ""
+"إعداد الإدارة مكتمل قبل بدء المباراة. نتيجة المباراة والتقرير يُتابعان بشكل "
+"منفصل، بعد انتهاء المباراة."
+
+msgid "Admin Setup"
+msgstr "الإعداد الإداري"
+
+msgid "Match Report"
+msgstr "تقرير المباراة"
 
 #, fuzzy
 #| msgid "Ticketing Plan"
@@ -1891,16 +1936,29 @@ msgstr "لم يتم تعيين رمز خصم."
 msgid "Add"
 msgstr "إضافة"
 
-msgid "Progress Summary"
-msgstr "ملخص التقدم"
+msgid "Admin Setup Progress"
+msgstr "تقدّم الإعداد الإداري"
 
 #, python-format
-msgid "%(done_items)s of %(total_items)s items completed"
-msgstr "%(done_items)s من %(total_items)s عناصر مكتملة"
+msgid ""
+"%(non_post_match_done)s of %(non_post_match_total)s admin setup items "
+"completed"
+msgstr ""
+"%(non_post_match_done)s من %(non_post_match_total)s من عناصر الإعداد الإداري "
+"مكتملة"
 
 #, python-format
-msgid "%(progress_percent)s%% Completed"
-msgstr "%(progress_percent)s%% مكتمل"
+msgid "%(percent)s%% Completed"
+msgstr "%(percent)s%% مكتمل"
+
+msgid ""
+"This percentage covers admin setup before kickoff only. The match result and "
+"post-match report are tracked separately below and can only be completed "
+"after the match ends."
+msgstr ""
+"هذه النسبة تغطي الإعداد الإداري قبل بدء المباراة فقط. نتيجة المباراة وتقرير "
+"ما بعد المباراة يُتابعان بشكل منفصل أدناه، ولا يمكن استكمالهما إلا بعد انتهاء "
+"المباراة."
 
 msgid "Totals"
 msgstr "الإجماليات"
@@ -1911,16 +1969,24 @@ msgstr "إجمالي العناصر"
 msgid "Required Done"
 msgstr "المطلوب المكتمل"
 
+msgid "Post-Match Report"
+msgstr "تقرير ما بعد المباراة"
+
+msgid "Report Items Done"
+msgstr "عناصر التقرير المنجزة"
+
+msgid "Report Completed"
+msgstr "تم إنجاز التقرير"
+
+msgid "Pending (after match)"
+msgstr "معلّق (بعد المباراة)"
+
 msgid "By Status"
 msgstr "حسب الحالة"
 
 #, python-format
-msgid "%(percent)s%% pre-match ready"
-msgstr "%(percent)s%% جاهزية ما قبل المباراة"
-
-#, python-format
-msgid "%(percent)s%% ready"
-msgstr "%(percent)s%% جاهز"
+msgid "%(percent)s%% admin setup done"
+msgstr "%(percent)s%% من الإعداد الإداري منجز"
 
 #, python-format
 msgid "%(counter)s post-match item still pending"
@@ -2356,9 +2422,6 @@ msgstr "الفريق المضيف"
 msgid "Away Team"
 msgstr "الفريق الضيف"
 
-msgid "Match Readiness"
-msgstr "جاهزية المباراة"
-
 msgid "Confirms the SPL team has approved the match's ticketing release plan."
 msgstr ""
 
@@ -2378,6 +2441,9 @@ msgstr ""
 #| msgid "Not Ready"
 msgid "Not Received"
 msgstr "غير جاهز"
+
+msgid "Pending"
+msgstr "معلّق"
 
 msgid "Coordinator Workload"
 msgstr "عبء عمل المنسقين"
@@ -2644,6 +2710,29 @@ msgstr "تحقق من اسم المستخدم وكلمة المرور وحاول
 
 msgid "Password"
 msgstr "كلمة المرور"
+
+#~ msgid "Filed"
+#~ msgstr "تم الإرسال"
+
+#~ msgid "All core requirements are ready."
+#~ msgstr "كل المتطلبات الأساسية جاهزة."
+
+#~ msgid "Pre-match"
+#~ msgstr "ما قبل المباراة"
+
+#~ msgid "Progress Summary"
+#~ msgstr "ملخص التقدم"
+
+#, python-format
+#~ msgid "%(done_items)s of %(total_items)s items completed"
+#~ msgstr "%(done_items)s من %(total_items)s عناصر مكتملة"
+
+#, python-format
+#~ msgid "%(percent)s%% pre-match ready"
+#~ msgstr "%(percent)s%% جاهزية ما قبل المباراة"
+
+#~ msgid "Match Readiness"
+#~ msgstr "جاهزية المباراة"
 
 #~ msgid "Live View"
 #~ msgstr "العرض المباشر"

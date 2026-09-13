@@ -59,11 +59,7 @@
                 <div class="progress-bar" style="width:{% widthratio card.non_post_match_done card.non_post_match_total 100 %}%"></div>
             </div>
             {% widthratio card.non_post_match_done card.non_post_match_total 100 as ready_percent %}
-            {% if card.needs_reports %}
-                <span class="progress-label">{% blocktrans with percent=ready_percent %}{{ percent }}% pre-match ready{% endblocktrans %}</span>
-            {% else %}
-                <span class="progress-label">{% blocktrans with percent=ready_percent %}{{ percent }}% ready{% endblocktrans %}</span>
-            {% endif %}
+            <span class="progress-label">{% blocktrans with percent=ready_percent %}{{ percent }}% admin setup done{% endblocktrans %}</span>
         </div>
         {% if card.needs_reports %}
             <span class="mini-badge mini-badge-danger" title="{% blocktrans count counter=card.post_match_pending %}{{ counter }} post-match item still pending{% plural %}{{ counter }} post-match items still pending{% endblocktrans %}">

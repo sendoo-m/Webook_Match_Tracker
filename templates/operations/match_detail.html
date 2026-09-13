@@ -141,12 +141,18 @@
     </aside>
 </div>
 
-{% if required_done == required_total and not delayed_items %}
+{% if non_post_match_percent >= 100 and not delayed_items %}
     <div class="card panel peak-end-summary peak-end-summary--positive">
         <i class="ti ti-circle-check peak-end-summary-icon"></i>
         <div>
-            <div class="block-title">{% trans "All core requirements are ready." %}</div>
-            <p class="help-text">{% blocktrans %}{{ done_items }} of {{ total_items }} checklist items complete.{% endblocktrans %}</p>
+            <div class="block-title">{% trans "Admin setup is 100% complete." %}</div>
+            <p class="help-text">
+                {% if post_match_total > 0 and post_match_done < post_match_total %}
+                    {% trans "The match result and post-match report are still pending and will be completed after the match ends." %}
+                {% else %}
+                    {% blocktrans %}{{ done_items }} of {{ total_items }} checklist items complete.{% endblocktrans %}
+                {% endif %}
+            </p>
         </div>
     </div>
 {% else %}
@@ -156,8 +162,8 @@
             <div class="block-title">{% trans "This match still needs attention before it's ready." %}</div>
             <p class="help-text">
                 {% if delayed_items %}{% blocktrans count counter=delayed_items %}{{ counter }} delayed item{% plural %}{{ counter }} delayed items{% endblocktrans %}{% endif %}
-                {% if delayed_items and required_done != required_total %} · {% endif %}
-                {% if required_done != required_total %}{% blocktrans with done=required_done total=required_total %}{{ done }} of {{ total }} required items done{% endblocktrans %}{% endif %}
+                {% if delayed_items and non_post_match_percent < 100 %} · {% endif %}
+                {% if non_post_match_percent < 100 %}{% blocktrans with done=non_post_match_done total=non_post_match_total %}{{ done }} of {{ total }} admin setup items done{% endblocktrans %}{% endif %}
             </p>
         </div>
     </div>

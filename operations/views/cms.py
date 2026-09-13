@@ -15,6 +15,7 @@ from operations.models import MatchActivityLog
 from operations.permissions import MatchScopedQuerysetMixin, require_match_access
 
 from .helpers import (
+    auto_complete_non_post_match_items,
     build_match_detail_side_context,
     build_match_progress_context,
     build_spl_report_row,
@@ -90,6 +91,21 @@ class MatchCMSStatusUpdateView(LoginRequiredMixin, MatchScopedQuerysetMixin, Vie
         if old_status != new_status:
             log_match_activity(match=match, action=MatchActivityLog.Action.STATUS_CHANGED, description=f"CMS status changed: {old_status_label} → {new_status_label}", user=request.user)
         match.refresh_from_db()
+
+        # Publishing a match with a ticket link already set (e.g. it was
+        # entered before this status change) means every pre-match item is
+        # effectively confirmed - see auto_complete_non_post_match_items.
+        auto_completed = []
+        if new_status == Match.Status.PUBLISHED and match.webook_purchase_url:
+            auto_completed = auto_complete_non_post_match_items(match, request.user)
+            if auto_completed:
+                log_match_activity(
+                    match=match,
+                    action=MatchActivityLog.Action.CHECKLIST_UPDATED,
+                    description=f"{len(auto_completed)} pre-match checklist item(s) auto-completed on publish.",
+                    user=request.user,
+                )
+
         detail_context = build_match_detail_side_context(match)
         detail_context["match_status"] = Match.Status
         detail_context["today"] = timezone.localdate()
@@ -109,7 +125,15 @@ class MatchCMSStatusUpdateView(LoginRequiredMixin, MatchScopedQuerysetMixin, Vie
         )
         response_html = progress_html + status_html + activity_html
         if request.headers.get("HX-Request") == "true":
-            return HttpResponse(response_html + spl_info_html)
+            response = HttpResponse(response_html + spl_info_html)
+            if auto_completed:
+                # The checklist cards themselves aren't part of this
+                # response (only the status/progress/sidebar boxes are) -
+                # a full refresh is the simplest way to guarantee every
+                # auto-completed item's card reflects its new status too,
+                # instead of only patching the summary numbers.
+                response["HX-Refresh"] = "true"
+            return response
         messages.success(request, _("CMS status updated successfully."))
         return redirect("operations:match-detail", pk=match.pk)
 
@@ -144,11 +168,32 @@ class MatchWebookLinkUpdateView(LoginRequiredMixin, MatchScopedQuerysetMixin, Vi
         messages.success(request, _("Webook purchase link updated."))
 
         match.refresh_from_db()
+
+        # This is the common order in practice: publish first (the link
+        # field only appears once Published), then paste the link - so
+        # this is where auto_complete_non_post_match_items usually fires.
+        auto_completed = []
+        if match.cms_status == Match.Status.PUBLISHED and match.webook_purchase_url:
+            auto_completed = auto_complete_non_post_match_items(match, request.user)
+            if auto_completed:
+                log_match_activity(
+                    match=match,
+                    action=MatchActivityLog.Action.CHECKLIST_UPDATED,
+                    description=f"{len(auto_completed)} pre-match checklist item(s) auto-completed on publish.",
+                    user=request.user,
+                )
+
         detail_context = build_match_detail_side_context(match)
         detail_context["match_status"] = Match.Status
         detail_context["today"] = timezone.localdate()
         detail_context["can_edit"] = True
         status_html = render_to_string("operations/partials/match_status_badge.html", detail_context, request=request)
         if request.headers.get("HX-Request") == "true":
-            return HttpResponse(status_html)
+            response = HttpResponse(status_html)
+            if auto_completed:
+                # Same reasoning as MatchCMSStatusUpdateView - the checklist
+                # item cards aren't part of this response, so a full
+                # refresh is the simplest way to keep them in sync.
+                response["HX-Refresh"] = "true"
+            return response
         return redirect("operations:match-detail", pk=match.pk)

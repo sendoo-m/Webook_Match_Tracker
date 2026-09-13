@@ -109,7 +109,11 @@
                     <th>{% trans "Stadium" %}</th>
                     <th>{% trans "Release Date" %}</th>
                     <th>{% trans "Actual Release Date" %}</th>
-                    <th>{% trans "Match Readiness" %}</th>
+                    <th>
+                        {% trans "Admin setup completed before kickoff. The match result and report are tracked separately, after the match ends." as readiness_help %}
+                        {% trans "Admin Setup" %}
+                        <i class="ti ti-info-circle" title="{{ readiness_help }}"></i>
+                    </th>
                     <th>
                         {% trans "Confirms the SPL team has approved the match's ticketing release plan." as plan_status_help %}
                         {% trans "Ticketing Plan Status" %}
@@ -117,6 +121,7 @@
                     </th>
                     <th>{% trans "KV / Webook Images" %}</th>
                     <th>{% trans "Webook Readiness" %}</th>
+                    <th>{% trans "Match Report" %}</th>
                     <th>{% trans "SPL Complimentary Tickets" %}</th>
                     <th>{% trans "Match Status" %}</th>
                     <th>{% trans "Coordinator (Webook)" %}</th>
@@ -164,6 +169,15 @@
                         </span>
                     </td>
                     <td>
+                        <span class="mini-badge mini-badge-{% if row.post_match_total > 0 and row.post_match_done == row.post_match_total %}success{% elif row.needs_reports %}danger{% else %}neutral{% endif %}">
+                            {% if row.post_match_total > 0 and row.post_match_done == row.post_match_total %}
+                                {% trans "Report Completed" %}
+                            {% else %}
+                                {% trans "Pending" %}
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>
                         <span class="mini-badge mini-badge-{{ row.match.spl_tickets_sent|urgency_badge_class:row.days_to_match }}">
                             {% if row.match.spl_tickets_sent %}{% trans "Sent" %}{% else %}{% trans "Not Sent" %}{% endif %}
                         </span>
@@ -188,7 +202,7 @@
                     <td>{{ row.match.home_club.owner|display_name }}</td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="14">{% trans "No matches found." %}</td></tr>
+                <tr><td colspan="15">{% trans "No matches found." %}</td></tr>
                 {% endfor %}
             </tbody>
         </table>
