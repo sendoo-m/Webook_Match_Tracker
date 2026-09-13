@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'core',
     'matches',
     'checklists',
+    'spl',
+    'clubs',
     'operations',
     'control_panel',
     'events',

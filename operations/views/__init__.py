@@ -3,14 +3,6 @@ from .activity_log import MatchActivityLogListView, MatchActivityView
 from .calendar import CalendarDayMatchesView, MatchCalendarView
 from .changelog import ChangelogView
 from .checklist import ChecklistItemNoteEditView, ChecklistItemUpdateView
-from .club_dashboard import (
-    ClubDashboardMatchDetailView,
-    ClubDashboardView,
-    ClubPricingPlanConfirmSubmissionView,
-    ClubPricingPlanDownloadView,
-    ClubPricingPlanSubmitView,
-    ClubPricingPlanUploadView,
-)
 from .cms import MatchCMSStatusUpdateView, MatchWebookLinkUpdateView, SendToCMSView
 from .dashboard import OperationsDashboardView
 from .delayed_details import MatchDelayedDetailsView
@@ -25,12 +17,32 @@ from .missing_requirements_popup import MissingRequirementsPopupView
 from .outstanding import MatchOutstandingItemsView
 from .release_schedule import MatchReleaseDelayUpdateView, MatchReleaseScheduleView
 from .slug import MatchSlugEditView, MatchSlugUpdateView
-from .spl_approvals import SPLApprovalsView
-from .spl_finished_matches import SPLFinishedMatchesView
-from .spl_confirm import SPLPlanApprovalUploadView, SPLPlanConfirmView, SPLTicketsConfirmView
-from .spl_info import MatchSPLInfoEditView, MatchSPLInfoUpdateView
-from .spl_report import SPLReportExportView, SPLReportView
 from .team_quick_view import TeamQuickViewView
+
+# SPL and Club Dashboard views/forms now live in their own apps
+# (modular-monolith restructuring). Re-exported here unchanged so
+# operations/urls.py's `views.SPLReportView`/`views.ClubDashboardView`
+# (etc.) and any other existing `from operations.views import X` keep
+# working without changes.
+from spl.views import (  # noqa: F401 - re-exported for backward compatibility
+    MatchSPLInfoEditView,
+    MatchSPLInfoUpdateView,
+    SPLApprovalsView,
+    SPLFinishedMatchesView,
+    SPLPlanApprovalUploadView,
+    SPLPlanConfirmView,
+    SPLReportExportView,
+    SPLReportView,
+    SPLTicketsConfirmView,
+)
+from clubs.views import (  # noqa: F401 - re-exported for backward compatibility
+    ClubDashboardMatchDetailView,
+    ClubDashboardView,
+    ClubPricingPlanConfirmSubmissionView,
+    ClubPricingPlanDownloadView,
+    ClubPricingPlanSubmitView,
+    ClubPricingPlanUploadView,
+)
 from .workload import CoordinatorWorkloadReportView
 from .auth_views import HtmxLoginView  # <- new import
 
