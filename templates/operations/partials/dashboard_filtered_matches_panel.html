@@ -131,7 +131,7 @@
             <tbody>
                 {% for card in featured_matches %}
                     <tr{% if card.is_live_now and not card.match.webook_purchase_url %} class="row-action-needed"{% endif %}>
-                        <td{% if card.is_live_now and not card.match.webook_purchase_url %} class="row-action-accent"{% endif %}>
+                        <td>
                             <a href="{% url 'operations:match-detail' card.match.pk %}" class="match-row-link">
                                 {% include "operations/partials/club_chip.html" with club=card.match.home_club role="home" %}
                                 <span class="help-text">vs</span>

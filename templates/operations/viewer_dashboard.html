@@ -271,7 +271,7 @@
                 {% for card in table_cards %}
                     <tr{% if card|match_lifecycle_status == "live" and not card.match.webook_purchase_url %} class="row-action-needed"{% endif %}>
                         <td class="viewer-advanced-only">{{ card.match.round_number|default:"—" }}</td>
-                        <td{% if card|match_lifecycle_status == "live" and not card.match.webook_purchase_url %} class="row-action-accent"{% endif %}>
+                        <td>
                             <div
                                 class="match-row-link"
                                 role="button"

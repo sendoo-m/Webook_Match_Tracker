@@ -1304,7 +1304,6 @@ button:hover,
    beyond just the small LIVE badge in the corner (Von Restorff). */
 .round-preview-card--live {
     border-color: var(--live);
-    border-inline-start-width: 3px;
     background: var(--success-soft);
 }
 
@@ -1680,12 +1679,11 @@ button:hover,
     text-decoration: none;
 }
 
-/* Stat cards - flat, accent border instead of gradient */
+/* Stat cards - flat, uniform status-colored border instead of a side accent */
 .stat-card {
     padding: var(--space-6);
     border-radius: var(--radius);
     border: 1px solid var(--border);
-    border-inline-start: 3px solid var(--border-strong);
     background: var(--surface);
 }
 
@@ -1699,14 +1697,14 @@ a.stat-card:hover {
     text-decoration: none;
 }
 
-.stat-card-live { border-inline-start-color: var(--live); }
-.stat-card-info { border-inline-start-color: var(--info); }
-.stat-card-success { border-inline-start-color: var(--success); }
-.stat-card-warning { border-inline-start-color: var(--warning); }
-.stat-card-danger { border-inline-start-color: var(--danger); }
-.stat-card-upcoming { border-inline-start-color: var(--primary); }
-.stat-card-past { border-inline-start-color: var(--border-strong); }
-.stat-card-neutral { border-inline-start-color: var(--border-strong); }
+.stat-card-live { border-color: var(--live); }
+.stat-card-info { border-color: var(--info); }
+.stat-card-success { border-color: var(--success); }
+.stat-card-warning { border-color: var(--warning); }
+.stat-card-danger { border-color: var(--danger); }
+.stat-card-upcoming { border-color: var(--primary); }
+.stat-card-past { border-color: var(--border-strong); }
+.stat-card-neutral { border-color: var(--border-strong); }
 
 .stat-label {
     color: var(--muted);
@@ -1908,14 +1906,10 @@ a.stat-strip-item:focus-visible {
 }
 
 /* A live match with no ticket link yet is an urgent action item - the
-   whole row gets a warning tint plus an accent bar so it stands out while
-   scanning the table, not just the badge text inside one cell. */
+   whole row gets a warning tint so it stands out while scanning the
+   table, not just the badge text inside one cell. */
 tr.row-action-needed td {
     background: var(--warning-soft);
-}
-
-.row-action-accent {
-    border-inline-start: 3px solid var(--warning);
 }
 
 .btn-add-ticket-link-urgent.btn-add-ticket-link-urgent {
@@ -2700,8 +2694,7 @@ th {
 .checklist-card {
     padding: var(--space-3) var(--space-5);
     margin-bottom: var(--space-3);
-    border-inline-start: 3px solid var(--border-strong);
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease, border-color 0.15s ease;
 }
 
 /* Paired with hx-swap="outerHTML swap:300ms" on the item form - once a
@@ -2712,10 +2705,10 @@ th {
     transform: scale(0.97) translateY(-6px);
 }
 
-.checklist-card--not_started { border-inline-start-color: var(--warning); }
-.checklist-card--in_progress { border-inline-start-color: var(--info); }
-.checklist-card--delayed { border-inline-start-color: var(--danger); }
-.checklist-card--done { border-inline-start-color: var(--success); opacity: 0.85; }
+.checklist-card--not_started { border-color: var(--warning); }
+.checklist-card--in_progress { border-color: var(--info); }
+.checklist-card--delayed { border-color: var(--danger); }
+.checklist-card--done { border-color: var(--success); opacity: 0.85; }
 
 /* Checklist item row - everything on one line (title, status, actions,
    note button) to keep the list compact; the note/delay-reason text moved
@@ -2908,7 +2901,6 @@ th {
 .cms-control-warning {
     margin: var(--space-4) 0 0;
     padding: var(--space-3) var(--space-4);
-    border-inline-start: 3px solid var(--warning);
     background: var(--warning-soft);
     border-radius: var(--radius-sm);
     color: var(--warning);
@@ -3012,12 +3004,11 @@ th {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--surface);
-    border-inline-start: 3px solid var(--border-strong);
 }
 
-.match-row-soon { border-inline-start-color: var(--info); }
-.match-row-ready { border-inline-start-color: var(--success); }
-.match-row-danger { border-inline-start-color: var(--danger); }
+.match-row-soon { border-color: var(--info); }
+.match-row-ready { border-color: var(--success); }
+.match-row-danger { border-color: var(--danger); }
 
 .match-row-top {
     display: flex;
@@ -3133,8 +3124,7 @@ th {
 
 /* Compact live cards (dashboard) */
 .match-row-compact {
-    border: 1px solid var(--border);
-    border-inline-start: 3px solid var(--live);
+    border: 1px solid var(--live);
     border-radius: var(--radius);
     padding: var(--space-4) var(--space-5);
     background: var(--surface);
@@ -3170,13 +3160,12 @@ th {
     border-radius: var(--radius);
     border: 1px solid var(--border);
     background: var(--surface);
-    border-inline-start: 3px solid var(--border-strong);
 }
 
-.alert-info { border-inline-start-color: var(--info); }
-.alert-warning { border-inline-start-color: var(--warning); }
-.alert-danger { border-inline-start-color: var(--danger); }
-.alert-success { border-inline-start-color: var(--success); }
+.alert-info { border-color: var(--info); background: var(--info-soft); }
+.alert-warning { border-color: var(--warning); background: var(--warning-soft); }
+.alert-danger { border-color: var(--danger); background: var(--danger-soft); }
+.alert-success { border-color: var(--success); background: var(--success-soft); }
 
 .alert-head {
     display: flex;
@@ -3213,8 +3202,8 @@ th {
 .live-hero {
     padding: var(--space-8);
     margin-bottom: var(--space-8);
-    border: 1px solid var(--border);
-    border-inline-start: 4px solid var(--live);
+    border: 1px solid var(--live);
+    background: color-mix(in srgb, var(--live) 6%, var(--surface));
 }
 
 .live-hero-top {
@@ -3276,7 +3265,6 @@ th {
    while scanning a live match's page. */
 .attention-panel--alert {
     border-color: var(--danger);
-    border-inline-start-width: 3px;
     background: var(--danger-soft);
 }
 
