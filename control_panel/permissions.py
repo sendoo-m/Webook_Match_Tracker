@@ -2,7 +2,7 @@
 
 from django.contrib.auth.mixins import UserPassesTestMixin
 
-from operations.permissions import can_manage_control_panel, is_super_admin
+from core.permissions import can_manage_control_panel, is_super_admin
 
 
 class ControlPanelAccessMixin(UserPassesTestMixin):

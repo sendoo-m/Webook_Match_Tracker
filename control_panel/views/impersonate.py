@@ -11,7 +11,7 @@ from django.utils.translation import gettext as _
 from django.views import View
 
 from control_panel.permissions import SuperAdminAccessMixin
-from operations.permissions import is_super_admin
+from core.permissions import is_super_admin
 
 User = get_user_model()
 logger = logging.getLogger(__name__)

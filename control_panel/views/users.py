@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _eager
 from django.utils.translation import gettext_lazy as _
 
 from control_panel.forms import UserForm
-from operations.permissions import is_super_admin
+from core.permissions import is_super_admin
 
 from .base import PanelCreateView, PanelListView, PanelToggleActiveView, PanelUpdateView
 

@@ -1,7 +1,8 @@
 # control_panel/context_processors.py
 
+from core.permissions import can_manage_control_panel, is_viewer_only
 from events.permissions import can_manage_events_panel, can_view_events_hub
-from operations.permissions import can_manage_control_panel, can_view_own_club_dashboard, is_viewer_only
+from operations.permissions import can_view_own_club_dashboard
 
 from .design_tokens import LIGHT_TOKENS
 from .models import ReleaseNote

@@ -1,7 +1,19 @@
 # operations/permissions.py
+#
+# Match/Club/Competition-scoped access rules. The domain-agnostic role
+# checks (can_manage_control_panel, is_super_admin, is_viewer_only, and the
+# group-name constants they use) now live in core/permissions.py - imported
+# and re-exported here unchanged so every existing
+# `from operations.permissions import can_manage_control_panel` (and
+# similar) elsewhere in the project keeps working without any changes.
 
-MANAGER_GROUPS = {"Operations Manager", "Super Admin"}
-VIEWER_GROUPS = {"Viewer"}
+from core.permissions import (  # noqa: F401 - re-exported for backward compatibility
+    MANAGER_GROUPS,
+    VIEWER_GROUPS,
+    can_manage_control_panel,
+    is_super_admin,
+    is_viewer_only,
+)
 
 
 def get_user_club_ids(user):
@@ -27,38 +39,6 @@ def get_user_competition_ids(user):
     )
 
 
-def can_manage_control_panel(user):
-    """
-    True for users allowed into the Control Panel (Operations Manager /
-    Super Admin): full back-office CRUD over clubs, venues, competitions,
-    users, and checklist templates — everything except Django's own /admin/.
-
-    This is ONLY about Control Panel access. It does NOT mean the user can
-    edit a match's checklist/CMS status in the operations app — see
-    user_can_manage_match for that.
-    """
-    if not getattr(user, "is_authenticated", False):
-        return False
-
-    return user.is_superuser or user.groups.filter(
-        name__in=MANAGER_GROUPS
-    ).exists()
-
-
-def is_super_admin(user):
-    """
-    True only for the top-tier accounts: Django superuser or in the
-    "Super Admin" group. Stricter than can_manage_control_panel (which also
-    lets Operations Manager in) - this gates user impersonation ("login
-    as"), where only the most trusted accounts should be allowed, and no
-    account at this level can be impersonated by another.
-    """
-    if not getattr(user, "is_authenticated", False):
-        return False
-
-    return user.is_superuser or user.groups.filter(name="Super Admin").exists()
-
-
 class ExcludeViewerAccessMixin:
     """Blocks the read-only Viewer role from a view entirely (e.g. Missing
     Operational Requirements, which is operations-internal - the SPL team's
@@ -72,23 +52,6 @@ class ExcludeViewerAccessMixin:
 
             raise PermissionDenied(self.permission_denied_message)
         return super().dispatch(request, *args, **kwargs)
-
-
-def is_viewer_only(user):
-    """
-    True for accounts whose ENTIRE access is the read-only Viewer role (the
-    external SPL monitoring team) - never true for anyone who is also a
-    manager/admin, even if they happen to also sit in the "Viewer" group.
-    Gates the simplified Viewer dashboard/sidebar and the narrow SPL-plan
-    confirmation action.
-    """
-    if not getattr(user, "is_authenticated", False):
-        return False
-
-    if can_manage_control_panel(user):
-        return False
-
-    return user.groups.filter(name__in=VIEWER_GROUPS).exists()
 
 
 def can_view_all_matches(user):

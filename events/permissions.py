@@ -5,7 +5,7 @@
 # except here a single EventCategoryAccess row (user, category, role) is the
 # whole grant, since there's no separate "ownership" table to combine with.
 
-from operations.permissions import can_manage_control_panel, is_super_admin
+from core.permissions import can_manage_control_panel, is_super_admin
 
 EVENTS_MANAGER_GROUP = "Events Manager"
 
