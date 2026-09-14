@@ -1,0 +1,68 @@
+{# clubs/club_venue_image_list.html #}
+{% extends "operations/base.html" %}
+{% load display_helpers %}
+{% load i18n %}
+
+{% block title %}{% trans "Venue Images" %}{% endblock %}
+
+{% block page_help %}
+    <p>{% blocktrans %}Upload your stadium's seating-map image here, then use "Block Positions" to mark where
+        each of your pricing categories appears on it.{% endblocktrans %}</p>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">{% trans "Venue Images" %}</h1>
+            <p class="page-subtitle">{% trans "Seating-map photos for your own club's home ground(s)." %}</p>
+        </div>
+        <div class="filter-bar">
+            <a class="btn btn-secondary" href="{% url 'operations:club-dashboard' %}">{% trans "Back to Club Dashboard" %}</a>
+            <a class="btn btn-primary" href="{% url 'operations:club-venue-image-create' %}"><i class="ti ti-plus"></i>&nbsp; {% trans "Add Venue Image" %}</a>
+        </div>
+    </div>
+</div>
+
+<div class="card panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>{% trans "Venue" %}</th>
+                    <th>{% trans "Image" %}</th>
+                    <th>{% trans "Caption" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venue_image in venue_images %}
+                    <tr>
+                        <td>{{ venue_image.venue|localized_name }}</td>
+                        <td>
+                            {% if venue_image.image %}
+                                <img src="{{ venue_image.image.url }}" alt="{{ venue_image.caption }}" class="club-logo-thumb">
+                            {% endif %}
+                        </td>
+                        <td>{{ venue_image.caption|default:"—" }}</td>
+                        <td>
+                            <span class="badge {% if venue_image.is_active %}badge-published{% else %}badge-draft{% endif %}">
+                                {% if venue_image.is_active %}{% trans "Active" %}{% else %}{% trans "Inactive" %}{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                <a class="btn btn-secondary btn-sm" href="{% url 'operations:club-venue-image-update' venue_image.pk %}">{% trans "Edit" %}</a>
+                                <a class="btn btn-secondary btn-sm" href="{% url 'operations:club-venue-image-positions' venue_image.pk %}">{% trans "Block Positions" %}</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5">{% trans "No venue images found." %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

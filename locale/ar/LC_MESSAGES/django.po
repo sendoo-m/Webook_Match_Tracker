@@ -1342,6 +1342,25 @@ msgstr "المرجع المحفوظ (وقت اتخاذ القرار)"
 msgid "Block Positions"
 msgstr "مواقع الفئات على الصورة"
 
+msgid ""
+"Upload your stadium's seating-map image here, then use \"Block Positions\" "
+"to mark where\n"
+"        each of your pricing categories appears on it."
+msgstr "ارفع صورة خريطة ملعبك هنا، ثم استخدم \"مواقع الفئات على الصورة\" لتحديد مكان ظهور كل فئة من فئات أسعارك عليها."
+
+msgid "Seating-map photos for your own club's home ground(s)."
+msgstr "صور خرائط المقاعد لملعب (أو ملاعب) ناديك."
+
+msgid "Venue image added."
+msgstr "تمت إضافة صورة الملعب."
+
+msgid ""
+"Pick a club (if you manage more than one at this venue), then click the "
+"image to place\n"
+"        each of its blocks - the same spot is used later to show that "
+"block's price to you and to SPL."
+msgstr "اختر ناديًا (لو كنت تدير أكثر من نادٍ في هذا الملعب)، ثم انقر على الصورة لتحديد مكان كل فئة - نفس المكان يُستخدم لاحقًا لعرض سعرها لك ولـ SPL."
+
 msgid "Back to Venue Images"
 msgstr "العودة لصور الملاعب"
 

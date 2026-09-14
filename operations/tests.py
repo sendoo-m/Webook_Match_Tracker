@@ -6,7 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.utils import timezone
 
-from matches.models import Club, Competition, Match, UserCompetitionAccess, VenueSeatingCategory
+from matches.models import Club, Competition, Match, UserCompetitionAccess, VenueImage, VenueSeatingCategory
 from notifications.models import Notification
 from operations.models import ClubPricingPlan, ClubPricingPlanCategoryPrice, MatchActivityLog
 from operations.permissions import (
@@ -1344,3 +1344,124 @@ class SPLPricingPlanSnapshotTests(IsolatedMediaMixin, ClubDashboardPermissionsTe
         self._approve()
         self.plan.refresh_from_db()
         self.assertFalse(bool(self.plan.seat_map_snapshot))
+
+
+class ClubVenueImagePositionTests(IsolatedMediaMixin, ClubDashboardPermissionsTestBase):
+    """Coordinators (and a club's own direct account) can now manage their
+    own venue's seating-map image and block positions without Control Panel
+    access - see clubs/views/venue_images.py. Scoped strictly to the venues
+    of their own HOME matches; another coordinator (even one with a real
+    club) must never reach a venue image that isn't theirs."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        from matches.models import Venue, VenueImage
+
+        cls.venue = Venue.objects.create(name_ar="ملعب أ", name_en="_Test Venue A")
+        cls.match.venue = cls.venue
+        cls.match.save(update_fields=["venue"])
+
+        cls.venue_image = VenueImage.objects.create(venue=cls.venue, image=_tiny_png())
+        cls.category = VenueSeatingCategory.objects.create(
+            venue=cls.venue, club=cls.club_a, code="_TEST CAT",
+        )
+
+        # club_account_user: the club's own direct account (not a
+        # coordinator) - should have the exact same manage rights as user_a.
+        club_viewer_group, _ = Group.objects.get_or_create(name="Club Viewer")
+        cls.club_account_user = User.objects.create_user(username="_test_club_account", password="pw")
+        cls.club_account_user.groups.add(club_viewer_group)
+        cls.club_a.club_account = cls.club_account_user
+        cls.club_a.save(update_fields=["club_account"])
+
+    def test_coordinator_sees_their_own_venue_image(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/operations/club-dashboard/venue-images/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "_Test Venue A")
+
+    def test_club_account_sees_the_same_venue_image(self):
+        client = Client()
+        client.login(username="_test_club_account", password="pw")
+        response = client.get("/operations/club-dashboard/venue-images/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "_Test Venue A")
+
+    def test_unrelated_coordinator_gets_404_on_this_venue_image(self):
+        """user_c owns club_c, a real coordinator - but not for THIS venue."""
+        client = Client()
+        client.login(username="_test_club_c", password="pw")
+        response = client.get(f"/operations/club-dashboard/venue-images/{self.venue_image.pk}/positions/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_user_with_no_club_is_denied(self):
+        client = Client()
+        client.login(username="_test_ops_manager", password="pw")
+        # An Operations Manager isn't a club account - can_view_own_club_dashboard
+        # is False for them, same as any other non-club user.
+        response = client.get("/operations/club-dashboard/venue-images/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_position_editor_auto_selects_the_only_club(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get(f"/operations/club-dashboard/venue-images/{self.venue_image.pk}/positions/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "_TEST CAT")
+
+    def test_coordinator_can_save_a_position_for_their_own_category(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.post(
+            f"/operations/club-dashboard/venue-images/{self.venue_image.pk}/positions/{self.category.pk}/save/",
+            {"x": "33.0", "y": "44.0"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.category.refresh_from_db()
+        self.assertEqual(self.category.position_x, 33.0)
+        self.assertEqual(self.category.position_y, 44.0)
+        self.assertEqual(self.category.position_image_id, self.venue_image.pk)
+
+    def test_unrelated_coordinator_cannot_save_a_position_for_this_category(self):
+        client = Client()
+        client.login(username="_test_club_c", password="pw")
+        response = client.post(
+            f"/operations/club-dashboard/venue-images/{self.venue_image.pk}/positions/{self.category.pk}/save/",
+            {"x": "33.0", "y": "44.0"},
+        )
+        self.assertEqual(response.status_code, 404)
+        self.category.refresh_from_db()
+        self.assertIsNone(self.category.position_x)
+
+    def test_coordinator_can_upload_a_new_venue_image(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.post("/operations/club-dashboard/venue-images/new/", {
+            "venue": self.venue.pk,
+            "image": _tiny_png(),
+            "caption": "New seating map",
+            "sort_order": 0,
+            "is_active": True,
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(VenueImage.objects.filter(venue=self.venue, caption="New seating map").exists())
+
+    def test_coordinator_cannot_upload_an_image_for_an_unrelated_venue(self):
+        from matches.models import Venue
+
+        other_venue = Venue.objects.create(name_ar="ملعب ب", name_en="_Test Venue B")
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.post("/operations/club-dashboard/venue-images/new/", {
+            "venue": other_venue.pk,
+            "image": _tiny_png(),
+            "caption": "Should not be allowed",
+            "sort_order": 0,
+            "is_active": True,
+        })
+        # The venue queryset on the form excludes other_venue entirely, so
+        # this is a normal form validation error, not a 403/404.
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(VenueImage.objects.filter(caption="Should not be allowed").exists())

@@ -19,10 +19,17 @@
 
 {% block content %}
 <div class="page-header">
-    <h1 class="page-title">{% trans "Club Dashboard" %}</h1>
-    <p class="page-subtitle">
-        {% for club in clubs %}{{ club|localized_name }}{% if not forloop.last %}{% trans ", " %}{% endif %}{% endfor %}
-    </p>
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">{% trans "Club Dashboard" %}</h1>
+            <p class="page-subtitle">
+                {% for club in clubs %}{{ club|localized_name }}{% if not forloop.last %}{% trans ", " %}{% endif %}{% endfor %}
+            </p>
+        </div>
+        <div class="filter-bar">
+            <a class="btn btn-secondary" href="{% url 'operations:club-venue-image-list' %}"><i class="ti ti-photo"></i>&nbsp; {% trans "Venue Images" %}</a>
+        </div>
+    </div>
 </div>
 
 <div class="card panel dashboard-section">

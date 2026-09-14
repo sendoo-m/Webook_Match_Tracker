@@ -9,9 +9,26 @@
 
 from django import forms
 
+from matches.models import VenueImage
 from operations.models import ClubPricingPlan
 
 CATEGORY_PRICE_FIELD_PREFIX = "price_"
+
+
+class ClubVenueImageForm(forms.ModelForm):
+    """Same fields as control_panel's VenueImageForm, but `venue` is
+    restricted per-request (see __init__) to only the venues the logged-in
+    coordinator's own clubs actually play at - never every venue in the
+    system."""
+
+    class Meta:
+        model = VenueImage
+        fields = ["venue", "image", "caption", "sort_order", "is_active"]
+
+    def __init__(self, *args, venue_queryset=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if venue_queryset is not None:
+            self.fields["venue"].queryset = venue_queryset
 
 
 class ClubPricingPlanUploadForm(forms.ModelForm):

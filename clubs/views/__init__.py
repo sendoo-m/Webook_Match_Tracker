@@ -6,6 +6,13 @@ from .pricing_plan import (
     ClubPricingPlanSubmitView,
     ClubPricingPlanUploadView,
 )
+from .venue_images import (
+    ClubVenueCategoryPositionSaveView,
+    ClubVenueImageCreateView,
+    ClubVenueImageListView,
+    ClubVenueImagePositionEditorView,
+    ClubVenueImageUpdateView,
+)
 
 __all__ = [
     "ClubDashboardMatchDetailView",
@@ -15,4 +22,9 @@ __all__ = [
     "ClubPricingPlanDownloadView",
     "ClubPricingPlanSubmitView",
     "ClubPricingPlanUploadView",
+    "ClubVenueCategoryPositionSaveView",
+    "ClubVenueImageCreateView",
+    "ClubVenueImageListView",
+    "ClubVenueImagePositionEditorView",
+    "ClubVenueImageUpdateView",
 ]

@@ -93,6 +93,23 @@ urlpatterns = [
         views.ClubPricingPlanConfirmSubmissionView.as_view(),
         name="club-pricing-plan-confirm-submission",
     ),
+    path("club-dashboard/venue-images/", views.ClubVenueImageListView.as_view(), name="club-venue-image-list"),
+    path("club-dashboard/venue-images/new/", views.ClubVenueImageCreateView.as_view(), name="club-venue-image-create"),
+    path(
+        "club-dashboard/venue-images/<int:pk>/edit/",
+        views.ClubVenueImageUpdateView.as_view(),
+        name="club-venue-image-update",
+    ),
+    path(
+        "club-dashboard/venue-images/<int:pk>/positions/",
+        views.ClubVenueImagePositionEditorView.as_view(),
+        name="club-venue-image-positions",
+    ),
+    path(
+        "club-dashboard/venue-images/<int:image_pk>/positions/<int:category_pk>/save/",
+        views.ClubVenueCategoryPositionSaveView.as_view(),
+        name="club-venue-category-position-save",
+    ),
     path("feedback/", views.FeedbackPageView.as_view(), name="feedback"),
     path("feedback/submit/", views.FeedbackSubmitView.as_view(), name="feedback-submit"),
     path("whats-new/", views.ChangelogView.as_view(), name="changelog"),
