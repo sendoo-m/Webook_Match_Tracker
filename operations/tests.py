@@ -6,8 +6,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.utils import timezone
 
-from matches.models import Club, Competition, Match, UserCompetitionAccess
-from operations.models import ClubPricingPlan
+from matches.models import Club, Competition, Match, UserCompetitionAccess, VenueSeatingCategory
+from notifications.models import Notification
+from operations.models import ClubPricingPlan, ClubPricingPlanCategoryPrice, MatchActivityLog
 from operations.permissions import (
     can_access_spl_approval_area,
     can_approve_pricing_plan,
@@ -1036,3 +1037,310 @@ class ClubPricingPlanConfirmSubmissionTests(IsolatedMediaMixin, ClubDashboardPer
         client.login(username="_test_club_a", password="pw")
         client.post(f"/operations/club-dashboard/pricing-plan/{self.plan.pk}/confirm-submission/")
         self.assertTrue(self.match.activity_logs.filter(description__icontains="confirmed pricing plan").exists())
+
+
+class SPLPricingPlanDecisionTests(ClubDashboardPermissionsTestBase):
+    """Covers the SPL Approvals page's approve/reject decision flow: state
+    transitions, idempotency on a double POST, activity log, and the
+    notification sent to the home club (see spl/views/pricing_plan_decision.py
+    and notifications.services.notify_club)."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        # SPLApprovalsView/SPLReportFilterMixin hard-scope every row on this
+        # page to the Roshan League competition (seeded for every database,
+        # test included, by matches/migrations/0006_backfill_roshan_league.py)
+        # - the base fixture's own "Test League" competition never appears on
+        # this page at all, so tests that need a visible row must use this one.
+        from operations.views.helpers import get_roshan_league_competition
+        roshan = get_roshan_league_competition()
+        cls.match.competition = roshan
+        cls.match.save(update_fields=["competition"])
+
+        cls.category = None
+        if cls.match.venue_id:
+            cls.category = VenueSeatingCategory.objects.create(
+                venue=cls.match.venue, club=cls.club_a, code="_TEST CAT",
+            )
+        cls.plan = ClubPricingPlan.objects.create(
+            match=cls.match, club=cls.club_a, version=1,
+            status=ClubPricingPlan.Status.SUBMITTED_TO_SPL,
+        )
+        if cls.category:
+            ClubPricingPlanCategoryPrice.objects.create(plan=cls.plan, category=cls.category, price=150)
+
+    def _approve(self, username="_test_ops_manager"):
+        client = Client()
+        client.login(username=username, password="pw")
+        return client, client.post(f"/operations/pricing-plan/{self.plan.pk}/spl-approve/")
+
+    def _reject(self, note="Needs corrected pricing.", username="_test_ops_manager"):
+        client = Client()
+        client.login(username=username, password="pw")
+        data = {"note": note} if note is not None else {}
+        return client, client.post(f"/operations/pricing-plan/{self.plan.pk}/spl-reject/", data)
+
+    def test_approve_sets_decision_user_and_timestamp(self):
+        client, response = self._approve()
+        self.assertEqual(response.status_code, 302)
+        self.plan.refresh_from_db()
+        self.assertEqual(self.plan.spl_decision, ClubPricingPlan.SPLDecision.APPROVED)
+        self.assertEqual(self.plan.spl_decision_by.username, "_test_ops_manager")
+        self.assertIsNotNone(self.plan.spl_decision_at)
+
+    def test_approve_syncs_match_ticketing_plan_approved_only(self):
+        cms_status_before = self.match.cms_status
+        self._approve()
+        self.match.refresh_from_db()
+        self.assertTrue(self.match.ticketing_plan_approved)
+        self.assertIsNotNone(self.match.ticketing_plan_approved_at)
+        self.assertEqual(self.match.cms_status, cms_status_before)
+
+    def test_approve_creates_activity_log(self):
+        self._approve()
+        self.assertTrue(
+            self.match.activity_logs.filter(description__icontains=f"approved pricing plan v{self.plan.version}").exists()
+        )
+
+    def test_approve_notifies_home_club_owner(self):
+        self._approve()
+        notification = Notification.objects.filter(
+            recipient=self.user_a, notification_type="pricing_plan_approved", plan=self.plan,
+        ).first()
+        self.assertIsNotNone(notification)
+        self.assertIn(str(self.match), notification.message)
+        self.assertEqual(notification.match_id, self.match.pk)
+
+    def test_approve_does_not_notify_away_club(self):
+        self._approve()
+        self.assertFalse(
+            Notification.objects.filter(recipient=self.user_b, notification_type="pricing_plan_approved").exists()
+        )
+
+    def test_double_submit_approve_does_not_duplicate_log_or_notification(self):
+        self._approve()
+        self._approve()
+        self.assertEqual(
+            self.match.activity_logs.filter(description__icontains="approved pricing plan").count(), 1
+        )
+        self.assertEqual(
+            Notification.objects.filter(recipient=self.user_a, notification_type="pricing_plan_approved").count(), 1
+        )
+
+    def test_cannot_approve_already_rejected_plan(self):
+        self._reject()
+        self.plan.refresh_from_db()
+        self.assertEqual(self.plan.spl_decision, ClubPricingPlan.SPLDecision.REJECTED)
+        self._approve()
+        self.plan.refresh_from_db()
+        self.assertEqual(self.plan.spl_decision, ClubPricingPlan.SPLDecision.REJECTED)
+
+    def test_reject_requires_a_note(self):
+        client, response = self._reject(note="")
+        self.assertEqual(response.status_code, 302)
+        self.plan.refresh_from_db()
+        self.assertEqual(self.plan.spl_decision, ClubPricingPlan.SPLDecision.PENDING)
+
+    def test_reject_saves_the_exact_note_entered(self):
+        self._reject(note="Prices for CAT 1 look wrong.")
+        self.plan.refresh_from_db()
+        self.assertEqual(self.plan.spl_decision, ClubPricingPlan.SPLDecision.REJECTED)
+        self.assertEqual(self.plan.spl_decision_note, "Prices for CAT 1 look wrong.")
+
+    def test_reject_creates_activity_log_with_note(self):
+        self._reject(note="Prices for CAT 1 look wrong.")
+        self.assertTrue(
+            self.match.activity_logs.filter(description__icontains="Prices for CAT 1 look wrong.").exists()
+        )
+
+    def test_reject_notifies_home_club_with_reason(self):
+        self._reject(note="Prices for CAT 1 look wrong.")
+        notification = Notification.objects.filter(
+            recipient=self.user_a, notification_type="pricing_plan_rejected", plan=self.plan,
+        ).first()
+        self.assertIsNotNone(notification)
+        self.assertIn("Prices for CAT 1 look wrong.", notification.message)
+
+    def test_double_submit_reject_does_not_duplicate_log_or_notification(self):
+        self._reject(note="First reason.")
+        self._reject(note="Second reason.")
+        self.plan.refresh_from_db()
+        self.assertEqual(self.plan.spl_decision_note, "First reason.")
+        self.assertEqual(
+            Notification.objects.filter(recipient=self.user_a, notification_type="pricing_plan_rejected").count(), 1
+        )
+
+    def test_reject_syncs_ticketing_plan_approved_false(self):
+        self.match.ticketing_plan_approved = True
+        self.match.save(update_fields=["ticketing_plan_approved"])
+        self._reject()
+        self.match.refresh_from_db()
+        self.assertFalse(self.match.ticketing_plan_approved)
+
+    def test_club_user_cannot_approve_directly(self):
+        client, response = self._approve(username="_test_club_a")
+        self.assertEqual(response.status_code, 302)
+        self.plan.refresh_from_db()
+        self.assertEqual(self.plan.spl_decision, ClubPricingPlan.SPLDecision.PENDING)
+
+    def test_club_user_cannot_reject_directly(self):
+        client, response = self._reject(username="_test_club_a")
+        self.assertEqual(response.status_code, 302)
+        self.plan.refresh_from_db()
+        self.assertEqual(self.plan.spl_decision, ClubPricingPlan.SPLDecision.PENDING)
+
+    def test_viewer_can_approve(self):
+        client, response = self._approve(username="_test_viewer")
+        self.assertEqual(response.status_code, 302)
+        self.plan.refresh_from_db()
+        self.assertEqual(self.plan.spl_decision, ClubPricingPlan.SPLDecision.APPROVED)
+
+    def test_cannot_decide_on_a_superseded_plan_version(self):
+        newer = ClubPricingPlan.objects.create(
+            match=self.match, club=self.club_a, version=2, status=ClubPricingPlan.Status.UPLOADED,
+        )
+        client, response = self._approve()
+        self.assertEqual(response.status_code, 302)
+        self.plan.refresh_from_db()
+        newer.refresh_from_db()
+        self.assertEqual(self.plan.spl_decision, ClubPricingPlan.SPLDecision.PENDING)
+        self.assertEqual(newer.spl_decision, ClubPricingPlan.SPLDecision.PENDING)
+
+
+class SPLApprovalsPageDecisionUITests(ClubDashboardPermissionsTestBase):
+    """Covers what the redesigned SPL Approvals page actually renders for a
+    pending vs. already-decided plan - action buttons only show for a
+    pending decision, and a decided plan shows who/when/why instead."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        # See the identical note in SPLPricingPlanDecisionTests.setUpTestData -
+        # this page only ever shows Roshan League matches.
+        from operations.views.helpers import get_roshan_league_competition
+        roshan = get_roshan_league_competition()
+        cls.match.competition = roshan
+        cls.match.save(update_fields=["competition"])
+
+        cls.plan = ClubPricingPlan.objects.create(
+            match=cls.match, club=cls.club_a, version=1,
+            status=ClubPricingPlan.Status.SUBMITTED_TO_SPL,
+        )
+
+    def _get_page(self, username="_test_ops_manager"):
+        client = Client()
+        client.login(username=username, password="pw")
+        return client.get("/operations/reports/spl/approvals/")
+
+    def test_pending_plan_shows_decision_buttons(self):
+        response = self._get_page()
+        self.assertContains(response, "Approve Pricing Plan")
+        self.assertContains(response, "Reject Pricing Plan")
+
+    def test_approved_plan_hides_decision_buttons_and_shows_who_and_when(self):
+        self.plan.spl_decision = ClubPricingPlan.SPLDecision.APPROVED
+        self.plan.spl_decision_at = timezone.now()
+        self.plan.spl_decision_by = self.manager_user
+        self.plan.save()
+        response = self._get_page()
+        self.assertNotContains(response, "Approve Pricing Plan")
+        self.assertNotContains(response, "Reject Pricing Plan")
+        self.assertContains(response, "Approved by")
+
+    def test_rejected_plan_shows_reason_and_hides_buttons(self):
+        self.plan.spl_decision = ClubPricingPlan.SPLDecision.REJECTED
+        self.plan.spl_decision_at = timezone.now()
+        self.plan.spl_decision_by = self.manager_user
+        self.plan.spl_decision_note = "Fix the VIP pricing."
+        self.plan.save()
+        response = self._get_page()
+        self.assertNotContains(response, "Approve Pricing Plan")
+        self.assertNotContains(response, "Reject Pricing Plan")
+        self.assertContains(response, "Fix the VIP pricing.")
+
+    def test_club_user_cannot_load_the_page(self):
+        response = self._get_page(username="_test_club_a")
+        self.assertEqual(response.status_code, 302)
+
+
+def _tiny_png():
+    from io import BytesIO
+
+    from PIL import Image
+
+    buffer = BytesIO()
+    Image.new("RGB", (200, 200), color=(0, 128, 0)).save(buffer, format="PNG")
+    return SimpleUploadedFile("venue.png", buffer.getvalue(), content_type="image/png")
+
+
+class SPLPricingPlanSnapshotTests(IsolatedMediaMixin, ClubDashboardPermissionsTestBase):
+    """Covers generate_seat_map_snapshot(): approving/rejecting a plan with
+    at least one positioned category bakes a real PNG (base image + price
+    badges) and saves it as a permanent reference, independent of any later
+    edit to the live block positions."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        from operations.views.helpers import get_roshan_league_competition
+        from matches.models import Venue, VenueImage
+
+        roshan = get_roshan_league_competition()
+        cls.venue = Venue.objects.create(name_ar="ملعب تجريبي", name_en="_Test Venue")
+        cls.match.competition = roshan
+        cls.match.venue = cls.venue
+        cls.match.save(update_fields=["competition", "venue"])
+
+        cls.venue_image = VenueImage.objects.create(venue=cls.venue, image=_tiny_png())
+        cls.category = VenueSeatingCategory.objects.create(
+            venue=cls.venue, club=cls.club_a, code="_TEST CAT",
+            position_image=cls.venue_image, position_x=40.0, position_y=60.0,
+        )
+        cls.plan = ClubPricingPlan.objects.create(
+            match=cls.match, club=cls.club_a, version=1,
+            status=ClubPricingPlan.Status.SUBMITTED_TO_SPL,
+        )
+        ClubPricingPlanCategoryPrice.objects.create(plan=cls.plan, category=cls.category, price=250)
+
+    def _approve(self):
+        client = Client()
+        client.login(username="_test_ops_manager", password="pw")
+        return client.post(f"/operations/pricing-plan/{self.plan.pk}/spl-approve/")
+
+    def _reject(self, note="Needs corrected pricing."):
+        client = Client()
+        client.login(username="_test_ops_manager", password="pw")
+        return client.post(f"/operations/pricing-plan/{self.plan.pk}/spl-reject/", {"note": note})
+
+    def test_approve_generates_a_snapshot_file(self):
+        self._approve()
+        self.plan.refresh_from_db()
+        self.assertTrue(bool(self.plan.seat_map_snapshot))
+        self.assertTrue(self.plan.seat_map_snapshot.name.endswith(".png"))
+
+    def test_reject_generates_a_snapshot_file(self):
+        self._reject()
+        self.plan.refresh_from_db()
+        self.assertTrue(bool(self.plan.seat_map_snapshot))
+
+    def test_snapshot_survives_a_later_position_edit(self):
+        """The whole point of the snapshot - it must not change even after
+        the live block position it was rendered from is edited or cleared."""
+        self._approve()
+        self.plan.refresh_from_db()
+        snapshot_name_before = self.plan.seat_map_snapshot.name
+        self.category.position_x = 5.0
+        self.category.position_y = 5.0
+        self.category.save()
+        self.plan.refresh_from_db()
+        self.assertEqual(self.plan.seat_map_snapshot.name, snapshot_name_before)
+
+    def test_generate_seat_map_snapshot_is_a_noop_without_any_position(self):
+        self.category.position_image = None
+        self.category.position_x = None
+        self.category.position_y = None
+        self.category.save()
+        self._approve()
+        self.plan.refresh_from_db()
+        self.assertFalse(bool(self.plan.seat_map_snapshot))

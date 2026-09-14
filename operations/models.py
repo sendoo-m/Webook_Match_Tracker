@@ -158,6 +158,15 @@ class ClubPricingPlan(models.Model):
         help_text="Required when rejecting - explains what needs to change.",
     )
 
+    # A frozen PNG (seat-map image + a price badge per positioned category,
+    # baked into the pixels) generated at the moment SPL decides on this
+    # plan - see generate_seat_map_snapshot(). Deliberately NOT the same
+    # thing as the live seat_map_groups() render: block positions or the
+    # venue image itself can be edited later in the Control Panel, and this
+    # snapshot must keep showing exactly what SPL saw when they decided,
+    # regardless of any such later edit.
+    seat_map_snapshot = models.ImageField(upload_to="club_pricing_plan_snapshots/", null=True, blank=True)
+
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -191,6 +200,61 @@ class ClubPricingPlan(models.Model):
             else:
                 unplaced.append(category_price)
         return {"images": list(images_by_id.values()), "unplaced": unplaced}
+
+    def generate_seat_map_snapshot(self):
+        """Renders seat_map_groups()'s positioned categories onto a real PNG
+        (one badge per block, baked into the pixels at its saved x/y%) and
+        saves it to seat_map_snapshot - called once, at the moment SPL
+        approves or rejects this plan (see spl/views/pricing_plan_decision.py).
+        A no-op if no category on this plan has a saved position yet."""
+        from io import BytesIO
+
+        from django.core.files.base import ContentFile
+        from PIL import Image, ImageDraw, ImageFont
+
+        groups = self.seat_map_groups()["images"]
+        if not groups:
+            return
+
+        # Only one image group is the common case (every category placed on
+        # the same venue photo) - a plan spanning more than one would need
+        # more than a single flat PNG to represent, so the first group is
+        # used as this snapshot's base, matching what the page shows first.
+        group = groups[0]
+        with group["image"].image.open("rb") as source_file:
+            base_image = Image.open(source_file).convert("RGB")
+            base_image.load()
+
+        draw = ImageDraw.Draw(base_image)
+        try:
+            font = ImageFont.load_default(size=max(14, base_image.width // 80))
+        except TypeError:
+            # Older Pillow: load_default() takes no size argument.
+            font = ImageFont.load_default()
+
+        for category_price in group["prices"]:
+            category = category_price.category
+            label = f"{category.code}: {category_price.price}"
+            x = category.position_x / 100 * base_image.width
+            y = category.position_y / 100 * base_image.height
+
+            bbox = draw.textbbox((0, 0), label, font=font)
+            text_width = bbox[2] - bbox[0]
+            text_height = bbox[3] - bbox[1]
+            padding = 6
+            box = (
+                x - text_width / 2 - padding, y - text_height / 2 - padding,
+                x + text_width / 2 + padding, y + text_height / 2 + padding,
+            )
+            draw.rounded_rectangle(box, radius=6, fill=(255, 255, 255), outline=(60, 60, 60), width=1)
+            draw.text((x, y), label, font=font, fill=(20, 20, 20), anchor="mm")
+
+        buffer = BytesIO()
+        base_image.save(buffer, format="PNG")
+        self.seat_map_snapshot.save(
+            f"plan-{self.pk}-seat-map.png", ContentFile(buffer.getvalue()), save=False
+        )
+        self.save(update_fields=["seat_map_snapshot"])
 
 
 class ClubPricingPlanCategoryPrice(models.Model):

@@ -24,6 +24,7 @@
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.db.models import Max, Min
 from django.utils import timezone
 from django.views.generic import TemplateView
 
@@ -86,6 +87,22 @@ class SPLApprovalsView(LoginRequiredMixin, SPLReportFilterMixin, TemplateView):
 
         rows = [build_spl_report_row(match, now) for match in matches]
         rows = [row for row in rows if not row["match_finished"]]
+
+        # Plan summary stats (category count, price range) for the decision
+        # panel - computed here rather than in the template so a single
+        # aggregate query covers it per row instead of Python-side min()/
+        # max() over an already-fetched, unordered queryset.
+        for row in rows:
+            plan = row["current_pricing_plan"]
+            if plan is not None:
+                price_stats = plan.category_prices.aggregate(min_price=Min("price"), max_price=Max("price"))
+                row["plan_category_count"] = plan.category_prices.count()
+                row["plan_min_price"] = price_stats["min_price"]
+                row["plan_max_price"] = price_stats["max_price"]
+            else:
+                row["plan_category_count"] = 0
+                row["plan_min_price"] = None
+                row["plan_max_price"] = None
 
         # .order_by("round_number") is required, not decorative: Match's
         # Meta.ordering (event_date, match_start_time, id) otherwise leaks

@@ -2041,6 +2041,126 @@ tr.row-action-needed td {
     gap: var(--space-3);
 }
 
+.spl-approval-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    margin: calc(var(--space-3) * -1) 0 var(--space-4);
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.spl-approval-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* The pricing-plan review block spans the full card width (map + decision
+   need more room than the half-width grid the other two blocks use) and
+   sits above them, since reviewing/deciding on the plan is this page's
+   primary action. */
+.spl-pricing-review {
+    margin-bottom: var(--space-4);
+}
+
+.pricing-review-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(240px, 2fr);
+    gap: var(--space-4);
+    align-items: start;
+    margin-top: var(--space-3);
+}
+
+@media (max-width: 860px) {
+    .pricing-review-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.pricing-review-subtitle {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.pricing-review-legend {
+    margin-top: var(--space-2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pricing-review-decision {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+}
+
+.pricing-review-stat-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.pricing-review-decided-note {
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--border);
+}
+
+.pricing-review-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.pricing-review-actions .btn {
+    width: 100%;
+    justify-content: center;
+    padding: var(--space-3) var(--space-4);
+    font-size: 14px;
+}
+
+.pricing-review-reject-btn {
+    color: var(--danger);
+    border-color: var(--danger);
+}
+
+.pricing-review-reject-btn:hover {
+    background: var(--danger-soft);
+}
+
+.pricing-review-confirm-facts {
+    margin: var(--space-3) 0;
+    padding-inline-start: var(--space-5);
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.pricing-review-confirm-warning {
+    font-weight: 600;
+    color: var(--danger);
+}
+
+.pricing-review-reject-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.pricing-review-reject-form textarea {
+    width: 100%;
+    resize: vertical;
+    font-family: inherit;
+}
+
 /* Plan vs. Tickets Confirm buttons look identical otherwise - different
    icon + accent color per confirmation type so it's clear at a glance
    which one a click is about to fire. */

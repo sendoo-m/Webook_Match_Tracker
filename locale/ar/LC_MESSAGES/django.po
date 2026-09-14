@@ -1256,6 +1256,89 @@ msgstr "لا توجد تصنيفات مطابقة لعوامل التصفية."
 msgid "Grouped by club - use the filters below to jump straight to one club or coordinator."
 msgstr "مجمّعة حسب النادي - استخدم عوامل التصفية أدناه للانتقال مباشرة إلى نادٍ أو منسّق معيّن."
 
+msgid "Seat Map & Pricing Plan"
+msgstr "خريطة الملعب وخطة الأسعار"
+
+msgid "Each label on the map shows the block's code and its price."
+msgstr "كل ملصق على الخريطة يوضح رمز الفئة وسعرها."
+
+#, python-format
+msgid "%(counter)s category"
+msgid_plural "%(counter)s categories"
+msgstr[0] "لا توجد فئات"
+msgstr[1] "فئة واحدة"
+msgstr[2] "فئتان"
+msgstr[3] "%(counter)s فئات"
+msgstr[4] "%(counter)s فئة"
+msgstr[5] "%(counter)s فئة"
+
+#, python-format
+msgid "%(low)s–%(high)s"
+msgstr "%(low)s–%(high)s"
+
+msgid "Approved by %(who)s on %(when)s"
+msgstr "تمت الموافقة بواسطة %(who)s بتاريخ %(when)s"
+
+msgid "Rejected by %(who)s on %(when)s"
+msgstr "تم الرفض بواسطة %(who)s بتاريخ %(when)s"
+
+msgid "Approve Pricing Plan"
+msgstr "الموافقة على خطة الأسعار"
+
+msgid "Reject Pricing Plan"
+msgstr "رفض خطة الأسعار"
+
+msgid "Are you sure you want to approve the pricing plan for this match?"
+msgstr "هل أنت متأكد من الموافقة على خطة الأسعار الخاصة بهذه المباراة؟"
+
+msgid "The decision will be recorded and the club will be notified."
+msgstr "سيتم تسجيل القرار وإرسال إشعار إلى النادي."
+
+msgid "Match: %(match)s"
+msgstr "المباراة: %(match)s"
+
+msgid "Club: %(club)s"
+msgstr "النادي: %(club)s"
+
+msgid "Plan version: %(version)s"
+msgstr "نسخة الخطة: %(version)s"
+
+msgid "Confirm Approval"
+msgstr "تأكيد الموافقة"
+
+msgid "Approving…"
+msgstr "جارٍ الموافقة…"
+
+msgid "Explain what needs to change…"
+msgstr "وضّح ما الذي يجب تغييره…"
+
+msgid "The reason is required and will be sent to the club with the rejection notification."
+msgstr "سبب الرفض مطلوب، وسيتم إرساله إلى النادي مع إشعار الرفض."
+
+msgid "Are you sure you want to reject this pricing plan? The reason will be saved and sent to the club via a notification."
+msgstr "هل أنت متأكد من رفض خطة الأسعار؟ سيتم حفظ سبب الرفض وإرساله إلى النادي عن طريق إشعار."
+
+msgid "Confirm Rejection"
+msgstr "تأكيد الرفض"
+
+msgid "Rejecting…"
+msgstr "جارٍ الرفض…"
+
+msgid "This pricing plan has already been decided on."
+msgstr "تم اتخاذ قرار بشأن خطة الأسعار هذه بالفعل."
+
+msgid "Pricing plan approved. The club has been notified."
+msgstr "تمت الموافقة على خطة الأسعار، وتم إرسال إشعار إلى النادي."
+
+msgid "Pricing plan rejected. The club has been notified and can upload a corrected version."
+msgstr "تم رفض خطة الأسعار، وتم إرسال إشعار إلى النادي، ويمكنه رفع نسخة مصححة."
+
+msgid "updated %(when)s"
+msgstr "آخر تحديث %(when)s"
+
+msgid "Saved reference (at time of decision)"
+msgstr "المرجع المحفوظ (وقت اتخاذ القرار)"
+
 msgid "Block Positions"
 msgstr "مواقع الفئات على الصورة"
 
@@ -3504,10 +3587,8 @@ msgstr ""
 msgid "Approve Pricing"
 msgstr "معتمد"
 
-#, fuzzy
-#| msgid "Waiting for resolution"
 msgid "Reason for rejection"
-msgstr "بانتظار الحل"
+msgstr "سبب الرفض"
 
 msgid "Reject"
 msgstr ""

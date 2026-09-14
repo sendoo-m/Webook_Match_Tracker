@@ -66,6 +66,7 @@
 
 <div class="spl-approval-list">
     {% for row in rows %}
+        {% with plan=row.current_pricing_plan %}
         <div class="card panel spl-approval-card">
             <div class="spl-approval-card-head">
                 <span class="round-preview-round-tag">{% blocktrans with number=row.match.round_number|default:"—" %}Round {{ number }}{% endblocktrans %}</span>
@@ -78,6 +79,185 @@
                 {% include "operations/partials/club_chip.html" with club=row.match.home_club role="home" %}
                 <span class="help-text">vs</span>
                 {% include "operations/partials/club_chip.html" with club=row.match.away_club role="away" %}
+            </div>
+
+            <div class="spl-approval-meta">
+                <span><i class="ti ti-trophy"></i> {{ row.match.competition|localized_name }}</span>
+                {% if row.match.venue %}<span><i class="ti ti-map-pin"></i> {{ row.match.venue|localized_name }}</span>{% endif %}
+                {% if row.match.match_start_time %}<span><i class="ti ti-clock"></i> {{ row.match.match_start_time }}</span>{% endif %}
+                {% if plan %}<span><i class="ti ti-clock-edit"></i> {% blocktrans with when=plan.updated_at %}updated {{ when }}{% endblocktrans %}</span>{% endif %}
+            </div>
+
+            {# --- Pricing plan review: seat map + decision, side by side on desktop, stacked on mobile. --- #}
+            <div class="spl-approval-block spl-pricing-review">
+                <div class="spl-approval-block-head">
+                    <span class="block-title">{% trans "Club Pricing Plan" %}</span>
+                    {% if plan %}
+                        <span class="mini-badge mini-badge-{% if plan.spl_decision == 'approved' %}success{% elif plan.spl_decision == 'rejected' %}danger{% else %}neutral{% endif %}">
+                            {{ plan.get_spl_decision_display }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                {% if plan %}
+                    <div class="pricing-review-layout">
+                        <div class="pricing-review-map">
+                            <h3 class="pricing-review-subtitle">{% trans "Seat Map & Pricing Plan" %}</h3>
+                            <div style="margin-top: var(--space-2);">
+                                {% include "operations/partials/pricing_plan_categories.html" with plan=plan %}
+                            </div>
+                            <p class="help-text pricing-review-legend">
+                                <i class="ti ti-info-circle"></i>
+                                {% trans "Each label on the map shows the block's code and its price." %}
+                            </p>
+
+                            {% if plan.file %}
+                                <div class="spl-plan-file-link">
+                                    <i class="ti ti-paperclip"></i>
+                                    <a href="{% url 'operations:club-pricing-plan-download' plan.pk %}">
+                                        {{ plan.file.name|cut:"club_pricing_plans/" }}
+                                    </a>
+                                </div>
+                            {% endif %}
+
+                            {% if plan.seat_map_snapshot %}
+                                <div class="spl-plan-file-link">
+                                    <i class="ti ti-camera"></i>
+                                    <a href="{{ plan.seat_map_snapshot.url }}" target="_blank" rel="noopener">
+                                        {% trans "Saved reference (at time of decision)" %}
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="pricing-review-decision">
+                            <div class="pricing-review-summary">
+                                <div class="help-text">
+                                    {% blocktrans with version=plan.version status=plan.get_status_display %}v{{ version }} - {{ status }}{% endblocktrans %}
+                                </div>
+                                <div class="pricing-review-stat-row">
+                                    <span class="mini-badge mini-badge-info">{% blocktrans count counter=row.plan_category_count %}{{ counter }} category{% plural %}{{ counter }} categories{% endblocktrans %}</span>
+                                    {% if row.plan_min_price is not None %}
+                                        <span class="mini-badge mini-badge-neutral">
+                                            {% if row.plan_min_price == row.plan_max_price %}
+                                                {{ row.plan_min_price }}
+                                            {% else %}
+                                                {% blocktrans with low=row.plan_min_price high=row.plan_max_price %}{{ low }}–{{ high }}{% endblocktrans %}
+                                            {% endif %}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {% if plan.spl_decision != 'pending' %}
+                                <div class="pricing-review-decided-note">
+                                    <p class="help-text">
+                                        {% if plan.spl_decision == 'approved' %}
+                                            {% blocktrans with who=plan.spl_decision_by|display_name when=plan.spl_decision_at %}Approved by {{ who }} on {{ when }}{% endblocktrans %}
+                                        {% else %}
+                                            {% blocktrans with who=plan.spl_decision_by|display_name when=plan.spl_decision_at %}Rejected by {{ who }} on {{ when }}{% endblocktrans %}
+                                        {% endif %}
+                                    </p>
+                                    {% if plan.spl_decision_note %}
+                                        <p class="help-text">{% trans "Reason" %}: {{ plan.spl_decision_note }}</p>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
+                            {% if can_confirm_spl_plan and plan.spl_decision == 'pending' %}
+                                <div class="pricing-review-actions">
+                                    <button
+                                        type="button"
+                                        class="btn btn-primary"
+                                        data-modal-trigger
+                                        onclick="OperationsModal.open('approve-modal-{{ plan.pk }}')"
+                                    >
+                                        <i class="ti ti-check"></i> {% trans "Approve Pricing Plan" %}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-secondary pricing-review-reject-btn"
+                                        data-modal-trigger
+                                        onclick="OperationsModal.open('reject-modal-{{ plan.pk }}')"
+                                    >
+                                        <i class="ti ti-x"></i> {% trans "Reject Pricing Plan" %}
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if can_confirm_spl_plan and plan.spl_decision == 'pending' %}
+                    {# --- Approve confirmation modal --- #}
+                    <div id="approve-modal-{{ plan.pk }}" class="modal-overlay">
+                        <div class="modal-box">
+                            <div class="modal-head">
+                                <strong>{% trans "Approve Pricing Plan" %}</strong>
+                                <button type="button" class="modal-close" data-modal-close="approve-modal-{{ plan.pk }}" aria-label="{% trans 'Close' %}">
+                                    <i class="ti ti-x"></i>
+                                </button>
+                            </div>
+                            <p>{% trans "Are you sure you want to approve the pricing plan for this match?" %}</p>
+                            <p class="help-text">{% trans "The decision will be recorded and the club will be notified." %}</p>
+                            <ul class="pricing-review-confirm-facts">
+                                <li>{% blocktrans with match=row.match %}Match: {{ match }}{% endblocktrans %}</li>
+                                <li>{% blocktrans with club=row.match.home_club|localized_name %}Club: {{ club }}{% endblocktrans %}</li>
+                                <li>{% blocktrans with version=plan.version %}Plan version: {{ version }}{% endblocktrans %}</li>
+                            </ul>
+                            <form method="post" action="{% url 'operations:spl-pricing-plan-approve' plan.pk %}" data-prevent-double-submit>
+                                {% csrf_token %}
+                                <div class="form-actions">
+                                    <button type="button" class="btn btn-ghost" data-modal-close="approve-modal-{{ plan.pk }}">{% trans "Cancel" %}</button>
+                                    <button type="submit" class="btn btn-primary" data-saving-label="{% trans 'Approving…' %}">
+                                        <i class="ti ti-check"></i> {% trans "Confirm Approval" %}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    {# --- Reject reason modal --- #}
+                    <div id="reject-modal-{{ plan.pk }}" class="modal-overlay">
+                        <div class="modal-box">
+                            <div class="modal-head">
+                                <strong>{% trans "Reject Pricing Plan" %}</strong>
+                                <button type="button" class="modal-close" data-modal-close="reject-modal-{{ plan.pk }}" aria-label="{% trans 'Close' %}">
+                                    <i class="ti ti-x"></i>
+                                </button>
+                            </div>
+                            <ul class="pricing-review-confirm-facts">
+                                <li>{% blocktrans with match=row.match %}Match: {{ match }}{% endblocktrans %}</li>
+                                <li>{% blocktrans with club=row.match.home_club|localized_name %}Club: {{ club }}{% endblocktrans %}</li>
+                                <li>{% blocktrans with version=plan.version %}Plan version: {{ version }}{% endblocktrans %}</li>
+                            </ul>
+                            <form method="post" action="{% url 'operations:spl-pricing-plan-reject' plan.pk %}" data-prevent-double-submit class="pricing-review-reject-form">
+                                {% csrf_token %}
+                                <label for="reject-note-{{ plan.pk }}">{% trans "Reason for rejection" %}</label>
+                                <textarea
+                                    id="reject-note-{{ plan.pk }}"
+                                    name="note"
+                                    rows="3"
+                                    required
+                                    minlength="5"
+                                    placeholder="{% trans 'Explain what needs to change…' %}"
+                                ></textarea>
+                                <p class="help-text">{% trans "The reason is required and will be sent to the club with the rejection notification." %}</p>
+                                <p class="pricing-review-confirm-warning">
+                                    {% trans "Are you sure you want to reject this pricing plan? The reason will be saved and sent to the club via a notification." %}
+                                </p>
+                                <div class="form-actions">
+                                    <button type="button" class="btn btn-ghost" data-modal-close="reject-modal-{{ plan.pk }}">{% trans "Cancel" %}</button>
+                                    <button type="submit" class="btn btn-secondary pricing-review-reject-btn" data-saving-label="{% trans 'Rejecting…' %}">
+                                        <i class="ti ti-x"></i> {% trans "Confirm Rejection" %}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <p class="help-text">{% trans "The club has not submitted a pricing plan yet." %}</p>
+                {% endif %}
             </div>
 
             <div class="spl-approval-card-body">
@@ -130,60 +310,6 @@
 
                 <div class="spl-approval-block">
                     <div class="spl-approval-block-head">
-                        <span class="block-title">{% trans "Club Pricing Plan" %}</span>
-                        {% if row.current_pricing_plan %}
-                            <span class="mini-badge mini-badge-{% if row.current_pricing_plan.spl_decision == 'approved' %}success{% elif row.current_pricing_plan.spl_decision == 'rejected' %}danger{% else %}neutral{% endif %}">
-                                {{ row.current_pricing_plan.get_spl_decision_display }}
-                            </span>
-                        {% endif %}
-                    </div>
-
-                    {% if row.current_pricing_plan %}
-                        <div class="help-text">
-                            {% blocktrans with version=row.current_pricing_plan.version status=row.current_pricing_plan.get_status_display %}v{{ version }} - {{ status }}{% endblocktrans %}
-                        </div>
-
-                        {% if row.current_pricing_plan.file %}
-                            <div class="spl-plan-file-link">
-                                <i class="ti ti-paperclip"></i>
-                                <a href="{% url 'operations:club-pricing-plan-download' row.current_pricing_plan.pk %}">
-                                    {{ row.current_pricing_plan.file.name|cut:"club_pricing_plans/" }}
-                                </a>
-                            </div>
-                        {% endif %}
-
-                        {% if row.current_pricing_plan.category_prices.all %}
-                            <div style="margin-top: var(--space-2);">
-                                {% include "operations/partials/pricing_plan_categories.html" with plan=row.current_pricing_plan %}
-                            </div>
-                        {% endif %}
-
-                        {% if row.current_pricing_plan.spl_decision_note %}
-                            <div class="help-text">{% trans "Note" %}: {{ row.current_pricing_plan.spl_decision_note }}</div>
-                        {% endif %}
-
-                        {% if can_confirm_spl_plan and row.current_pricing_plan.spl_decision != 'approved' %}
-                            <form method="post" action="{% url 'operations:spl-pricing-plan-approve' row.current_pricing_plan.pk %}" class="logout-form spl-confirm-form">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm">
-                                    <i class="ti ti-check"></i> {% trans "Approve" %}
-                                </button>
-                            </form>
-                            <form method="post" action="{% url 'operations:spl-pricing-plan-reject' row.current_pricing_plan.pk %}" class="logout-form spl-plan-upload-form">
-                                {% csrf_token %}
-                                <input type="text" name="note" placeholder="{% trans 'Reason for rejection' %}" required>
-                                <button type="submit" class="btn btn-secondary btn-sm">
-                                    <i class="ti ti-x"></i> {% trans "Reject" %}
-                                </button>
-                            </form>
-                        {% endif %}
-                    {% else %}
-                        <div class="help-text">{% trans "The club has not submitted a pricing plan yet." %}</div>
-                    {% endif %}
-                </div>
-
-                <div class="spl-approval-block">
-                    <div class="spl-approval-block-head">
                         <span class="block-title">{% trans "SPL Complimentary Tickets" %}</span>
                         <span class="mini-badge mini-badge-{{ row.match.spl_tickets_sent|urgency_badge_class:row.days_to_match }}">
                             {% if row.match.spl_tickets_sent %}{% trans "Sent" %}{% else %}{% trans "Not Sent" %}{% endif %}
@@ -205,6 +331,7 @@
                 </div>
             </div>
         </div>
+        {% endwith %}
     {% empty %}
         <div class="card panel">
             <p class="help-text">{% trans "No matches found." %}</p>
@@ -216,4 +343,6 @@
 {% block extra_js %}
     <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
     <script src="{% static 'operations/js/searchable-select.js' %}"></script>
+    <script src="{% static 'operations/js/prevent-double-submit.js' %}"></script>
+    <script src="{% static 'operations/js/spl-approvals.js' %}"></script>
 {% endblock %}

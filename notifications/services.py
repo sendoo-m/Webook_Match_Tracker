@@ -67,11 +67,14 @@ def _club_account_holders(club):
     return holders
 
 
-def notify_club(match, notification_type, message):
+def notify_club(match, notification_type, message, plan=None):
     """The general "club-side" audience for a match: home_club's owner AND
     club_account (both slots), matching this codebase's split of "who
-    represents this club" into a coordinator and the club's own account."""
-    return notify_users(_club_account_holders(match.home_club), notification_type, message, match=match)
+    represents this club" into a coordinator and the club's own account.
+    `plan` is optional so existing callers (the 25-day notice) are
+    unaffected - pass it when the notification is about a specific
+    ClubPricingPlan (e.g. an SPL approve/reject decision)."""
+    return notify_users(_club_account_holders(match.home_club), notification_type, message, match=match, plan=plan)
 
 
 def notify_coordinator(match, notification_type, message):
