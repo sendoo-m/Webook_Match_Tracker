@@ -26,6 +26,19 @@ from .matches import (
     MatchTemplateView,
 )
 from .release_notes import ReleaseNoteCreateView, ReleaseNoteListView, ReleaseNoteUpdateView
+from .venue_details import (
+    VenueCategoryExportView,
+    VenueCategoryImportView,
+    VenueCategoryTemplateView,
+    VenueImageCreateView,
+    VenueImageListView,
+    VenueImageToggleActiveView,
+    VenueImageUpdateView,
+    VenueSeatingCategoryCreateView,
+    VenueSeatingCategoryListView,
+    VenueSeatingCategoryToggleActiveView,
+    VenueSeatingCategoryUpdateView,
+)
 from .venues import (
     StadiumCreateView,
     StadiumListView,
@@ -86,4 +99,15 @@ __all__ = [
     "UserListView",
     "UserToggleActiveView",
     "UserUpdateView",
+    "VenueCategoryExportView",
+    "VenueCategoryImportView",
+    "VenueCategoryTemplateView",
+    "VenueImageCreateView",
+    "VenueImageListView",
+    "VenueImageToggleActiveView",
+    "VenueImageUpdateView",
+    "VenueSeatingCategoryCreateView",
+    "VenueSeatingCategoryListView",
+    "VenueSeatingCategoryToggleActiveView",
+    "VenueSeatingCategoryUpdateView",
 ]

@@ -89,10 +89,18 @@ class Club(models.Model):
 
 
 class Venue(models.Model):
+    class SeatType(models.TextChoices):
+        SEATED = "seated", "Seated (numbered)"
+        FREE = "free", "Free seated (unnumbered)"
+
     name_ar = models.CharField(max_length=255)
     name_en = models.CharField(max_length=255, blank=True)
     city = models.CharField(max_length=120, blank=True)
     google_maps_url = models.URLField(blank=True)
+    # Whole-stadium seating style - a fixed physical property of the venue
+    # itself, not per-club (unlike VenueSeatingCategory below, which can
+    # differ between two clubs sharing the same venue).
+    seat_type = models.CharField(max_length=10, choices=SeatType.choices, default=SeatType.SEATED)
     is_active = models.BooleanField(default=True)
 
     class Meta:
@@ -100,6 +108,101 @@ class Venue(models.Model):
 
     def __str__(self):
         return self.name_ar or self.name_en
+
+
+VENUE_IMAGE_MAX_DIMENSION = 1920
+
+
+class VenueImage(models.Model):
+    """A seating-map/overview image for a venue - not tied to any club,
+    since the venue's physical layout is shared by every club that plays
+    there. Managed by coordinators/admin in the Control Panel, viewed by
+    clubs on the pricing-plan page."""
+
+    venue = models.ForeignKey(Venue, related_name="images", on_delete=models.CASCADE)
+    image = models.ImageField(upload_to="venue_images/")
+    caption = models.CharField(max_length=150, blank=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["venue__name_ar", "sort_order"]
+
+    def __str__(self):
+        return self.caption or f"{self.venue} image {self.pk}"
+
+    def save(self, *args, **kwargs):
+        if self.image and hasattr(self.image, "file"):
+            self._compress_image()
+        super().save(*args, **kwargs)
+
+    def _compress_image(self):
+        """Downscales/re-compresses the uploaded image before it's saved to
+        storage - venue seating-map photos exported straight from a phone
+        camera or screenshot regularly land in the multi-megabyte range,
+        which makes the pricing-plan page slow to load for clubs. Resizes
+        to a max of VENUE_IMAGE_MAX_DIMENSION on the longer side, keeps
+        the original format, re-encodes with optimize=True."""
+        from io import BytesIO
+
+        from django.core.files.base import ContentFile
+        from PIL import Image
+
+        try:
+            img = Image.open(self.image)
+            img.load()
+        except Exception:
+            return
+
+        original_format = (img.format or "PNG").upper()
+        if img.width <= VENUE_IMAGE_MAX_DIMENSION and img.height <= VENUE_IMAGE_MAX_DIMENSION:
+            return
+
+        img.thumbnail((VENUE_IMAGE_MAX_DIMENSION, VENUE_IMAGE_MAX_DIMENSION), Image.LANCZOS)
+
+        buffer = BytesIO()
+        save_kwargs = {"optimize": True}
+        if original_format in ("JPEG", "JPG"):
+            if img.mode in ("RGBA", "P"):
+                img = img.convert("RGB")
+            save_kwargs["quality"] = 85
+            img.save(buffer, format="JPEG", **save_kwargs)
+        else:
+            img.save(buffer, format="PNG", **save_kwargs)
+
+        buffer.seek(0)
+        self.image = ContentFile(buffer.read(), name=self.image.name)
+
+
+class VenueSeatingCategory(models.Model):
+    """One seating category/block reference row for a specific club at a
+    specific venue (e.g. "CAT 1", "CAT 1 N", "Bronze - S") - scoped to
+    (venue, club), not venue alone: two clubs sharing the same physical
+    venue (e.g. Al Kholood and Al Hazem both at Al Hazm Stadium) can have
+    different category lists for the same stadium. Clubs price against
+    these codes on the pricing-plan page; coordinators/admin manage the
+    list itself in the Control Panel. Seat numbering style is a property
+    of the venue as a whole (see Venue.seat_type), not of each category."""
+
+    venue = models.ForeignKey(Venue, related_name="seating_categories", on_delete=models.CASCADE)
+    club = models.ForeignKey(Club, related_name="venue_seating_categories", on_delete=models.CASCADE)
+    code = models.CharField(max_length=30, help_text='e.g. "CAT 1", "CAT 1 N", "Bronze - S".')
+    seat_count = models.PositiveIntegerField(null=True, blank=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["venue__name_ar", "club__name_ar", "sort_order", "code"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["venue", "club", "code"], name="unique_venue_club_seating_category_code"
+            ),
+        ]
+        verbose_name = "Venue Seating Category"
+        verbose_name_plural = "Venue Seating Categories"
+
+    def __str__(self):
+        return f"{self.venue} - {self.club} - {self.code}"
 
 
 class Match(models.Model):

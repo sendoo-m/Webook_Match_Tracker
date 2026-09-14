@@ -1,0 +1,81 @@
+{# control_panel/venue_category_import.html #}
+{% extends "operations/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Import Venue Categories" %} · {% trans "Control Panel" %}{% endblock %}
+
+{% block content %}
+{% include "control_panel/_subnav.html" %}
+
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">{% trans "Import Venue Categories" %}</h1>
+            <p class="page-subtitle">
+                {% blocktrans %}Choose a venue and club, then download a template (pre-filled with that club's
+                existing categories at this venue, if any) or upload a filled-in file. Existing category codes
+                are updated; new codes are created. The "Price" column, if present in your file, is ignored -
+                pricing is set per match, not stored here.{% endblocktrans %}
+            </p>
+        </div>
+        <div class="filter-bar">
+            <a class="btn btn-secondary" href="{% url 'control_panel:venue-category-list' %}">{% trans "Back to Categories" %}</a>
+        </div>
+    </div>
+</div>
+
+<div class="card panel" style="max-width:640px;">
+    <form method="post" enctype="multipart/form-data" class="form-stack">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}<p class="help-text">{{ field.help_text }}</p>{% endif %}
+                {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="form-actions">
+            <button type="submit" formmethod="get" formaction="{% url 'control_panel:venue-category-template' %}" class="btn btn-secondary">
+                {% trans "Download Template" %}
+            </button>
+            <button type="submit" formmethod="get" formaction="{% url 'control_panel:venue-category-export' %}" class="btn btn-secondary">
+                {% trans "Export Current" %}
+            </button>
+            <button type="submit" class="btn btn-primary">{% trans "Import" %}</button>
+        </div>
+    </form>
+</div>
+
+{% if result %}
+<div class="card panel">
+    <h2 class="panel-title">{% trans "Import Results" %}</h2>
+    <p class="help-text">
+        {% blocktrans with created=result.created updated=result.updated errors=result.errors|length %}Created: {{ created }} · Updated: {{ updated }} ·
+        Errors: {{ errors }}{% endblocktrans %}
+    </p>
+
+    {% if result.errors %}
+        <h3 class="panel-title">{% trans "Errors" %}</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>{% trans "Row" %}</th>
+                        <th>{% trans "Problem" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row_number, message in result.errors %}
+                        <tr>
+                            <td>{{ row_number }}</td>
+                            <td>{{ message }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

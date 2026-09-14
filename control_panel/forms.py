@@ -1,10 +1,11 @@
 from zoneinfo import ZoneInfo
 
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from checklists.models import ChecklistCategory, ChecklistTemplateItem
 from control_panel.models import FeedbackEntry, ReleaseNote
-from matches.models import Club, Competition, Match, Venue
+from matches.models import Club, Competition, Match, Venue, VenueImage, VenueSeatingCategory
 
 RIYADH_TZ = ZoneInfo("Asia/Riyadh")
 
@@ -18,7 +19,44 @@ class ClubForm(forms.ModelForm):
 class VenueForm(forms.ModelForm):
     class Meta:
         model = Venue
-        fields = ["name_ar", "name_en", "city", "google_maps_url", "is_active"]
+        fields = ["name_ar", "name_en", "city", "google_maps_url", "seat_type", "is_active"]
+
+
+class VenueImageForm(forms.ModelForm):
+    class Meta:
+        model = VenueImage
+        fields = ["venue", "image", "caption", "sort_order", "is_active"]
+
+
+class VenueSeatingCategoryForm(forms.ModelForm):
+    class Meta:
+        model = VenueSeatingCategory
+        fields = ["venue", "club", "code", "seat_count", "sort_order", "is_active"]
+
+
+class VenueCategoryImportForm(forms.Form):
+    venue = forms.ModelChoiceField(
+        label=_("Venue"),
+        queryset=Venue.objects.filter(is_active=True).order_by("name_ar"),
+    )
+    club = forms.ModelChoiceField(
+        label=_("Club"),
+        queryset=Club.objects.filter(is_active=True, is_test_club=False).order_by("name_ar"),
+    )
+    import_file = forms.FileField(
+        label=_("Excel file"),
+        help_text=_(
+            'Columns: "code" (or "Ticket Name") and "seat_count" (or "Total Capacity"). '
+            'A "Price" column, if present, is ignored - pricing is set per match, not here. '
+            "Existing categories for this venue/club are updated by code; new codes are created."
+        ),
+    )
+
+    def clean_import_file(self):
+        import_file = self.cleaned_data["import_file"]
+        if not import_file.name.lower().endswith(".xlsx"):
+            raise forms.ValidationError(_("Please upload a .xlsx file."))
+        return import_file
 
 
 class CompetitionForm(forms.ModelForm):

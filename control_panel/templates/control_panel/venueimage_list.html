@@ -1,0 +1,42 @@
+{# control_panel/venueimage_list.html #}
+{% extends "control_panel/list.html" %}
+{% load i18n %}
+
+{% block page_subtitle %}
+    <p class="page-subtitle">{% trans "Seating-map/overview images shown to clubs on the pricing-plan page." %}</p>
+{% endblock %}
+
+{% block table_head %}
+    <th>{% trans "Venue" %}</th>
+    <th>{% trans "Image" %}</th>
+    <th>{% trans "Caption" %}</th>
+    <th>{% trans "Status" %}</th>
+    <th></th>
+{% endblock %}
+
+{% block table_body %}
+    {% for venue_image in venue_images %}
+        <tr>
+            <td>{{ venue_image.venue.name_en|default:venue_image.venue.name_ar }}</td>
+            <td>
+                {% if venue_image.image %}
+                    <img src="{{ venue_image.image.url }}" alt="{{ venue_image.caption }}" class="club-logo-thumb">
+                {% endif %}
+            </td>
+            <td>{{ venue_image.caption|default:"—" }}</td>
+            <td>
+                <span class="badge {% if venue_image.is_active %}badge-published{% else %}badge-draft{% endif %}">
+                    {% if venue_image.is_active %}{% trans "Active" %}{% else %}{% trans "Inactive" %}{% endif %}
+                </span>
+            </td>
+            <td>
+                <div class="row-actions">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:venue-image-update' venue_image.pk %}">{% trans "Edit" %}</a>
+                    {% include "control_panel/_toggle_active_button.html" with obj=venue_image toggle_url_name="control_panel:venue-image-toggle-active" %}
+                </div>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5">{% trans "No venue images found." %}</td></tr>
+    {% endfor %}
+{% endblock %}

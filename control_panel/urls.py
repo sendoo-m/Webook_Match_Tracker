@@ -25,6 +25,19 @@ urlpatterns = [
     path("stadiums/<int:pk>/edit/", views.StadiumUpdateView.as_view(), name="stadium-update"),
     path("stadiums/<int:pk>/toggle-active/", views.StadiumToggleActiveView.as_view(), name="stadium-toggle-active"),
 
+    path("venue-images/", views.VenueImageListView.as_view(), name="venue-image-list"),
+    path("venue-images/new/", views.VenueImageCreateView.as_view(), name="venue-image-create"),
+    path("venue-images/<int:pk>/edit/", views.VenueImageUpdateView.as_view(), name="venue-image-update"),
+    path("venue-images/<int:pk>/toggle-active/", views.VenueImageToggleActiveView.as_view(), name="venue-image-toggle-active"),
+
+    path("venue-categories/", views.VenueSeatingCategoryListView.as_view(), name="venue-category-list"),
+    path("venue-categories/new/", views.VenueSeatingCategoryCreateView.as_view(), name="venue-category-create"),
+    path("venue-categories/<int:pk>/edit/", views.VenueSeatingCategoryUpdateView.as_view(), name="venue-category-update"),
+    path("venue-categories/<int:pk>/toggle-active/", views.VenueSeatingCategoryToggleActiveView.as_view(), name="venue-category-toggle-active"),
+    path("venue-categories/import/", views.VenueCategoryImportView.as_view(), name="venue-category-import"),
+    path("venue-categories/template/", views.VenueCategoryTemplateView.as_view(), name="venue-category-template"),
+    path("venue-categories/export/", views.VenueCategoryExportView.as_view(), name="venue-category-export"),
+
     path("users/", views.UserListView.as_view(), name="user-list"),
     path("users/new/", views.UserCreateView.as_view(), name="user-create"),
     path("users/<int:pk>/edit/", views.UserUpdateView.as_view(), name="user-update"),

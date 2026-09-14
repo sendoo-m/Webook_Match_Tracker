@@ -1,0 +1,46 @@
+{# control_panel/venueseatingcategory_list.html #}
+{% extends "control_panel/list.html" %}
+{% load i18n %}
+
+{% block page_subtitle %}
+    <p class="page-subtitle">{% trans "The seating category codes (e.g. CAT 1, CAT 1 N) clubs price against on the pricing-plan page." %}</p>
+{% endblock %}
+
+{% block extra_content %}
+<div class="filter-bar" style="margin-bottom: var(--space-4);">
+    <a class="btn btn-secondary" href="{% url 'control_panel:venue-category-import' %}">{% trans "Import / Export" %}</a>
+</div>
+{% endblock %}
+
+{% block table_head %}
+    <th>{% trans "Venue" %}</th>
+    <th>{% trans "Club" %}</th>
+    <th>{% trans "Code" %}</th>
+    <th>{% trans "Seat Count" %}</th>
+    <th>{% trans "Status" %}</th>
+    <th></th>
+{% endblock %}
+
+{% block table_body %}
+    {% for category in categories %}
+        <tr>
+            <td>{{ category.venue.name_en|default:category.venue.name_ar }}</td>
+            <td>{{ category.club.name_en|default:category.club.name_ar }}</td>
+            <td>{{ category.code }}</td>
+            <td>{{ category.seat_count|default:"—" }}</td>
+            <td>
+                <span class="badge {% if category.is_active %}badge-published{% else %}badge-draft{% endif %}">
+                    {% if category.is_active %}{% trans "Active" %}{% else %}{% trans "Inactive" %}{% endif %}
+                </span>
+            </td>
+            <td>
+                <div class="row-actions">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:venue-category-update' category.pk %}">{% trans "Edit" %}</a>
+                    {% include "control_panel/_toggle_active_button.html" with obj=category toggle_url_name="control_panel:venue-category-toggle-active" %}
+                </div>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="6">{% trans "No venue seating categories found." %}</td></tr>
+    {% endfor %}
+{% endblock %}
