@@ -134,7 +134,9 @@
                                     <i class="ti ti-point-filled"></i>
                                 {% endif %}
                                 <span class="calendar-match-chip-teams">
-                                    {{ card.match.home_club.short_name|default:card.match.home_club.name_ar }} vs {{ card.match.away_club.short_name|default:card.match.away_club.name_ar }}
+                                    {% if card.match.home_club.short_name %}{{ card.match.home_club.short_name }}{% else %}{{ card.match.home_club|localized_name }}{% endif %}
+                                    vs
+                                    {% if card.match.away_club.short_name %}{{ card.match.away_club.short_name }}{% else %}{{ card.match.away_club|localized_name }}{% endif %}
                                 </span>
                                 {% if card.match.round_number is not None %}
                                     <span class="calendar-match-chip-round">R{{ card.match.round_number }}</span>

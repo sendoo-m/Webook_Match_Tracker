@@ -8,7 +8,7 @@
 {% block page_help %}
     <p>
         {% trans "Roshan League" as roshan_league_label %}
-        {% blocktrans with competition_name=roshan_competition.name_ar|default:roshan_league_label %}This is your <strong>Dashboard</strong> — every {{ competition_name }}
+        {% blocktrans with competition_name=roshan_competition|localized_name|default:roshan_league_label %}This is your <strong>Dashboard</strong> — every {{ competition_name }}
         match, browsable by team or by round.{% endblocktrans %}
     </p>
     <p>
@@ -34,7 +34,7 @@
     <div class="page-header-row">
         <div>
             <h1 class="page-title">{% trans "Dashboard" %}</h1>
-            <p class="page-subtitle">{% trans "Roshan League" as roshan_league_label %}{% blocktrans with competition_name=roshan_competition.name_ar|default:roshan_league_label %}{{ competition_name }} match schedule and readiness.{% endblocktrans %}
+            <p class="page-subtitle">{% trans "Roshan League" as roshan_league_label %}{% blocktrans with competition_name=roshan_competition|localized_name|default:roshan_league_label %}{{ competition_name }} match schedule and readiness.{% endblocktrans %}
                 <span class="help-text">{% trans "Auto-refreshes automatically - adjust the interval from the sidebar." %}</span>
             </p>
         </div>
