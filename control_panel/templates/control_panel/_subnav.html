@@ -1,5 +1,6 @@
 {# control_panel/_subnav.html #}
 {% load i18n %}
+{% load display_helpers %}
 <nav class="subnav">
     <a href="{% url 'control_panel:home' %}" class="subnav-link{% if request.resolver_match.url_name == 'home' %} is-active{% endif %}">{% trans "Overview" %}</a>
     <a href="{% url 'control_panel:match-list' %}" class="subnav-link{% if 'match' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Events" %}</a>
@@ -14,4 +15,7 @@
     <a href="{% url 'control_panel:feedback-list' %}" class="subnav-link{% if 'feedback' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Feedback" %}</a>
     <a href="{% url 'control_panel:release-note-list' %}" class="subnav-link{% if 'release-note' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "What's New" %}</a>
     <a href="{% url 'control_panel:site-settings' %}" class="subnav-link{% if 'site-settings' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Settings" %}</a>
+    {% if request.user|is_admin_account %}
+    <a href="{% url 'control_panel:backup-list' %}" class="subnav-link{% if 'backup' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Backups" %}</a>
+    {% endif %}
 </nav>

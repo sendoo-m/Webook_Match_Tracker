@@ -2945,6 +2945,17 @@ th {
     border-color: color-mix(in srgb, var(--warning) 85%, black);
 }
 
+.btn-danger.btn-danger {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: var(--white);
+}
+
+.btn-danger.btn-danger:hover {
+    background: color-mix(in srgb, var(--danger) 85%, black);
+    border-color: color-mix(in srgb, var(--danger) 85%, black);
+}
+
 .cms-control-head {
     display: flex;
     align-items: flex-start;

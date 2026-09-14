@@ -2,7 +2,7 @@
 
 from django.contrib.auth.mixins import UserPassesTestMixin
 
-from core.permissions import can_manage_control_panel
+from core.permissions import can_manage_control_panel, is_super_admin
 
 
 class ControlPanelAccessMixin(UserPassesTestMixin):
@@ -11,3 +11,16 @@ class ControlPanelAccessMixin(UserPassesTestMixin):
 
     def test_func(self):
         return can_manage_control_panel(self.request.user)
+
+
+class BackupAccessMixin(UserPassesTestMixin):
+    """Stricter than ControlPanelAccessMixin - reuses is_super_admin
+    directly (superuser or "Super Admin" group only, not Operations
+    Manager) since this gates the single most destructive action in the
+    system: replacing the live database and media files."""
+
+    raise_exception = True
+    permission_denied_message = "Only Super Admins can manage database backups."
+
+    def test_func(self):
+        return is_super_admin(self.request.user)

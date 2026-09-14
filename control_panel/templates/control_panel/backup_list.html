@@ -1,0 +1,89 @@
+{# control_panel/backup_list.html #}
+{% extends "operations/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ page_title }} · {% trans "Control Panel" %}{% endblock %}
+
+{% block page_help %}
+    <p>{% blocktrans %}Full backups of the database and uploaded files (logos, venue images, pricing plan
+        documents). Restoring replaces the live data - a safety backup of the current state is always taken
+        automatically first.{% endblocktrans %}</p>
+{% endblock %}
+
+{% block content %}
+{% include "control_panel/_subnav.html" %}
+
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">{{ page_title }}</h1>
+        </div>
+        <div class="filter-bar">
+            <form method="post" action="{% url 'control_panel:backup-create' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary"><i class="ti ti-database-plus"></i>&nbsp; {% trans "Create Backup Now" %}</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card panel alert-card alert-danger" style="margin-bottom: var(--space-4);">
+    <p style="margin:0;">
+        {% blocktrans %}<strong>Restoring a backup replaces the entire live database and all uploaded files.</strong>
+        This cannot be undone from within the app - only from a backup file. Type the exact phrase below to confirm
+        each restore.{% endblocktrans %}
+    </p>
+</div>
+
+<div class="card panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>{% trans "File" %}</th>
+                    <th>{% trans "Created" %}</th>
+                    <th>{% trans "Size" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for backup in backups %}
+                <tr>
+                    <td>{{ backup.name }}</td>
+                    <td>{{ backup.created_at|date:"F j, Y, g:i A" }}</td>
+                    <td>{{ backup.size|filesizeformat }}</td>
+                    <td style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:backup-download' backup.name %}">{% trans "Download" %}</a>
+                        <form method="post" action="{% url 'control_panel:backup-restore' backup.name %}" class="backup-restore-form" style="display:flex; gap:6px; align-items:center;">
+                            {% csrf_token %}
+                            <input type="text" name="confirmation" placeholder="{{ confirmation_phrase }}" class="form-control" style="width:180px;">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{% trans "This will replace the live database. Are you sure?" %}');">{% trans "Restore" %}</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4">{% trans "No backups yet." %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card panel" style="margin-top: var(--space-4);">
+    <h2 class="section-title">{% trans "Upload & Restore" %}</h2>
+    <form method="post" action="{% url 'control_panel:backup-restore-upload' %}" enctype="multipart/form-data" class="form-stack">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="backup_file">{% trans "Backup file (.zip)" %}</label>
+            <input type="file" name="backup_file" id="backup_file" accept=".zip" required>
+        </div>
+        <div class="form-group">
+            <label for="upload_confirmation">{% blocktrans %}Type "{{ confirmation_phrase }}" to confirm{% endblocktrans %}</label>
+            <input type="text" name="confirmation" id="upload_confirmation" placeholder="{{ confirmation_phrase }}" class="form-control">
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-danger" onclick="return confirm('{% trans "This will replace the live database. Are you sure?" %}');">{% trans "Upload & Restore" %}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

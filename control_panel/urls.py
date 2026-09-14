@@ -68,4 +68,10 @@ urlpatterns = [
     path("release-notes/<int:pk>/edit/", views.ReleaseNoteUpdateView.as_view(), name="release-note-update"),
 
     path("settings/", views.SiteSettingsUpdateView.as_view(), name="site-settings"),
+
+    path("backups/", views.BackupListView.as_view(), name="backup-list"),
+    path("backups/create/", views.BackupCreateView.as_view(), name="backup-create"),
+    path("backups/restore-upload/", views.BackupUploadRestoreView.as_view(), name="backup-restore-upload"),
+    path("backups/<str:name>/download/", views.BackupDownloadView.as_view(), name="backup-download"),
+    path("backups/<str:name>/restore/", views.BackupRestoreView.as_view(), name="backup-restore"),
 ]

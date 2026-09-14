@@ -852,6 +852,64 @@ msgstr "20 يومًا على المباراة، ولم تُطرح بعد"
 msgid "Match went live"
 msgstr "المباراة أصبحت مباشرة"
 
+msgid "Backups"
+msgstr "النسخ الاحتياطية"
+
+msgid "Database Backups"
+msgstr "النسخ الاحتياطية لقاعدة البيانات"
+
+msgid "Create Backup Now"
+msgstr "إنشاء نسخة احتياطية الآن"
+
+msgid "Created"
+msgstr "تاريخ الإنشاء"
+
+msgid "Size"
+msgstr "الحجم"
+
+msgid "Actions"
+msgstr "الإجراءات"
+
+msgid "Download"
+msgstr "تحميل"
+
+msgid "Restore"
+msgstr "استعادة"
+
+msgid "No backups yet."
+msgstr "لا توجد نسخ احتياطية بعد."
+
+msgid "Upload & Restore"
+msgstr "رفع واستعادة"
+
+msgid "Backup file (.zip)"
+msgstr "ملف النسخة الاحتياطية (.zip)"
+
+msgid "This will replace the live database. Are you sure?"
+msgstr "سيؤدي هذا إلى استبدال قاعدة البيانات الحية. هل أنت متأكد؟"
+
+msgid "Please choose a backup .zip file to upload."
+msgstr "يرجى اختيار ملف نسخة احتياطية بصيغة .zip لرفعه."
+
+msgid "Backup created: %(name)s"
+msgstr "تم إنشاء النسخة الاحتياطية: %(name)s"
+
+#, python-format
+msgid "Restore cancelled: confirmation phrase did not match \"%(phrase)s\"."
+msgstr "تم إلغاء الاستعادة: عبارة التأكيد غير مطابقة لـ \"%(phrase)s\"."
+
+#, python-format
+msgid "Type \"%(confirmation_phrase)s\" to confirm"
+msgstr "اكتب \"%(confirmation_phrase)s\" للتأكيد"
+
+#, python-format
+msgid "Database restored from %(name)s. The pre-restore state was saved as %(safety)s."
+msgstr "تمت استعادة قاعدة البيانات من %(name)s. تم حفظ الحالة السابقة للاستعادة باسم %(safety)s."
+
+#, python-format
+msgid "Database restored from the uploaded file. The pre-restore state was saved as %(safety)s."
+msgstr "تمت استعادة قاعدة البيانات من الملف المرفوع. تم حفظ الحالة السابقة للاستعادة باسم %(safety)s."
+
 msgid "Deactivate"
 msgstr "إلغاء التفعيل"
 

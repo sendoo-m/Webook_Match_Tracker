@@ -9,3 +9,5 @@ staticfiles/
 .vscode/
 .claude/
 SPL_*_Rounds_*.xlsx
+db.sqlite3.backup-*
+/backups/

@@ -1,3 +1,10 @@
+from .backup import (
+    BackupCreateView,
+    BackupDownloadView,
+    BackupListView,
+    BackupRestoreView,
+    BackupUploadRestoreView,
+)
 from .checklist import (
     ChecklistCategoryCreateView,
     ChecklistCategoryListView,
@@ -61,6 +68,11 @@ from accounts.views import (  # noqa: F401 - re-exported for backward compatibil
 )
 
 __all__ = [
+    "BackupCreateView",
+    "BackupDownloadView",
+    "BackupListView",
+    "BackupRestoreView",
+    "BackupUploadRestoreView",
     "ChecklistCategoryCreateView",
     "ChecklistCategoryListView",
     "ChecklistCategoryUpdateView",
