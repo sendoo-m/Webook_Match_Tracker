@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from core.permissions import VIEWER_GROUPS, can_manage_control_panel
 
@@ -79,6 +80,58 @@ def notify_coordinator(match, notification_type, message):
     the club-viewer account from match-management actions."""
     recipients = [match.home_club.owner] if match.home_club.owner_id else []
     return notify_users(recipients, notification_type, message, match=match)
+
+
+def run_daily_notification_sweep():
+    """The one function behind both `manage.py generate_daily_notifications`
+    and the request-time fallback in operations/middleware.py - mirrors the
+    dual CLI/button pattern matches.calendar_sync already established for
+    calendar sync, so there's exactly one place this logic lives.
+
+    Walks every match once and fires, for each: the 25-day club notice, the
+    20-day-not-live coordinator notice, and the match-live notice (SPL +
+    both clubs). All three go through notify_users, which already skips a
+    recipient who has one for this exact (type, match) - so re-running this
+    daily, or many times in one day, never re-notifies for the same event.
+    Returns a dict of how many new notifications were created per type, for
+    the command's own summary output."""
+    from matches.models import Match
+    from operations.views.helpers import build_dashboard_match_state
+
+    now = timezone.localtime()
+    counts = {
+        Notification.NotificationType.MATCH_25_DAYS: 0,
+        Notification.NotificationType.MATCH_20_DAYS_NOT_LIVE: 0,
+        Notification.NotificationType.MATCH_LIVE: 0,
+    }
+    matches = Match.objects.exclude(event_date=None).select_related("home_club", "away_club")
+    for match in matches:
+        state = build_dashboard_match_state(match, now)
+        days_to_match = state["days_to_match"]
+        if days_to_match is None:
+            continue
+
+        if days_to_match == 25:
+            created = notify_club(
+                match,
+                Notification.NotificationType.MATCH_25_DAYS,
+                f"25 days remain until {match}.",
+            )
+            counts[Notification.NotificationType.MATCH_25_DAYS] += len(created)
+
+        if days_to_match == 20 and not state["is_live_now"]:
+            created = notify_coordinator(
+                match,
+                Notification.NotificationType.MATCH_20_DAYS_NOT_LIVE,
+                f"20 days remain until {match} and it is not live yet.",
+            )
+            counts[Notification.NotificationType.MATCH_20_DAYS_NOT_LIVE] += len(created)
+
+        if state["is_live_now"]:
+            created = notify_match_live(match, f"{match} has gone live.")
+            counts[Notification.NotificationType.MATCH_LIVE] += len(created)
+
+    return counts
 
 
 def notify_match_live(match, message):

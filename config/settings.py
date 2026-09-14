@@ -69,6 +69,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'operations.middleware.FriendlyPermissionDeniedMiddleware',  # <- new: turns 403s into toasts
+    'notifications.middleware.DailyNotificationSweepMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
