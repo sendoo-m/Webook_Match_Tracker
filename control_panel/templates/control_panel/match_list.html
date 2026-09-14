@@ -41,6 +41,7 @@
     </form>
 </div>
 
+{% if is_full_admin %}
 <div class="card panel">
     <form method="get" action="{% url 'control_panel:match-export' %}" class="filters">
         <div class="field-group">
@@ -69,6 +70,7 @@
         </div>
     </form>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}

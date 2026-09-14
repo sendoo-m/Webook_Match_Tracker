@@ -29,15 +29,35 @@ class VenueForm(forms.ModelForm):
 
 
 class VenueImageForm(forms.ModelForm):
+    """`venue_queryset`, when passed, restricts the venue choices - used by
+    a Club Manager coordinator's scoped access to this page (see
+    control_panel/views/venue_details.py), left unset for the full-admin
+    path so every venue stays available there."""
+
     class Meta:
         model = VenueImage
         fields = ["venue", "image", "caption", "sort_order", "is_active"]
 
+    def __init__(self, *args, venue_queryset=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if venue_queryset is not None:
+            self.fields["venue"].queryset = venue_queryset
+
 
 class VenueSeatingCategoryForm(forms.ModelForm):
+    """`venue_queryset`/`club_queryset`, when passed, restrict those two
+    choices - same coordinator-scoping purpose as VenueImageForm above."""
+
     class Meta:
         model = VenueSeatingCategory
         fields = ["venue", "club", "code", "seat_count", "sort_order", "is_active"]
+
+    def __init__(self, *args, venue_queryset=None, club_queryset=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if venue_queryset is not None:
+            self.fields["venue"].queryset = venue_queryset
+        if club_queryset is not None:
+            self.fields["club"].queryset = club_queryset
 
 
 class VenueCategoryImportForm(forms.Form):

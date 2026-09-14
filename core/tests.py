@@ -64,8 +64,17 @@ class BackupRestoreTests(unittest.TestCase):
             self.assertIn("media/logos/club.png", names)
 
     def test_list_backups_returns_newest_first(self):
+        import os
+
         first = create_backup(label="one")
         second = create_backup(label="two")
+        # list_backups() sorts by mtime, which only has whole-second
+        # resolution on some filesystems - two backups created within the
+        # same second would otherwise make this assertion flaky depending
+        # on how fast the test machine is. Force them a full second apart
+        # instead of relying on real wall-clock timing.
+        first_mtime = os.path.getmtime(first)
+        os.utime(second, (first_mtime + 1, first_mtime + 1))
         listed = list_backups()
         self.assertEqual([b["path"] for b in listed][:2], [second, first])
 

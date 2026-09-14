@@ -17,12 +17,19 @@ from django.views import View
 from django.views.generic import FormView
 
 from control_panel.forms import VenueCategoryImportForm, VenueImageForm, VenueSeatingCategoryForm
-from control_panel.permissions import ControlPanelAccessMixin
+from control_panel.permissions import ControlPanelAccessMixin, ScopedControlPanelAccessMixin
 from matches.models import Club, Venue, VenueImage, VenueSeatingCategory
 from matches.venue_category_import_export import (
     build_venue_category_import_template_xlsx,
     export_venue_categories_xlsx,
     import_venue_categories_xlsx,
+)
+from operations.permissions import (
+    can_access_limited_control_panel,
+    can_manage_control_panel,
+    can_manage_venue_for_club,
+    get_manageable_venue_ids_for_user,
+    get_owned_club_ids,
 )
 
 User = get_user_model()
@@ -31,6 +38,12 @@ from .base import PanelCreateView, PanelListView, PanelToggleActiveView, PanelUp
 
 
 class VenueImageListView(PanelListView):
+    """A Club Manager coordinator can also reach this page (see
+    can_access_limited_control_panel), scoped to only the venues their own
+    clubs actually play HOME at - get_manageable_venue_ids_for_user already
+    returns every active venue for a full admin, so this filter is a no-op
+    for them and doesn't need its own branch."""
+
     model = VenueImage
     template_name = "control_panel/venueimage_list.html"
     context_object_name = "venue_images"
@@ -39,8 +52,12 @@ class VenueImageListView(PanelListView):
     create_url_name = "control_panel:venue-image-create"
     create_label = _("Add Venue Image")
 
+    def test_func(self):
+        return can_access_limited_control_panel(self.request.user)
+
     def get_queryset(self):
-        return super().get_queryset().select_related("venue")
+        venue_ids = get_manageable_venue_ids_for_user(self.request.user)
+        return super().get_queryset().filter(venue_id__in=venue_ids).select_related("venue")
 
 
 class VenueImageCreateView(PanelCreateView):
@@ -52,6 +69,15 @@ class VenueImageCreateView(PanelCreateView):
     page_title = _("Add Venue Image")
     list_url_name = "control_panel:venue-image-list"
 
+    def test_func(self):
+        return can_access_limited_control_panel(self.request.user)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        venue_ids = get_manageable_venue_ids_for_user(self.request.user)
+        kwargs["venue_queryset"] = Venue.objects.filter(id__in=venue_ids)
+        return kwargs
+
 
 class VenueImageUpdateView(PanelUpdateView):
     model = VenueImage
@@ -62,13 +88,33 @@ class VenueImageUpdateView(PanelUpdateView):
     page_title = _("Edit Venue Image")
     list_url_name = "control_panel:venue-image-list"
 
+    def test_func(self):
+        return can_access_limited_control_panel(self.request.user)
+
+    def get_queryset(self):
+        venue_ids = get_manageable_venue_ids_for_user(self.request.user)
+        return super().get_queryset().filter(venue_id__in=venue_ids)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        venue_ids = get_manageable_venue_ids_for_user(self.request.user)
+        kwargs["venue_queryset"] = Venue.objects.filter(id__in=venue_ids)
+        return kwargs
+
 
 class VenueImageToggleActiveView(PanelToggleActiveView):
     model = VenueImage
     success_url_name = "control_panel:venue-image-list"
 
+    def test_func(self):
+        return can_access_limited_control_panel(self.request.user)
 
-class VenueImagePositionEditorView(LoginRequiredMixin, ControlPanelAccessMixin, View):
+    def get_object(self, pk):
+        venue_ids = get_manageable_venue_ids_for_user(self.request.user)
+        return get_object_or_404(self.model, pk=pk, venue_id__in=venue_ids)
+
+
+class VenueImagePositionEditorView(LoginRequiredMixin, ScopedControlPanelAccessMixin, View):
     """Lets a coordinator/admin click on a venue's seating-map image to
     place one point per seating category (block) - the price badge shown
     to clubs/SPL later gets positioned there. One club at a time (a venue
@@ -79,13 +125,21 @@ class VenueImagePositionEditorView(LoginRequiredMixin, ControlPanelAccessMixin, 
     template_name = "control_panel/venue_image_positions.html"
 
     def get(self, request, pk, *args, **kwargs):
-        image = get_object_or_404(VenueImage, pk=pk)
+        venue_ids = get_manageable_venue_ids_for_user(request.user)
+        image = get_object_or_404(VenueImage, pk=pk, venue_id__in=venue_ids)
+
         club_choices = Club.objects.filter(
             venue_seating_categories__venue_id=image.venue_id, is_active=True
         ).distinct().order_by("name_ar")
+        if not can_manage_control_panel(request.user):
+            club_choices = club_choices.filter(id__in=get_owned_club_ids(request.user))
 
         selected_club_id = request.GET.get("club", "").strip()
         selected_club = club_choices.filter(pk=selected_club_id).first() if selected_club_id else None
+        if not selected_club and club_choices.count() == 1:
+            # A coordinator with exactly one club at this venue never needs
+            # to pick it themselves - skip straight to their own categories.
+            selected_club = club_choices.first()
 
         categories = []
         if selected_club:
@@ -119,16 +173,19 @@ class VenueImagePositionEditorView(LoginRequiredMixin, ControlPanelAccessMixin, 
         })
 
 
-class VenueCategoryPositionSaveView(LoginRequiredMixin, ControlPanelAccessMixin, View):
+class VenueCategoryPositionSaveView(LoginRequiredMixin, ScopedControlPanelAccessMixin, View):
     """AJAX-only: saves (or clears, when x/y are omitted) one category's
     point on one venue image. Immediate-save-on-click rather than a batch
     "Save" button, so a placement is never lost if the coordinator
     navigates away mid-session."""
 
     def post(self, request, image_pk, category_pk, *args, **kwargs):
-        image = get_object_or_404(VenueImage, pk=image_pk)
+        venue_ids = get_manageable_venue_ids_for_user(request.user)
+        image = get_object_or_404(VenueImage, pk=image_pk, venue_id__in=venue_ids)
         category = get_object_or_404(VenueSeatingCategory, pk=category_pk)
         if category.venue_id != image.venue_id:
+            raise Http404("This category doesn't belong to this venue's image.")
+        if not can_manage_venue_for_club(request.user, category.club):
             raise Http404("This category doesn't belong to this venue's image.")
 
         x = request.POST.get("x")
@@ -157,7 +214,11 @@ class VenueSeatingCategoryListView(PanelListView):
     to find anything. Ordering by club first (not venue first, as before)
     is what makes the groupby() in get_context_data valid - groupby only
     groups consecutive items, so the queryset's own ordering has to match
-    the grouping key."""
+    the grouping key.
+
+    A Club Manager coordinator can also reach this page (see
+    can_access_limited_control_panel), scoped to only their own club(s)'
+    categories - never another club's, even one sharing the same venue."""
 
     model = VenueSeatingCategory
     template_name = "control_panel/venueseatingcategory_list.html"
@@ -168,8 +229,14 @@ class VenueSeatingCategoryListView(PanelListView):
     create_label = _("Add Category")
     paginate_by = None
 
+    def test_func(self):
+        return can_access_limited_control_panel(self.request.user)
+
     def get_queryset(self):
         queryset = super().get_queryset().select_related("venue", "club")
+
+        if not can_manage_control_panel(self.request.user):
+            queryset = queryset.filter(club_id__in=get_owned_club_ids(self.request.user))
 
         club = self.request.GET.get("club", "").strip()
         if club:
@@ -187,22 +254,32 @@ class VenueSeatingCategoryListView(PanelListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        is_full_admin = can_manage_control_panel(self.request.user)
         categories = context[self.context_object_name]
         context["grouped_categories"] = [
             {"club": club, "categories": list(group)}
             for club, group in groupby(categories, key=lambda category: category.club)
         ]
-        context["club_choices"] = Club.objects.filter(is_active=True).order_by("name_ar")
+        if is_full_admin:
+            context["club_choices"] = Club.objects.filter(is_active=True).order_by("name_ar")
+            context["venue_choices"] = Venue.objects.filter(is_active=True).order_by("name_ar")
+        else:
+            owned_club_ids = get_owned_club_ids(self.request.user)
+            context["club_choices"] = Club.objects.filter(id__in=owned_club_ids).order_by("name_ar")
+            venue_ids = get_manageable_venue_ids_for_user(self.request.user)
+            context["venue_choices"] = Venue.objects.filter(id__in=venue_ids).order_by("name_ar")
         context["coordinator_choices"] = User.objects.filter(
             owned_clubs__isnull=False, is_active=True
         ).distinct().order_by("username")
-        context["venue_choices"] = Venue.objects.filter(is_active=True).order_by("name_ar")
         context["selected_club"] = self.request.GET.get("club", "")
         context["selected_coordinator"] = self.request.GET.get("coordinator", "")
         context["selected_venue"] = self.request.GET.get("venue", "")
         context["has_active_filters"] = any([
             context["selected_club"], context["selected_coordinator"], context["selected_venue"],
         ])
+        context["is_full_admin"] = is_full_admin
+        if not is_full_admin:
+            context.pop("create_url", None)
         return context
 
 
@@ -215,6 +292,17 @@ class VenueSeatingCategoryCreateView(PanelCreateView):
     page_title = _("Add Venue Seating Category")
     list_url_name = "control_panel:venue-category-list"
 
+    def test_func(self):
+        return can_access_limited_control_panel(self.request.user)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        if not can_manage_control_panel(self.request.user):
+            venue_ids = get_manageable_venue_ids_for_user(self.request.user)
+            kwargs["venue_queryset"] = Venue.objects.filter(id__in=venue_ids)
+            kwargs["club_queryset"] = Club.objects.filter(id__in=get_owned_club_ids(self.request.user))
+        return kwargs
+
 
 class VenueSeatingCategoryUpdateView(PanelUpdateView):
     model = VenueSeatingCategory
@@ -225,10 +313,36 @@ class VenueSeatingCategoryUpdateView(PanelUpdateView):
     page_title = _("Edit Venue Seating Category")
     list_url_name = "control_panel:venue-category-list"
 
+    def test_func(self):
+        return can_access_limited_control_panel(self.request.user)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if not can_manage_control_panel(self.request.user):
+            queryset = queryset.filter(club_id__in=get_owned_club_ids(self.request.user))
+        return queryset
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        if not can_manage_control_panel(self.request.user):
+            venue_ids = get_manageable_venue_ids_for_user(self.request.user)
+            kwargs["venue_queryset"] = Venue.objects.filter(id__in=venue_ids)
+            kwargs["club_queryset"] = Club.objects.filter(id__in=get_owned_club_ids(self.request.user))
+        return kwargs
+
 
 class VenueSeatingCategoryToggleActiveView(PanelToggleActiveView):
     model = VenueSeatingCategory
     success_url_name = "control_panel:venue-category-list"
+
+    def test_func(self):
+        return can_access_limited_control_panel(self.request.user)
+
+    def get_object(self, pk):
+        obj = get_object_or_404(self.model, pk=pk)
+        if not can_manage_control_panel(self.request.user) and obj.club_id not in get_owned_club_ids(self.request.user):
+            raise Http404("This category doesn't belong to one of your clubs.")
+        return obj
 
 
 class VenueCategoryTemplateView(LoginRequiredMixin, ControlPanelAccessMixin, View):

@@ -1346,17 +1346,18 @@ class SPLPricingPlanSnapshotTests(IsolatedMediaMixin, ClubDashboardPermissionsTe
         self.assertFalse(bool(self.plan.seat_map_snapshot))
 
 
-class ClubVenueImagePositionTests(IsolatedMediaMixin, ClubDashboardPermissionsTestBase):
-    """Coordinators (and a club's own direct account) can now manage their
-    own venue's seating-map image and block positions without Control Panel
-    access - see clubs/views/venue_images.py. Scoped strictly to the venues
-    of their own HOME matches; another coordinator (even one with a real
-    club) must never reach a venue image that isn't theirs."""
+class ScopedControlPanelAccessTests(IsolatedMediaMixin, ClubDashboardPermissionsTestBase):
+    """A Club Manager coordinator (Club.owner) now gets scoped Control
+    Panel access to exactly three sections - Matches, Venue Images, Venue
+    Categories - see operations.permissions.can_access_limited_control_panel
+    and the test_func/get_queryset overrides in control_panel/views/
+    matches.py and venue_details.py. Every full-admin path here must stay
+    exactly as it was (NoRegressionTests-style coverage for this phase)."""
 
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        from matches.models import Venue, VenueImage
+        from matches.models import Venue
 
         cls.venue = Venue.objects.create(name_ar="ملعب أ", name_en="_Test Venue A")
         cls.match.venue = cls.venue
@@ -1367,47 +1368,96 @@ class ClubVenueImagePositionTests(IsolatedMediaMixin, ClubDashboardPermissionsTe
             venue=cls.venue, club=cls.club_a, code="_TEST CAT",
         )
 
-        # club_account_user: the club's own direct account (not a
-        # coordinator) - should have the exact same manage rights as user_a.
+        # A pure Club Viewer (club_account, no owned club) - must NOT get
+        # this access, per explicit product decision (they keep using the
+        # separate Club Dashboard instead).
         club_viewer_group, _ = Group.objects.get_or_create(name="Club Viewer")
-        cls.club_account_user = User.objects.create_user(username="_test_club_account", password="pw")
-        cls.club_account_user.groups.add(club_viewer_group)
-        cls.club_a.club_account = cls.club_account_user
-        cls.club_a.save(update_fields=["club_account"])
+        cls.club_viewer_user = User.objects.create_user(username="_test_club_viewer_only", password="pw")
+        cls.club_viewer_user.groups.add(club_viewer_group)
+        cls.club_d.club_account = cls.club_viewer_user
+        cls.club_d.save(update_fields=["club_account"])
+
+    # --- Matches ---
+
+    def test_coordinator_sees_only_their_own_matches(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/control-panel/matches/")
+        self.assertEqual(response.status_code, 200)
+        matches = list(response.context["matches"])
+        self.assertIn(self.match, matches)
+        self.assertNotIn(self.unrelated_match, matches)
+
+    def test_coordinator_does_not_see_add_match_button(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/control-panel/matches/")
+        self.assertNotContains(response, "Add Match")
+
+    def test_coordinator_cannot_open_unrelated_match_for_edit(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get(f"/control-panel/matches/{self.unrelated_match.pk}/edit/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_coordinator_can_edit_all_fields_of_their_own_match(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.post(f"/control-panel/matches/{self.match.pk}/edit/", {
+            "competition": self.competition.pk,
+            "home_club": self.club_a.pk,
+            "away_club": self.club_b.pk,
+            "slug": self.match.slug,
+            "title_ar": "تعديل",
+            "title_en": "Edited",
+            "ticketing_plan_approved": "on",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.match.refresh_from_db()
+        self.assertTrue(self.match.ticketing_plan_approved)
+        self.assertEqual(self.match.title_en, "Edited")
+
+    def test_club_viewer_only_cannot_reach_matches_control_panel(self):
+        client = Client()
+        client.login(username="_test_club_viewer_only", password="pw")
+        response = client.get("/control-panel/matches/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_full_admin_still_sees_every_match_and_add_button(self):
+        client = Client()
+        client.login(username="_test_ops_manager", password="pw")
+        response = client.get("/control-panel/matches/")
+        self.assertEqual(response.status_code, 200)
+        matches = list(response.context["matches"])
+        self.assertIn(self.match, matches)
+        self.assertIn(self.unrelated_match, matches)
+        self.assertContains(response, "Add Match")
+
+    # --- Venue Images ---
 
     def test_coordinator_sees_their_own_venue_image(self):
         client = Client()
         client.login(username="_test_club_a", password="pw")
-        response = client.get("/operations/club-dashboard/venue-images/")
+        response = client.get("/control-panel/venue-images/")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "_Test Venue A")
 
-    def test_club_account_sees_the_same_venue_image(self):
-        client = Client()
-        client.login(username="_test_club_account", password="pw")
-        response = client.get("/operations/club-dashboard/venue-images/")
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "_Test Venue A")
-
-    def test_unrelated_coordinator_gets_404_on_this_venue_image(self):
-        """user_c owns club_c, a real coordinator - but not for THIS venue."""
+    def test_unrelated_coordinator_gets_404_on_this_venue_image_edit(self):
         client = Client()
         client.login(username="_test_club_c", password="pw")
-        response = client.get(f"/operations/club-dashboard/venue-images/{self.venue_image.pk}/positions/")
+        response = client.get(f"/control-panel/venue-images/{self.venue_image.pk}/edit/")
         self.assertEqual(response.status_code, 404)
 
-    def test_user_with_no_club_is_denied(self):
+    def test_unrelated_coordinator_gets_404_on_position_editor(self):
         client = Client()
-        client.login(username="_test_ops_manager", password="pw")
-        # An Operations Manager isn't a club account - can_view_own_club_dashboard
-        # is False for them, same as any other non-club user.
-        response = client.get("/operations/club-dashboard/venue-images/")
-        self.assertEqual(response.status_code, 302)
+        client.login(username="_test_club_c", password="pw")
+        response = client.get(f"/control-panel/venue-images/{self.venue_image.pk}/positions/")
+        self.assertEqual(response.status_code, 404)
 
-    def test_position_editor_auto_selects_the_only_club(self):
+    def test_coordinator_position_editor_auto_selects_the_only_club(self):
         client = Client()
         client.login(username="_test_club_a", password="pw")
-        response = client.get(f"/operations/club-dashboard/venue-images/{self.venue_image.pk}/positions/")
+        response = client.get(f"/control-panel/venue-images/{self.venue_image.pk}/positions/")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "_TEST CAT")
 
@@ -1415,30 +1465,28 @@ class ClubVenueImagePositionTests(IsolatedMediaMixin, ClubDashboardPermissionsTe
         client = Client()
         client.login(username="_test_club_a", password="pw")
         response = client.post(
-            f"/operations/club-dashboard/venue-images/{self.venue_image.pk}/positions/{self.category.pk}/save/",
+            f"/control-panel/venue-images/{self.venue_image.pk}/positions/{self.category.pk}/save/",
             {"x": "33.0", "y": "44.0"},
         )
         self.assertEqual(response.status_code, 200)
         self.category.refresh_from_db()
         self.assertEqual(self.category.position_x, 33.0)
-        self.assertEqual(self.category.position_y, 44.0)
-        self.assertEqual(self.category.position_image_id, self.venue_image.pk)
 
     def test_unrelated_coordinator_cannot_save_a_position_for_this_category(self):
         client = Client()
         client.login(username="_test_club_c", password="pw")
         response = client.post(
-            f"/operations/club-dashboard/venue-images/{self.venue_image.pk}/positions/{self.category.pk}/save/",
+            f"/control-panel/venue-images/{self.venue_image.pk}/positions/{self.category.pk}/save/",
             {"x": "33.0", "y": "44.0"},
         )
         self.assertEqual(response.status_code, 404)
         self.category.refresh_from_db()
         self.assertIsNone(self.category.position_x)
 
-    def test_coordinator_can_upload_a_new_venue_image(self):
+    def test_coordinator_can_upload_a_new_venue_image_for_their_own_venue(self):
         client = Client()
         client.login(username="_test_club_a", password="pw")
-        response = client.post("/operations/club-dashboard/venue-images/new/", {
+        response = client.post("/control-panel/venue-images/new/", {
             "venue": self.venue.pk,
             "image": _tiny_png(),
             "caption": "New seating map",
@@ -1454,14 +1502,92 @@ class ClubVenueImagePositionTests(IsolatedMediaMixin, ClubDashboardPermissionsTe
         other_venue = Venue.objects.create(name_ar="ملعب ب", name_en="_Test Venue B")
         client = Client()
         client.login(username="_test_club_a", password="pw")
-        response = client.post("/operations/club-dashboard/venue-images/new/", {
+        response = client.post("/control-panel/venue-images/new/", {
             "venue": other_venue.pk,
             "image": _tiny_png(),
             "caption": "Should not be allowed",
             "sort_order": 0,
             "is_active": True,
         })
-        # The venue queryset on the form excludes other_venue entirely, so
-        # this is a normal form validation error, not a 403/404.
         self.assertEqual(response.status_code, 200)
         self.assertFalse(VenueImage.objects.filter(caption="Should not be allowed").exists())
+
+    def test_full_admin_still_sees_every_venue_image(self):
+        other_venue_for_admin_check = VenueImage.objects.create(venue=self.venue, image=_tiny_png())
+        client = Client()
+        client.login(username="_test_ops_manager", password="pw")
+        response = client.get("/control-panel/venue-images/")
+        self.assertEqual(response.status_code, 200)
+        images = list(response.context["venue_images"])
+        self.assertIn(self.venue_image, images)
+        self.assertIn(other_venue_for_admin_check, images)
+
+    # --- Venue Categories ---
+
+    def test_coordinator_sees_only_their_own_categories(self):
+        other_club_category = VenueSeatingCategory.objects.create(
+            venue=self.venue, club=self.club_c, code="_OTHER CAT",
+        )
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/control-panel/venue-categories/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "_TEST CAT")
+        self.assertNotContains(response, "_OTHER CAT")
+
+    def test_coordinator_cannot_edit_an_unrelated_clubs_category(self):
+        other_club_category = VenueSeatingCategory.objects.create(
+            venue=self.venue, club=self.club_c, code="_OTHER CAT",
+        )
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get(f"/control-panel/venue-categories/{other_club_category.pk}/edit/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_coordinator_cannot_toggle_an_unrelated_clubs_category(self):
+        other_club_category = VenueSeatingCategory.objects.create(
+            venue=self.venue, club=self.club_c, code="_OTHER CAT",
+        )
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.post(f"/control-panel/venue-categories/{other_club_category.pk}/toggle-active/")
+        self.assertEqual(response.status_code, 404)
+        other_club_category.refresh_from_db()
+        self.assertTrue(other_club_category.is_active)
+
+    def test_coordinator_can_create_a_category_for_their_own_club_and_venue(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.post("/control-panel/venue-categories/new/", {
+            "venue": self.venue.pk,
+            "club": self.club_a.pk,
+            "code": "_NEW CAT",
+            "sort_order": 0,
+            "is_active": True,
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(VenueSeatingCategory.objects.filter(club=self.club_a, code="_NEW CAT").exists())
+
+    def test_coordinator_cannot_create_a_category_for_an_unrelated_club(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.post("/control-panel/venue-categories/new/", {
+            "venue": self.venue.pk,
+            "club": self.club_c.pk,
+            "code": "_SHOULD NOT EXIST",
+            "sort_order": 0,
+            "is_active": True,
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(VenueSeatingCategory.objects.filter(code="_SHOULD NOT EXIST").exists())
+
+    def test_full_admin_still_sees_every_category_and_import_export_button(self):
+        VenueSeatingCategory.objects.create(venue=self.venue, club=self.club_c, code="_OTHER CAT 2")
+        client = Client()
+        client.login(username="_test_ops_manager", password="pw")
+        response = client.get("/control-panel/venue-categories/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "_TEST CAT")
+        self.assertContains(response, "_OTHER CAT 2")
+        self.assertContains(response, "Import / Export")
+

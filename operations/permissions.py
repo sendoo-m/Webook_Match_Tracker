@@ -194,31 +194,55 @@ def can_view_own_club_dashboard(user):
     return bool(get_user_club_ids(user))
 
 
-def can_manage_venue_for_club(user, club):
-    """True for Control Panel admins (unrestricted, any venue/club) and for
-    a club's own coordinator/direct account (get_user_club_ids) managing
-    ONLY that club's own venue images and block positions - lets a
-    coordinator upload their stadium's seating-map photo and place their
-    own categories' price-badge positions on it without needing Control
-    Panel access at all."""
+def get_owned_club_ids(user):
+    """Clubs this user COORDINATES (Club.owner) - deliberately not the
+    get_user_club_ids owner+club_account union: the scoped Control Panel
+    access below (Matches/Venue Images/Venue Categories) is a Club Manager
+    feature by explicit product decision, not something extended to a
+    Club Viewer's direct club_account login, which keeps using the
+    separate Club Dashboard instead."""
+    if not getattr(user, "is_authenticated", False):
+        return []
+    return list(user.owned_clubs.filter(is_active=True).values_list("id", flat=True))
+
+
+def can_access_limited_control_panel(user):
+    """True for full Control Panel admins AND for any Club Manager
+    coordinator (owns at least one active club) - the broader gate for
+    exactly three Control Panel sections a coordinator needs day to day
+    (Matches, Venue Images, Venue Categories), each further scoped to that
+    coordinator's own clubs/matches by the views themselves. Every other
+    Control Panel section (Users, Checklist Templates, Sections, Settings,
+    Backups, ...) stays gated by the stricter can_manage_control_panel/
+    ControlPanelAccessMixin, unaffected by this."""
     if can_manage_control_panel(user):
         return True
-    return club.id in get_user_club_ids(user)
+    return bool(get_owned_club_ids(user))
+
+
+def can_manage_venue_for_club(user, club):
+    """True for Control Panel admins (unrestricted, any venue/club) and for
+    a club's own coordinator managing ONLY that club's own venue images and
+    block positions - lets a coordinator upload their stadium's seating-map
+    photo and place their own categories' price-badge positions on it."""
+    if can_manage_control_panel(user):
+        return True
+    return club.id in get_owned_club_ids(user)
 
 
 def get_manageable_venue_ids_for_user(user):
-    """Every venue a non-admin user is allowed to manage images/positions
-    for - derived from their own clubs' HOME matches (a club's seating-map
-    concern is always its own ground, never an away fixture's venue).
-    Admins should use Venue.objects.all() directly instead of this."""
-    if can_manage_control_panel(user):
-        from matches.models import Venue
+    """Every venue a non-admin coordinator is allowed to manage images/
+    positions for - derived from their own clubs' HOME matches (a club's
+    seating-map concern is always its own ground, never an away fixture's
+    venue). Returns every active venue for a full admin, so callers can use
+    this unconditionally instead of branching on can_manage_control_panel
+    themselves."""
+    from matches.models import Match, Venue
 
+    if can_manage_control_panel(user):
         return Venue.objects.filter(is_active=True).values_list("id", flat=True)
 
-    from matches.models import Match
-
-    club_ids = get_user_club_ids(user)
+    club_ids = get_owned_club_ids(user)
     return (
         Match.objects.filter(home_club_id__in=club_ids, venue__isnull=False)
         .values_list("venue_id", flat=True)

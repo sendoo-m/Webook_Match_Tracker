@@ -22,11 +22,20 @@ from matches.import_export import (
     import_matches_file,
 )
 from matches.models import Club, Match, Venue
+from operations.permissions import can_access_limited_control_panel, can_manage_control_panel, get_owned_club_ids
 
 from .base import PanelCreateView, PanelListView, PanelUpdateView
 
 
 class MatchAdminListView(PanelListView):
+    """A Club Manager coordinator can also reach this page (see
+    can_access_limited_control_panel) - test_func is overridden to admit
+    them, and get_queryset/get_context_data narrow everything they see to
+    their own clubs' fixtures. "Add Match" stays admin-only (creating a
+    fresh fixture is rare/riskier than editing one that already exists),
+    so its create_url is dropped from context for a non-admin instead of
+    linking to a page that would just 403 them."""
+
     model = Match
     template_name = "control_panel/match_list.html"
     context_object_name = "matches"
@@ -35,10 +44,16 @@ class MatchAdminListView(PanelListView):
     create_url_name = "control_panel:match-create"
     create_label = _("Add Match")
 
+    def test_func(self):
+        return can_access_limited_control_panel(self.request.user)
+
     def get_queryset(self):
         queryset = super().get_queryset().select_related(
             "competition", "home_club", "away_club", "venue"
         )
+        if not can_manage_control_panel(self.request.user):
+            club_ids = get_owned_club_ids(self.request.user)
+            queryset = queryset.filter(Q(home_club_id__in=club_ids) | Q(away_club_id__in=club_ids))
         round_number = self.request.GET.get("round", "")
         club_id = self.request.GET.get("club", "")
         city = self.request.GET.get("city", "")
@@ -52,6 +67,7 @@ class MatchAdminListView(PanelListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        is_full_admin = can_manage_control_panel(self.request.user)
         context["export_form"] = MatchExportFilterForm()
         context["selected_round"] = self.request.GET.get("round", "")
         context["selected_club"] = self.request.GET.get("club", "")
@@ -60,11 +76,18 @@ class MatchAdminListView(PanelListView):
             Match.objects.exclude(round_number__isnull=True)
             .values_list("round_number", flat=True).distinct().order_by("round_number")
         )
-        context["clubs"] = Club.objects.filter(is_active=True).order_by("name_ar")
+        if is_full_admin:
+            context["clubs"] = Club.objects.filter(is_active=True).order_by("name_ar")
+        else:
+            context["clubs"] = Club.objects.filter(id__in=get_owned_club_ids(self.request.user)).order_by("name_ar")
         context["cities"] = (
             Venue.objects.exclude(city="").values_list("city", flat=True).distinct().order_by("city")
         )
         context["today"] = date.today()
+        context["is_full_admin"] = is_full_admin
+        if not is_full_admin:
+            # No "Add Match" for a coordinator - see class docstring.
+            context.pop("create_url", None)
         return context
 
 
@@ -84,6 +107,11 @@ class MatchAdminCreateView(PanelCreateView):
 
 
 class MatchAdminUpdateView(PanelUpdateView):
+    """Same scoped access as MatchAdminListView - a coordinator can only
+    open/save a match where their own club is home or away; every field on
+    the form stays exactly as-is for them, including the SPL/ticketing ones,
+    matching Control Panel admin behavior exactly once they're in scope."""
+
     model = Match
     form_class = MatchForm
     template_name = "control_panel/match_form.html"
@@ -91,6 +119,16 @@ class MatchAdminUpdateView(PanelUpdateView):
     success_message = _("Match updated.")
     page_title = _("Edit Match")
     list_url_name = "control_panel:match-list"
+
+    def test_func(self):
+        return can_access_limited_control_panel(self.request.user)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if not can_manage_control_panel(self.request.user):
+            club_ids = get_owned_club_ids(self.request.user)
+            queryset = queryset.filter(Q(home_club_id__in=club_ids) | Q(away_club_id__in=club_ids))
+        return queryset
 
 
 class MatchExportView(LoginRequiredMixin, ControlPanelAccessMixin, View):

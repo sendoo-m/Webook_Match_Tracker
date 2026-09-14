@@ -2,12 +2,17 @@
 {% load i18n %}
 {% load display_helpers %}
 <nav class="subnav">
+    {% if can_view_control_panel %}
     <a href="{% url 'control_panel:home' %}" class="subnav-link{% if request.resolver_match.url_name == 'home' %} is-active{% endif %}">{% trans "Overview" %}</a>
+    {% endif %}
     <a href="{% url 'control_panel:match-list' %}" class="subnav-link{% if 'match' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Events" %}</a>
+    {% if can_view_control_panel %}
     <a href="{% url 'control_panel:team-list' %}" class="subnav-link{% if 'team' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Teams" %}</a>
     <a href="{% url 'control_panel:stadium-list' %}" class="subnav-link{% if 'stadium' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Venues" %}</a>
+    {% endif %}
     <a href="{% url 'control_panel:venue-image-list' %}" class="subnav-link{% if 'venue-image' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Venue Images" %}</a>
     <a href="{% url 'control_panel:venue-category-list' %}" class="subnav-link{% if 'venue-category' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Venue Categories" %}</a>
+    {% if can_view_control_panel %}
     <a href="{% url 'control_panel:section-list' %}" class="subnav-link{% if 'section' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Sections" %}</a>
     <a href="{% url 'control_panel:checklist-category-list' %}" class="subnav-link{% if 'checklist-category' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Categories" %}</a>
     <a href="{% url 'control_panel:checklist-item-list' %}" class="subnav-link{% if 'checklist-item' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Checklist Items" %}</a>
@@ -17,5 +22,6 @@
     <a href="{% url 'control_panel:site-settings' %}" class="subnav-link{% if 'site-settings' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Settings" %}</a>
     {% if request.user|is_admin_account %}
     <a href="{% url 'control_panel:backup-list' %}" class="subnav-link{% if 'backup' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Backups" %}</a>
+    {% endif %}
     {% endif %}
 </nav>

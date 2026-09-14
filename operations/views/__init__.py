@@ -41,11 +41,6 @@ from clubs.views import (  # noqa: F401 - re-exported for backward compatibility
     ClubPricingPlanDownloadView,
     ClubPricingPlanSubmitView,
     ClubPricingPlanUploadView,
-    ClubVenueCategoryPositionSaveView,
-    ClubVenueImageCreateView,
-    ClubVenueImageListView,
-    ClubVenueImagePositionEditorView,
-    ClubVenueImageUpdateView,
 )
 from reports.views import (  # noqa: F401 - re-exported for backward compatibility
     CoordinatorWorkloadReportView,
@@ -81,11 +76,6 @@ __all__ = [
     "ClubPricingPlanDownloadView",
     "ClubPricingPlanSubmitView",
     "ClubPricingPlanUploadView",
-    "ClubVenueCategoryPositionSaveView",
-    "ClubVenueImageCreateView",
-    "ClubVenueImageListView",
-    "ClubVenueImagePositionEditorView",
-    "ClubVenueImageUpdateView",
     "CoordinatorWorkloadReportView",
     "MatchActivityLogListView",
     "MatchActivityView",
