@@ -17,7 +17,7 @@ from django.views.generic import FormView
 
 from control_panel.forms import VenueCategoryImportForm, VenueImageForm, VenueSeatingCategoryForm
 from control_panel.permissions import ControlPanelAccessMixin
-from matches.models import Club, VenueImage, VenueSeatingCategory
+from matches.models import Club, Venue, VenueImage, VenueSeatingCategory
 from matches.venue_category_import_export import (
     build_venue_category_import_template_xlsx,
     export_venue_categories_xlsx,
@@ -95,6 +95,10 @@ class VenueSeatingCategoryListView(PanelListView):
         if coordinator:
             queryset = queryset.filter(club__owner_id=coordinator)
 
+        venue = self.request.GET.get("venue", "").strip()
+        if venue:
+            queryset = queryset.filter(venue_id=venue)
+
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -108,9 +112,13 @@ class VenueSeatingCategoryListView(PanelListView):
         context["coordinator_choices"] = User.objects.filter(
             owned_clubs__isnull=False, is_active=True
         ).distinct().order_by("username")
+        context["venue_choices"] = Venue.objects.filter(is_active=True).order_by("name_ar")
         context["selected_club"] = self.request.GET.get("club", "")
         context["selected_coordinator"] = self.request.GET.get("coordinator", "")
-        context["has_active_filters"] = any([context["selected_club"], context["selected_coordinator"]])
+        context["selected_venue"] = self.request.GET.get("venue", "")
+        context["has_active_filters"] = any([
+            context["selected_club"], context["selected_coordinator"], context["selected_venue"],
+        ])
         return context
 
 

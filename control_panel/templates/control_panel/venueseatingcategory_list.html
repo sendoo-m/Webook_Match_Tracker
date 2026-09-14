@@ -49,6 +49,16 @@
         </div>
 
         <div class="field-group">
+            <label>{% trans "Venue" %}</label>
+            <select name="venue" data-searchable>
+                <option value="">{% trans "All" %}</option>
+                {% for venue in venue_choices %}
+                    <option value="{{ venue.id }}" {% if selected_venue == venue.id|stringformat:"s" %}selected{% endif %}>{{ venue|localized_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
             <label>&nbsp;</label>
             <button type="submit" class="btn-apply-filters"><i class="ti ti-filter"></i> {% trans "Apply Filters" %}</button>
         </div>
