@@ -1,7 +1,7 @@
 from datetime import date
 
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect
@@ -184,23 +184,43 @@ class MatchImportView(LoginRequiredMixin, ControlPanelAccessMixin, FormView):
         return self.render_to_response(self.get_context_data(form=self.form_class(), result=result))
 
 
-class MatchSyncCalendarView(LoginRequiredMixin, ControlPanelAccessMixin, View):
+class MatchSyncCalendarView(LoginRequiredMixin, UserPassesTestMixin, View):
     """"Update Roshan League Schedule" button on the Control Panel's Matches
     page - the same matches.calendar_sync.sync_roshan_league_from_calendar()
     used by the Django Admin button and the sync_roshan_calendar management
     command, just surfaced here too. GET shows a confirm page; POST runs the
     sync (every round, not just 6-12) and redirects back to the match list
-    with a result message."""
+    with a result message.
+
+    A Club Manager coordinator can also trigger this - deliberately
+    unscoped (by explicit product decision): the sync processes the WHOLE
+    Roshan League calendar and can create/update matches for every club in
+    the league, not just the coordinator's own, exactly like it does for a
+    full admin. Unlike every other coordinator-facing action in this app,
+    this one is NOT limited to their own club's data."""
+
+    raise_exception = True
+    permission_denied_message = "You don't have access to the control panel — your account is limited to viewing only."
+
+    def test_func(self):
+        return can_access_limited_control_panel(self.request.user)
+
+    def _redirect_target(self):
+        if can_manage_control_panel(self.request.user):
+            return reverse("control_panel:match-list")
+        return reverse("control_panel:venue-control") + "?tab=matches"
 
     def get(self, request, *args, **kwargs):
-        return TemplateResponse(request, "control_panel/match_sync_calendar.html", {})
+        return TemplateResponse(request, "control_panel/match_sync_calendar.html", {
+            "back_url": self._redirect_target(),
+        })
 
     def post(self, request, *args, **kwargs):
         try:
             result = sync_roshan_league_from_calendar()
         except CalendarSyncError as exc:
             messages.error(request, _("Calendar sync failed: %(error)s") % {"error": exc})
-            return redirect("control_panel:match-list")
+            return redirect(self._redirect_target())
 
         skip_note = ""
         if result.skipped:
@@ -216,4 +236,4 @@ class MatchSyncCalendarView(LoginRequiredMixin, ControlPanelAccessMixin, View):
                 "skip_note": skip_note,
             },
         )
-        return redirect("control_panel:match-list")
+        return redirect(self._redirect_target())

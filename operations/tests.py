@@ -52,6 +52,22 @@ class ClubDashboardPermissionsTestBase(TestCase):
         for u in (cls.user_a, cls.user_b, cls.user_c):
             u.groups.add(club_manager_group)
 
+        # Real "Club Viewer" accounts (Club.club_account, a separate slot
+        # from the Club Manager coordinators above) for clubs A and B - the
+        # only accounts that can still reach the Club Dashboard's own
+        # landing page (ClubDashboardView) after the 2026-09-15 product
+        # decision to remove it from Club Manager.
+        club_viewer_group, _ = Group.objects.get_or_create(name="Club Viewer")
+        cls.club_viewer_a = User.objects.create_user(username="_test_club_viewer_a", password="pw")
+        cls.club_viewer_a.groups.add(club_viewer_group)
+        cls.club_a.club_account = cls.club_viewer_a
+        cls.club_a.save(update_fields=["club_account"])
+
+        cls.club_viewer_b = User.objects.create_user(username="_test_club_viewer_b", password="pw")
+        cls.club_viewer_b.groups.add(club_viewer_group)
+        cls.club_b.club_account = cls.club_viewer_b
+        cls.club_b.save(update_fields=["club_account"])
+
         # A hosts, B visits.
         cls.match = Match.objects.create(
             competition=cls.competition,
@@ -89,13 +105,16 @@ class ClubDashboardPermissionsTestBase(TestCase):
 
 
 class VisibilityTests(ClubDashboardPermissionsTestBase):
-    def test_home_club_user_sees_own_club_dashboard(self):
-        self.assertTrue(can_view_own_club_dashboard(self.user_a))
+    def test_club_manager_coordinator_no_longer_sees_the_club_dashboard(self):
+        # Product decision (2026-09-15): the Club Dashboard's landing page
+        # is reserved for a real "Club Viewer" account - a "Club Manager"
+        # coordinator (user_a's fixture group here) no longer sees it, even
+        # though they still keep the match detail page and the pricing-
+        # plan upload/submit/confirm/download flow exactly as before.
+        self.assertFalse(can_view_own_club_dashboard(self.user_a))
 
-    def test_unrelated_club_still_sees_its_own_dashboard(self):
-        # can_view_own_club_dashboard only checks club ownership, not
-        # relation to any specific match.
-        self.assertTrue(can_view_own_club_dashboard(self.user_c))
+    def test_unrelated_club_manager_also_does_not_see_the_dashboard(self):
+        self.assertFalse(can_view_own_club_dashboard(self.user_c))
 
     def test_can_view_club_match_true_for_home_club(self):
         self.assertTrue(can_view_club_match(self.user_a, self.match))
@@ -307,12 +326,21 @@ class NoRegressionTests(ClubDashboardPermissionsTestBase):
 
 
 class ClubDashboardAccessTests(ClubDashboardPermissionsTestBase):
-    def test_club_user_can_open_own_dashboard(self):
+    def test_club_viewer_can_open_own_dashboard(self):
         client = Client()
-        client.login(username="_test_club_a", password="pw")
+        client.login(username="_test_club_viewer_a", password="pw")
         response = client.get("/operations/club-dashboard/")
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "operations/club_dashboard.html")
+
+    def test_club_manager_coordinator_is_denied(self):
+        """Product decision (2026-09-15): the dashboard's own landing page
+        is Club Viewer-only now - a Club Manager coordinator (owner of the
+        same club) gets redirected away instead of the page itself."""
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/operations/club-dashboard/")
+        self.assertEqual(response.status_code, 302)
 
     def test_user_with_no_club_is_denied(self):
         """Operations Manager owns no club at all - denied, redirected by
@@ -335,7 +363,7 @@ class ClubDashboardAccessTests(ClubDashboardPermissionsTestBase):
         Club B's unrelated match must never appear no matter what's
         appended to the URL."""
         client = Client()
-        client.login(username="_test_club_a", password="pw")
+        client.login(username="_test_club_viewer_a", password="pw")
         response = client.get(
             "/operations/club-dashboard/",
             {"club_id": self.club_c.pk, "club": self.club_c.pk},
@@ -351,7 +379,7 @@ class ClubDashboardAccessTests(ClubDashboardPermissionsTestBase):
 class ClubDashboardMatchListTests(ClubDashboardPermissionsTestBase):
     def test_home_match_appears_for_home_club(self):
         client = Client()
-        client.login(username="_test_club_a", password="pw")
+        client.login(username="_test_club_viewer_a", password="pw")
         response = client.get("/operations/club-dashboard/")
         self.assertIn(self.match, [row["match"] for row in response.context["rows"]])
 
@@ -359,13 +387,13 @@ class ClubDashboardMatchListTests(ClubDashboardPermissionsTestBase):
         """The whole point of Phase 3: unlike get_visible_matches, the
         club dashboard shows the club its Away fixtures too."""
         client = Client()
-        client.login(username="_test_club_b", password="pw")
+        client.login(username="_test_club_viewer_b", password="pw")
         response = client.get("/operations/club-dashboard/")
         self.assertIn(self.match, [row["match"] for row in response.context["rows"]])
 
     def test_unrelated_match_never_appears(self):
         client = Client()
-        client.login(username="_test_club_a", password="pw")
+        client.login(username="_test_club_viewer_a", password="pw")
         response = client.get("/operations/club-dashboard/")
         matches = [row["match"] for row in response.context["rows"]]
         self.assertNotIn(self.unrelated_match, matches)
@@ -442,8 +470,10 @@ class ClubDashboardActionTests(ClubDashboardPermissionsTestBase):
 
 class ClubDashboardUITests(ClubDashboardPermissionsTestBase):
     def test_empty_state_renders_for_club_with_no_matches(self):
+        club_viewer_group = Group.objects.get(name="Club Viewer")
         no_match_user = User.objects.create_user(username="_test_club_e", password="pw")
-        Club.objects.create(name_ar="نادي هـ", name_en="Club E", owner=no_match_user)
+        no_match_user.groups.add(club_viewer_group)
+        Club.objects.create(name_ar="نادي هـ", name_en="Club E", club_account=no_match_user)
         client = Client()
         client.login(username="_test_club_e", password="pw")
         response = client.get("/operations/club-dashboard/")
@@ -452,14 +482,14 @@ class ClubDashboardUITests(ClubDashboardPermissionsTestBase):
 
     def test_type_filter_narrows_to_home_only(self):
         client = Client()
-        client.login(username="_test_club_a", password="pw")
+        client.login(username="_test_club_viewer_a", password="pw")
         response = client.get("/operations/club-dashboard/", {"type": "home"})
         for row in response.context["rows"]:
             self.assertTrue(row["is_home"])
 
     def test_type_filter_narrows_to_away_only(self):
         client = Client()
-        client.login(username="_test_club_b", password="pw")
+        client.login(username="_test_club_viewer_b", password="pw")
         response = client.get("/operations/club-dashboard/", {"type": "away"})
         for row in response.context["rows"]:
             self.assertFalse(row["is_home"])
@@ -469,21 +499,32 @@ class ClubDashboardUITests(ClubDashboardPermissionsTestBase):
         LANGUAGE_BIDI-driven dir=rtl/ltr) as every other page - no
         separate template system for this page."""
         client = Client()
-        client.login(username="_test_club_a", password="pw")
+        client.login(username="_test_club_viewer_a", password="pw")
         response = client.get("/operations/club-dashboard/")
         self.assertContains(response, "<html")
         self.assertContains(response, "toast-container")
 
-    def test_sidebar_link_only_shown_to_club_users(self):
+    def test_sidebar_link_only_shown_to_club_viewer_now(self):
+        """Product decision (2026-09-15): the sidebar's "Club Dashboard"
+        link disappears for a Club Manager coordinator - only a real Club
+        Viewer account keeps it."""
         client = Client()
-        client.login(username="_test_club_a", password="pw")
-        response = client.get("/operations/")
+        client.login(username="_test_club_viewer_a", password="pw")
+        # Club Viewer is excluded from the Operations Dashboard itself
+        # (ExcludeClubViewerAccessMixin) - check the sidebar on a page it
+        # can actually reach.
+        response = client.get("/operations/club-dashboard/")
         self.assertContains(response, "/operations/club-dashboard/")
 
         client2 = Client()
-        client2.login(username="_test_ops_manager", password="pw")
+        client2.login(username="_test_club_a", password="pw")
         response2 = client2.get("/operations/")
         self.assertNotContains(response2, "/operations/club-dashboard/")
+
+        client3 = Client()
+        client3.login(username="_test_ops_manager", password="pw")
+        response3 = client3.get("/operations/")
+        self.assertNotContains(response3, "/operations/club-dashboard/")
 
 
 class ClubViewerAccessRestrictionTests(TestCase):
@@ -1675,4 +1716,68 @@ class ScopedControlPanelAccessTests(IsolatedMediaMixin, ClubDashboardPermissions
         response = client.get(f"/control-panel/venue-images/{self.venue_image.pk}/positions/", {"club": self.club_a.pk})
         self.assertContains(response, "/control-panel/venue-images/")
         self.assertNotContains(response, "/control-panel/venue-control/")
+
+    # --- Category Import/Export/Template (scoped) ---
+
+    def test_coordinator_can_download_template_for_their_own_venue_and_club(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/control-panel/venue-categories/template/", {"venue": self.venue.pk, "club": self.club_a.pk})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response["Content-Type"],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+
+    def test_coordinator_cannot_download_template_for_an_unrelated_club(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/control-panel/venue-categories/template/", {"venue": self.venue.pk, "club": self.club_c.pk})
+        self.assertEqual(response.status_code, 400)
+
+    def test_coordinator_can_export_their_own_categories(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/control-panel/venue-categories/export/", {"venue": self.venue.pk, "club": self.club_a.pk})
+        self.assertEqual(response.status_code, 200)
+
+    def test_coordinator_cannot_export_an_unrelated_clubs_categories(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/control-panel/venue-categories/export/", {"venue": self.venue.pk, "club": self.club_c.pk})
+        self.assertEqual(response.status_code, 400)
+
+    def test_club_viewer_only_cannot_reach_category_import_export(self):
+        client = Client()
+        client.login(username="_test_club_viewer_only", password="pw")
+        response = client.get("/control-panel/venue-categories/import/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_full_admin_still_downloads_template_for_any_club(self):
+        client = Client()
+        client.login(username="_test_ops_manager", password="pw")
+        response = client.get("/control-panel/venue-categories/template/", {"venue": self.venue.pk, "club": self.club_c.pk})
+        self.assertEqual(response.status_code, 200)
+
+    # --- Calendar sync (unscoped by explicit product decision) ---
+
+    def test_coordinator_can_reach_the_sync_calendar_confirm_page(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/control-panel/matches/sync-calendar/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "/control-panel/venue-control/?tab=matches")
+
+    def test_club_viewer_only_cannot_reach_sync_calendar(self):
+        client = Client()
+        client.login(username="_test_club_viewer_only", password="pw")
+        response = client.get("/control-panel/matches/sync-calendar/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_full_admin_sync_calendar_back_link_points_to_match_list(self):
+        client = Client()
+        client.login(username="_test_ops_manager", password="pw")
+        response = client.get("/control-panel/matches/sync-calendar/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'href="/control-panel/matches/"')
 

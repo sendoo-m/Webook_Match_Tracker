@@ -189,8 +189,20 @@ def require_match_access(user, match):
 
 
 def can_view_own_club_dashboard(user):
-    """True if this user owns at least one active club - the basic gate
-    for the future club dashboard existing at all for them."""
+    """True only for an account in the "Club Viewer" group that owns/is
+    linked to at least one active club - a "Club Manager" coordinator no
+    longer sees this page at all, by explicit product decision
+    (2026-09-15). This only gates the dashboard's own landing page
+    (ClubDashboardView) and its sidebar link; it does NOT gate the match
+    detail page (can_view_club_match) or the pricing-plan upload/submit/
+    confirm/download flow (each of those checks its own per-match
+    capability directly, e.g. can_upload_home_match_pricing_plan) - a
+    Club Manager coordinator keeps using those exactly as before, just
+    without the dashboard's own summary/list page in front of them."""
+    from core.permissions import is_club_viewer
+
+    if not is_club_viewer(user):
+        return False
     return bool(get_user_club_ids(user))
 
 

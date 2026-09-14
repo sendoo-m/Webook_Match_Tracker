@@ -1,6 +1,10 @@
 {# control_panel/_venue_control_matches.html #}
 {% load i18n %}
 {% load display_helpers %}
+<div class="page-header-row" style="margin-bottom: var(--space-4);">
+    <p class="page-subtitle" style="margin:0;">{% trans "Matches where one of your clubs is home or away." %}</p>
+    <a class="btn btn-secondary" href="{% url 'control_panel:match-sync-calendar' %}"><i class="ti ti-calendar-event"></i> {% trans "Update Roshan League Schedule" %}</a>
+</div>
 <div class="card panel">
     <div class="table-wrap">
         <table>

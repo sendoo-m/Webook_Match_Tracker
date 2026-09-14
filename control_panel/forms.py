@@ -61,6 +61,10 @@ class VenueSeatingCategoryForm(forms.ModelForm):
 
 
 class VenueCategoryImportForm(forms.Form):
+    """`venue_queryset`/`club_queryset`, when passed, restrict those two
+    choices - used by a Club Manager coordinator's scoped access to
+    import/export/template (see control_panel/views/venue_details.py)."""
+
     venue = forms.ModelChoiceField(
         label=_("Venue"),
         queryset=Venue.objects.filter(is_active=True).order_by("name_ar"),
@@ -77,6 +81,13 @@ class VenueCategoryImportForm(forms.Form):
             "Existing categories for this venue/club are updated by code; new codes are created."
         ),
     )
+
+    def __init__(self, *args, venue_queryset=None, club_queryset=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if venue_queryset is not None:
+            self.fields["venue"].queryset = venue_queryset
+        if club_queryset is not None:
+            self.fields["club"].queryset = club_queryset
 
     def clean_import_file(self):
         import_file = self.cleaned_data["import_file"]

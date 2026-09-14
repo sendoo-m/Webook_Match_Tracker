@@ -381,14 +381,32 @@ class VenueSeatingCategoryToggleActiveView(PanelToggleActiveView):
         return self.success_url_name
 
 
-class VenueCategoryTemplateView(LoginRequiredMixin, ControlPanelAccessMixin, View):
+class VenueCategoryScopedFormMixin:
+    """Shared by the three views below: a Club Manager coordinator gets the
+    same Import/Export/Template tools as a full admin, restricted to only
+    their own club(s) and the venues those clubs play HOME at - never
+    another club's venue/categories, even one sharing the physical venue."""
+
+    def test_func(self):
+        return can_access_limited_control_panel(self.request.user)
+
+    def _scoped_form_kwargs(self):
+        if can_manage_control_panel(self.request.user):
+            return {}
+        return {
+            "venue_queryset": Venue.objects.filter(id__in=get_manageable_venue_ids_for_user(self.request.user)),
+            "club_queryset": Club.objects.filter(id__in=get_owned_club_ids(self.request.user)),
+        }
+
+
+class VenueCategoryTemplateView(LoginRequiredMixin, ScopedControlPanelAccessMixin, VenueCategoryScopedFormMixin, View):
     """Downloads a template pre-filled with the chosen venue/club's
     existing category codes (or just the header row if it has none yet) -
     venue and club are picked via GET params from the same select inputs
     shown on the import page."""
 
     def get(self, request, *args, **kwargs):
-        form = VenueCategoryImportForm(data=request.GET)
+        form = VenueCategoryImportForm(data=request.GET, **self._scoped_form_kwargs())
         # Only venue/club are relevant here - drop import_file from
         # required-field validation by checking those two fields alone.
         venue = form.fields["venue"].queryset.filter(pk=request.GET.get("venue")).first()
@@ -405,9 +423,9 @@ class VenueCategoryTemplateView(LoginRequiredMixin, ControlPanelAccessMixin, Vie
         return response
 
 
-class VenueCategoryExportView(LoginRequiredMixin, ControlPanelAccessMixin, View):
+class VenueCategoryExportView(LoginRequiredMixin, ScopedControlPanelAccessMixin, VenueCategoryScopedFormMixin, View):
     def get(self, request, *args, **kwargs):
-        form = VenueCategoryImportForm(data=request.GET)
+        form = VenueCategoryImportForm(data=request.GET, **self._scoped_form_kwargs())
         venue = form.fields["venue"].queryset.filter(pk=request.GET.get("venue")).first()
         club = form.fields["club"].queryset.filter(pk=request.GET.get("club")).first()
         if not venue or not club:
@@ -422,9 +440,14 @@ class VenueCategoryExportView(LoginRequiredMixin, ControlPanelAccessMixin, View)
         return response
 
 
-class VenueCategoryImportView(LoginRequiredMixin, ControlPanelAccessMixin, FormView):
+class VenueCategoryImportView(LoginRequiredMixin, ScopedControlPanelAccessMixin, VenueCategoryScopedFormMixin, FormView):
     template_name = "control_panel/venue_category_import.html"
     form_class = VenueCategoryImportForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update(self._scoped_form_kwargs())
+        return kwargs
 
     def get_success_url(self):
         return reverse("control_panel:venue-category-import")
@@ -435,5 +458,5 @@ class VenueCategoryImportView(LoginRequiredMixin, ControlPanelAccessMixin, FormV
         import_file = form.cleaned_data["import_file"]
         result = import_venue_categories_xlsx(import_file, venue, club)
         return self.render_to_response(
-            self.get_context_data(form=self.form_class(), result=result, venue=venue, club=club)
+            self.get_context_data(form=self.form_class(**self._scoped_form_kwargs()), result=result, venue=venue, club=club)
         )

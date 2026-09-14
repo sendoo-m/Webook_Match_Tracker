@@ -3,7 +3,10 @@
 {% load i18n %}
 <div class="page-header-row" style="margin-bottom: var(--space-4);">
     <p class="page-subtitle" style="margin:0;">{% trans "The seating category codes (e.g. CAT 1, CAT 1 N) clubs price against on the pricing-plan page." %}</p>
-    <a class="btn btn-primary" href="{% url 'control_panel:venue-category-create' %}"><i class="ti ti-plus"></i>&nbsp; {% trans "Add Category" %}</a>
+    <div class="filter-bar">
+        <a class="btn btn-secondary" href="{% url 'control_panel:venue-category-import' %}">{% trans "Import / Export" %}</a>
+        <a class="btn btn-primary" href="{% url 'control_panel:venue-category-create' %}"><i class="ti ti-plus"></i>&nbsp; {% trans "Add Category" %}</a>
+    </div>
 </div>
 
 {% for group in grouped_categories %}

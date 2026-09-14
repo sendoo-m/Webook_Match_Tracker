@@ -1070,6 +1070,9 @@ msgstr ""
 msgid "Back to Matches"
 msgstr "العودة إلى المباريات"
 
+msgid "Matches where one of your clubs is home or away."
+msgstr "المباريات التي يكون فيها أحد أنديتك مضيفًا أو ضيفًا."
+
 msgid "Import"
 msgstr "استيراد"
 

@@ -20,9 +20,7 @@
             <p class="page-subtitle">{% trans "Grouped by club - use the filters below to jump straight to one club or coordinator." %}</p>
         </div>
         <div class="filter-bar">
-            {% if is_full_admin %}
-                <a class="btn btn-secondary" href="{% url 'control_panel:venue-category-import' %}">{% trans "Import / Export" %}</a>
-            {% endif %}
+            <a class="btn btn-secondary" href="{% url 'control_panel:venue-category-import' %}">{% trans "Import / Export" %}</a>
             {% if create_url %}
                 <a class="btn btn-primary" href="{{ create_url }}"><i class="ti ti-plus"></i>&nbsp; {{ create_label }}</a>
             {% endif %}

@@ -70,6 +70,10 @@
         </div>
     </form>
 </div>
+{% else %}
+<div class="card panel">
+    <a class="btn btn-secondary" href="{% url 'control_panel:match-sync-calendar' %}"><i class="ti ti-calendar-event"></i> {% trans "Update Roshan League Schedule" %}</a>
+</div>
 {% endif %}
 {% endblock %}
 
