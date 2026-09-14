@@ -12,10 +12,10 @@
 
     <ul>
         <li>{% trans "Matches are matched by round + the two clubs playing, not by date or slug - so a match keeps updating correctly even if SPL reschedules it to a different day, and an existing match keeps its current slug." %}</li>
-        <li>{% trans "Fixtures whose kickoff time is still \"Time TBC\" on the calendar are skipped, not imported with a guessed time." %}</li>
-        <li>{% trans "A previously-known stadium is kept if the calendar's location briefly goes back to \"TBC\" - a match's venue only ever gets replaced by a new real one." %}</li>
+        <li>{% trans "Fixtures whose kickoff time is still marked Time TBC on the calendar are skipped, not imported with a guessed time." %}</li>
+        <li>{% trans "A previously-known stadium is kept if the calendar's location briefly goes back to TBC - a match's venue only ever gets replaced by a new real one." %}</li>
         <li>{% trans "A copy of the imported rows is also saved as an Excel file for reference." %}</li>
-        <li>{% trans "To keep this running automatically, schedule \"python manage.py sync_roshan_calendar\" (e.g. via Windows Task Scheduler) instead of clicking this button by hand." %}</li>
+        <li>{% trans "To keep this running automatically, schedule python manage.py sync_roshan_calendar (e.g. via Windows Task Scheduler) instead of clicking this button by hand." %}</li>
     </ul>
 
     <form method="post" style="margin-top: 20px;">

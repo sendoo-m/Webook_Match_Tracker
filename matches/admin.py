@@ -14,7 +14,7 @@ from .import_export import (
     export_matches_xlsx,
     import_matches_file,
 )
-from .models import Club, Venue, Match, Competition
+from .models import Club, Venue, VenueImage, VenueSeatingCategory, Match, Competition
 
 # Where the "Update Roshan League Schedule" button also saves a copy of the
 # imported rows as an .xlsx, per the calendar-import feature's requirements.
@@ -40,10 +40,41 @@ class ClubAdmin(admin.ModelAdmin):
 
 @admin.register(Venue)
 class VenueAdmin(admin.ModelAdmin):
-    list_display = ("name_ar", "name_en", "city", "is_active")
+    list_display = ("name_ar", "name_en", "city", "seat_type", "is_active")
     search_fields = ("name_ar", "name_en", "city")
-    list_filter = ("is_active", "city")
+    list_filter = ("is_active", "seat_type", "city")
     ordering = ("name_ar",)
+
+
+@admin.register(VenueImage)
+class VenueImageAdmin(admin.ModelAdmin):
+    """Seating-map/overview images shown to clubs on the pricing-plan page -
+    the same images the Control Panel's "Venue Images" screen manages, now
+    also reachable here."""
+
+    list_display = ("venue", "caption", "sort_order", "is_active")
+    search_fields = ("venue__name_ar", "venue__name_en", "caption")
+    list_filter = ("is_active", "venue")
+    ordering = ("venue__name_ar", "sort_order")
+    autocomplete_fields = ("venue",)
+
+
+@admin.register(VenueSeatingCategory)
+class VenueSeatingCategoryAdmin(admin.ModelAdmin):
+    """The seating category codes (e.g. "CAT 1") a club prices against on
+    the pricing-plan page, plus where its price badge is placed on a
+    seating-map image (position_image/position_x/position_y) - the same
+    data the Control Panel's "Venue Categories" position editor manages."""
+
+    list_display = ("venue", "club", "code", "seat_count", "has_position", "is_active")
+    search_fields = ("venue__name_ar", "venue__name_en", "club__name_ar", "club__name_en", "code")
+    list_filter = ("is_active", "venue", "club")
+    ordering = ("venue__name_ar", "club__name_ar", "sort_order", "code")
+    autocomplete_fields = ("venue", "club", "position_image")
+
+    @admin.display(boolean=True, description="Positioned on map")
+    def has_position(self, obj):
+        return obj.has_position
 
 
 class MatchChecklistItemInline(admin.TabularInline):

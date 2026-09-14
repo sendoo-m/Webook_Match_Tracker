@@ -697,6 +697,25 @@ class ClubViewerAccessRestrictionTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "/operations/club-dashboard/")
 
+    def test_login_with_a_stale_next_to_club_dashboard_does_not_loop_for_a_club_manager(self):
+        """Regression test for a real ERR_TOO_MANY_REDIRECTS bug: a Club
+        Manager coordinator (club_manager_cv here) hitting a stale
+        ?next=/operations/club-dashboard/ link (from before the
+        2026-09-15 product decision restricted that page to Club Viewer
+        only) must NOT be sent there - that page raises PermissionDenied
+        for them, and FriendlyPermissionDeniedMiddleware's HTTP_REFERER
+        fallback would otherwise bounce them right back through this same
+        login URL forever. HtmxLoginView.get_redirect_url() ignores the
+        stale `next` in this specific case and falls back to the ordinary
+        default redirect instead."""
+        client = Client()
+        response = client.post(
+            "/login/?next=/operations/club-dashboard/",
+            {"username": "_test_club_manager_cv", "password": "pw"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertNotEqual(response.url, "/operations/club-dashboard/")
+
 
 # --- Phase 4: Club Pricing Plan tests -------------------------------------
 
@@ -1323,6 +1342,102 @@ class SPLPricingPlanDecisionTests(ClubDashboardPermissionsTestBase):
         newer.refresh_from_db()
         self.assertEqual(self.plan.spl_decision, ClubPricingPlan.SPLDecision.PENDING)
         self.assertEqual(newer.spl_decision, ClubPricingPlan.SPLDecision.PENDING)
+
+
+class ClubPricingPlanAdminActionsTests(ClubDashboardPermissionsTestBase):
+    """The Django Admin's "Approve selected pricing plans" / "Reject
+    selected pricing plans" actions on ClubPricingPlanAdmin - the same
+    business logic as SPLPricingPlanDecisionTests above (state transitions,
+    idempotency, activity log, notification), reached from /admin/ instead."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.category = None
+        if cls.match.venue_id:
+            cls.category = VenueSeatingCategory.objects.create(
+                venue=cls.match.venue, club=cls.club_a, code="_TEST ADMIN CAT",
+            )
+        cls.plan = ClubPricingPlan.objects.create(
+            match=cls.match, club=cls.club_a, version=1,
+            status=ClubPricingPlan.Status.SUBMITTED_TO_SPL,
+        )
+        if cls.category:
+            ClubPricingPlanCategoryPrice.objects.create(plan=cls.plan, category=cls.category, price=150)
+
+    def _admin_client(self):
+        client = Client()
+        client.login(username="_test_super", password="pw")
+        return client
+
+    def test_venue_image_registered_in_admin(self):
+        response = self._admin_client().get("/admin/matches/venueimage/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_venue_seating_category_registered_in_admin(self):
+        response = self._admin_client().get("/admin/matches/venueseatingcategory/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_approve_action_via_admin(self):
+        client = self._admin_client()
+        response = client.post("/admin/operations/clubpricingplan/", {
+            "action": "approve_pricing_plans",
+            "_selected_action": [str(self.plan.pk)],
+        })
+        self.assertEqual(response.status_code, 302)
+        self.plan.refresh_from_db()
+        self.assertEqual(self.plan.spl_decision, ClubPricingPlan.SPLDecision.APPROVED)
+        self.assertEqual(self.plan.spl_decision_by.username, "_test_super")
+
+        self.match.refresh_from_db()
+        self.assertTrue(self.match.ticketing_plan_approved)
+        self.assertTrue(
+            self.match.activity_logs.filter(description__icontains=f"approved pricing plan v{self.plan.version}").exists()
+        )
+        self.assertTrue(
+            Notification.objects.filter(recipient=self.user_a, notification_type="pricing_plan_approved", plan=self.plan).exists()
+        )
+
+    def test_reject_action_via_admin_shows_a_note_form_first(self):
+        client = self._admin_client()
+        response = client.post("/admin/operations/clubpricingplan/", {
+            "action": "reject_pricing_plans",
+            "_selected_action": [str(self.plan.pk)],
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Reject pricing plans")
+        self.plan.refresh_from_db()
+        self.assertEqual(self.plan.spl_decision, ClubPricingPlan.SPLDecision.PENDING)
+
+    def test_reject_action_via_admin_applies_the_note(self):
+        client = self._admin_client()
+        response = client.post("/admin/operations/clubpricingplan/", {
+            "action": "reject_pricing_plans",
+            "_selected_action": [str(self.plan.pk)],
+            "apply": "1",
+            "note": "Prices for CAT 1 look wrong.",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.plan.refresh_from_db()
+        self.assertEqual(self.plan.spl_decision, ClubPricingPlan.SPLDecision.REJECTED)
+        self.assertEqual(self.plan.spl_decision_note, "Prices for CAT 1 look wrong.")
+
+        self.match.refresh_from_db()
+        self.assertFalse(self.match.ticketing_plan_approved)
+        self.assertTrue(
+            Notification.objects.filter(recipient=self.user_a, notification_type="pricing_plan_rejected", plan=self.plan).exists()
+        )
+
+    def test_approve_action_skips_an_already_decided_plan(self):
+        self.plan.spl_decision = ClubPricingPlan.SPLDecision.REJECTED
+        self.plan.save(update_fields=["spl_decision"])
+        client = self._admin_client()
+        client.post("/admin/operations/clubpricingplan/", {
+            "action": "approve_pricing_plans",
+            "_selected_action": [str(self.plan.pk)],
+        })
+        self.plan.refresh_from_db()
+        self.assertEqual(self.plan.spl_decision, ClubPricingPlan.SPLDecision.REJECTED)
 
 
 class SPLApprovalsPageDecisionUITests(ClubDashboardPermissionsTestBase):

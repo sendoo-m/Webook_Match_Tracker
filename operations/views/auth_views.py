@@ -7,11 +7,12 @@ from django.http import HttpResponse
 from django.urls import reverse
 
 from core.permissions import is_club_viewer
+from operations.permissions import can_view_own_club_dashboard
 
 
 class HtmxLoginView(LoginView):
     """
-    Same LoginView behavior, with three htmx-aware additions:
+    Same LoginView behavior, with four htmx-aware additions:
 
     1. On an invalid form (wrong credentials), an htmx request gets back
        just the login card partial instead of the full page — same
@@ -25,6 +26,16 @@ class HtmxLoginView(LoginView):
        blocked for this group (see
        operations.permissions.ExcludeClubViewerAccessMixin), so sending
        them there first would immediately bounce them right back out.
+    4. get_redirect_url() ignores a `?next=` pointing at the Club
+       Dashboard when the just-authenticated user can't actually view it
+       (a Club Manager coordinator, since the 2026-09-15 product decision
+       restricted that page to Club Viewer only) - otherwise a stale
+       bookmark/link to the Club Dashboard sends them through login,
+       PermissionDenied bounces them back via FriendlyPermissionDeniedMiddleware's
+       HTTP_REFERER redirect (which is this same login URL, `next` and
+       all), and the two pages redirect into each other forever
+       (ERR_TOO_MANY_REDIRECTS). Falling back to the ordinary default
+       redirect instead breaks that loop.
     """
 
     template_name = "registration/login.html"
@@ -42,6 +53,13 @@ class HtmxLoginView(LoginView):
         if is_club_viewer(self.request.user):
             return reverse("operations:club-dashboard")
         return super().get_default_redirect_url()
+
+    def get_redirect_url(self):
+        url = super().get_redirect_url()
+        if url and url.rstrip("/") == reverse("operations:club-dashboard").rstrip("/"):
+            if not can_view_own_club_dashboard(self.request.user):
+                return ""
+        return url
 
     def form_valid(self, form):
         response = super().form_valid(form)

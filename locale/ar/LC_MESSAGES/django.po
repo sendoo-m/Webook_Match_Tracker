@@ -144,29 +144,23 @@ msgstr "بدون دور"
 msgid "Coordinates"
 msgstr "يدير"
 
-#, fuzzy, python-format
-#| msgid "%(counter)s alert"
-#| msgid_plural "%(counter)s alerts"
 msgid "%(counter)s club"
 msgid_plural "%(counter)s clubs"
-msgstr[0] "لا توجد تنبيهات"
-msgstr[1] "تنبيه واحد"
-msgstr[2] "تنبيهان"
-msgstr[3] "%(counter)s تنبيهات"
-msgstr[4] "%(counter)s تنبيهًا"
-msgstr[5] "%(counter)s تنبيه"
+msgstr[0] "لا أندية"
+msgstr[1] "نادٍ واحد"
+msgstr[2] "ناديان"
+msgstr[3] "%(counter)s أندية"
+msgstr[4] "%(counter)s ناديًا"
+msgstr[5] "%(counter)s نادٍ"
 
-#, fuzzy, python-format
-#| msgid "%(counter)s pending"
-#| msgid_plural "%(counter)s pending"
 msgid "%(counter)s section"
 msgid_plural "%(counter)s sections"
-msgstr[0] "لا شيء معلّق"
-msgstr[1] "عنصر واحد معلّق"
-msgstr[2] "عنصران معلّقان"
-msgstr[3] "%(counter)s معلّقة"
-msgstr[4] "%(counter)s معلّقًا"
-msgstr[5] "%(counter)s معلّق"
+msgstr[0] "لا أقسام"
+msgstr[1] "قسم واحد"
+msgstr[2] "قسمان"
+msgstr[3] "%(counter)s أقسام"
+msgstr[4] "%(counter)s قسمًا"
+msgstr[5] "%(counter)s قسم"
 
 msgid "Every match"
 msgstr "كل المباريات"
@@ -546,7 +540,7 @@ msgid "Current File"
 msgstr "الملف الحالي"
 
 msgid "No file attached"
-msgstr ""
+msgstr "لا يوجد ملف مرفق"
 
 msgid "Version"
 msgstr "الإصدار"
@@ -555,24 +549,24 @@ msgid "Uploaded On"
 msgstr "تاريخ الرفع"
 
 msgid "SPL Decision"
-msgstr ""
+msgstr "قرار SPL"
 
 msgid "SPL requested changes"
-msgstr ""
+msgstr "طلب SPL إجراء تعديلات"
 
 msgid "Category"
 msgstr "تصنيف"
 
 msgid "Price"
-msgstr ""
+msgstr "السعر"
 
 #, python-format
 msgid "Submitted to SPL on %(date)s by %(user)s"
-msgstr ""
+msgstr "تم الإرسال إلى SPL في %(date)s بواسطة %(user)s"
 
 #, python-format
 msgid "Submission confirmed on %(date)s by %(user)s"
-msgstr ""
+msgstr "تم تأكيد الإرسال في %(date)s بواسطة %(user)s"
 
 msgid "No pricing plan uploaded yet."
 msgstr "لم يتم رفع خطة أسعار بعد."
@@ -662,47 +656,37 @@ msgstr ""
 "SPL، ولا نشر المباراة، ولا تغيير حالتها في CMS أو حالة التذاكر - كل ده خطوات "
 "منفصلة."
 
-#, fuzzy
-#| msgid "Current File"
 msgid "Current Plan"
-msgstr "الملف الحالي"
+msgstr "الخطة الحالية"
 
 msgid "Venue Seating Map"
-msgstr ""
+msgstr "مخطط مقاعد الملعب"
 
-#, fuzzy, python-format
-#| msgid "at %(sent_at)s"
 msgid "Seating: %(seat_type)s"
-msgstr "في %(sent_at)s"
+msgstr "الجلوس: %(seat_type)s"
 
 msgid "Enter Prices by Category"
-msgstr ""
+msgstr "إدخال الأسعار حسب الفئة"
 
 msgid "Seat Count"
-msgstr ""
+msgstr "عدد المقاعد"
 
-#, fuzzy
-#| msgid "Note (optional)"
 msgid "Attach a file (optional)"
-msgstr "ملاحظة (اختياري)"
+msgstr "إرفاق ملف (اختياري)"
 
-#, fuzzy
-#| msgid "Upload Pricing Plan"
 msgid "Save Pricing Plan"
-msgstr "رفع خطة الأسعار"
+msgstr "حفظ خطة التسعير"
 
 msgid "Or Upload an Excel File"
-msgstr ""
+msgstr "أو ارفع ملف إكسل"
 
 msgid ""
 "Columns: \"code\" (or \"Ticket Name\") and \"price\". Only categories listed "
 "above are accepted."
 msgstr ""
 
-#, fuzzy
-#| msgid "Import Events"
 msgid "Import Excel"
-msgstr "استيراد الفعاليات"
+msgstr "استيراد إكسل"
 
 msgid ""
 "No seating categories are set up yet for this venue/club - a coordinator "
@@ -714,43 +698,33 @@ msgid "Pricing Plan File"
 msgstr "ملف خطة الأسعار"
 
 msgid "Upload"
-msgstr ""
+msgstr "رفع"
 
-#, fuzzy
-#| msgid "Could not upload the file."
 msgid "Could not save the pricing plan."
-msgstr "تعذّر رفع الملف."
+msgstr "تعذّر حفظ خطة التسعير."
 
 msgid "Enter at least one category price or attach a file before saving."
-msgstr ""
+msgstr "أدخل سعر فئة واحدة على الأقل أو أرفق ملفًا قبل الحفظ."
 
 msgid ""
 "Pricing plan uploaded. This does not approve it - SPL review still applies."
 msgstr "تم رفع خطة الأسعار. هذا لا يعني اعتمادها - مراجعة SPL لا تزال مطلوبة."
 
-#, fuzzy
-#| msgid "Could not upload the file."
 msgid "Could not read the file."
-msgstr "تعذّر رفع الملف."
+msgstr "تعذّرت قراءة الملف."
 
 msgid ""
 "This match has no venue set, so it has no seating categories to price "
 "against."
 msgstr ""
 
-#, fuzzy
-#| msgid "No matches found for this filter."
 msgid "No valid category prices found in the file."
-msgstr "لا توجد مباريات مطابقة لهذا الفلتر."
+msgstr "لم يتم العثور على أسعار فئات صالحة في الملف."
 
-#, fuzzy, python-format
-#| msgid ""
-#| "Pricing plan uploaded. This does not approve it - SPL review still "
-#| "applies."
 msgid ""
 "Pricing plan imported (%(count)s categories). This does not approve it - SPL "
 "review still applies."
-msgstr "تم رفع خطة الأسعار. هذا لا يعني اعتمادها - مراجعة SPL لا تزال مطلوبة."
+msgstr "تم استيراد خطة الأسعار (%(count)s فئة). هذا لا يعني اعتمادها - مراجعة SPL لا تزال مطلوبة."
 
 msgid "This pricing plan has already been submitted to SPL."
 msgstr "تم إرسال خطة الأسعار هذه إلى SPL بالفعل."
@@ -773,7 +747,7 @@ msgid "Venue"
 msgstr "المكان"
 
 msgid "Excel file"
-msgstr ""
+msgstr "ملف إكسل"
 
 msgid ""
 "Columns: \"code\" (or \"Ticket Name\") and \"seat_count\" (or \"Total "
@@ -783,7 +757,7 @@ msgid ""
 msgstr ""
 
 msgid "Please upload a .xlsx file."
-msgstr ""
+msgstr "يُرجى رفع ملف بصيغة .xlsx."
 
 msgid "Overview"
 msgstr "نظرة عامة"
@@ -797,15 +771,11 @@ msgstr "الفرق"
 msgid "Venues"
 msgstr "الملاعب"
 
-#, fuzzy
-#| msgid "Venues"
 msgid "Venue Images"
-msgstr "الملاعب"
+msgstr "صور الملعب"
 
-#, fuzzy
-#| msgid "Categories"
 msgid "Venue Categories"
-msgstr "التصنيفات"
+msgstr "تصنيفات الملعب"
 
 msgid "Sections"
 msgstr "الأقسام"
@@ -1114,10 +1084,8 @@ msgstr "تصدير"
 msgid "Download Template"
 msgstr "تنزيل النموذج"
 
-#, fuzzy
-#| msgid "Roshan League"
 msgid "Update Roshan League Schedule"
-msgstr "دوري روشن"
+msgstr "تحديث جدول دوري روشن"
 
 msgid "Discount"
 msgstr "الخصم"
@@ -1138,14 +1106,6 @@ msgid ""
 "Matches are matched by round + the two clubs playing, not by date or slug - "
 "so a match keeps updating correctly even if SPL reschedules it, and an "
 "existing match keeps its current slug."
-msgstr ""
-
-msgid "Fixtures whose kickoff time is still \\"
-msgstr ""
-
-msgid ""
-"A previously-known stadium is kept if the calendar's location briefly goes "
-"back to \\"
 msgstr ""
 
 #, python-format
@@ -1175,10 +1135,8 @@ msgstr[5] "%(counter)s عنصر"
 msgid "No release notes yet."
 msgstr "لا توجد ملاحظات إصدار حتى الآن."
 
-#, fuzzy
-#| msgid "Import Events"
 msgid "Import Venue Categories"
-msgstr "استيراد الفعاليات"
+msgstr "استيراد تصنيفات الملعب"
 
 msgid ""
 "Choose a venue and club, then download a template (pre-filled with that "
@@ -1190,68 +1148,50 @@ msgid ""
 "                pricing is set per match, not stored here."
 msgstr ""
 
-#, fuzzy
-#| msgid "Checklist Categories"
 msgid "Back to Categories"
-msgstr "تصنيفات قائمة التحقق"
+msgstr "العودة إلى التصنيفات"
 
-#, fuzzy
-#| msgid "export the current events"
 msgid "Export Current"
-msgstr "تصدير الفعاليات الحالية"
+msgstr "تصدير الحالي"
 
-#, fuzzy, python-format
-#| msgid ""
-#| "Created: %(created)s · Updated: %(updated)s ·\n"
-#| "        Skipped (filtered out): %(skipped)s · Errors: %(errors)s"
 msgid ""
 "Created: %(created)s · Updated: %(updated)s ·\n"
 "        Errors: %(errors)s"
 msgstr ""
 "تم الإنشاء: %(created)s · تم التحديث: %(updated)s ·\n"
-"        تم التخطي (مستبعد بالفلتر): %(skipped)s · الأخطاء: %(errors)s"
+"        الأخطاء: %(errors)s"
 
-#, fuzzy
-#| msgid "Match Type"
 msgid "Seat Type"
-msgstr "نوع المباراة"
+msgstr "نوع المقاعد"
 
 msgid "No stadiums found."
 msgstr "لم يتم العثور على ملاعب."
 
 msgid "Seating-map/overview images shown to clubs on the pricing-plan page."
-msgstr ""
+msgstr "صور مخطط المقاعد/النظرة العامة المعروضة للأندية في صفحة خطة التسعير."
 
 msgid "Image"
-msgstr ""
+msgstr "صورة"
 
-#, fuzzy
-#| msgid "Competition"
 msgid "Caption"
-msgstr "البطولة"
+msgstr "الوصف"
 
-#, fuzzy
-#| msgid "No events found."
 msgid "No venue images found."
-msgstr "لم يتم العثور على فعاليات."
+msgstr "لم يتم العثور على صور للملعب."
 
 msgid ""
 "The seating category codes (e.g. CAT 1, CAT 1 N) clubs price against on the "
 "pricing-plan page."
 msgstr ""
 
-#, fuzzy
-#| msgid "Import Events"
 msgid "Import / Export"
-msgstr "استيراد الفعاليات"
+msgstr "استيراد / تصدير"
 
 msgid "Code"
-msgstr ""
+msgstr "الرمز"
 
-#, fuzzy
-#| msgid "No checklist categories found."
 msgid "No venue seating categories found."
-msgstr "لم يتم العثور على تصنيفات قائمة تحقق."
+msgstr "لم يتم العثور على تصنيفات مقاعد للملعب."
 
 msgid "No venue seating categories match your filters."
 msgstr "لا توجد تصنيفات مطابقة لعوامل التصفية."
@@ -1496,7 +1436,7 @@ msgstr "تعديل المباراة"
 
 #, python-format
 msgid "Calendar sync failed: %(error)s"
-msgstr ""
+msgstr "فشلت مزامنة التقويم: %(error)s"
 
 #, python-format
 msgid ""
@@ -1525,51 +1465,35 @@ msgstr "تعديل الإصدار"
 msgid "Settings updated."
 msgstr "تم تحديث الإعدادات."
 
-#, fuzzy
-#| msgid "Add Release"
 msgid "Add Venue Image"
-msgstr "إضافة إصدار"
+msgstr "إضافة صورة للملعب"
 
-#, fuzzy
-#| msgid "Team created."
 msgid "Venue image created."
-msgstr "تم إنشاء الفريق."
+msgstr "تم إنشاء صورة الملعب."
 
-#, fuzzy
-#| msgid "Team updated."
 msgid "Venue image updated."
-msgstr "تم تحديث الفريق."
+msgstr "تم تحديث صورة الملعب."
 
-#, fuzzy
-#| msgid "Edit Release"
 msgid "Edit Venue Image"
-msgstr "تعديل الإصدار"
+msgstr "تعديل صورة الملعب"
 
 msgid "Venue Seating Categories"
-msgstr ""
+msgstr "تصنيفات مقاعد الملعب"
 
-#, fuzzy
-#| msgid "Checklist category created."
 msgid "Venue seating category created."
-msgstr "تم إنشاء تصنيف قائمة التحقق."
+msgstr "تم إنشاء تصنيف مقاعد الملعب."
 
-#, fuzzy
-#| msgid "Add Category"
 msgid "Add Venue Seating Category"
-msgstr "إضافة تصنيف"
+msgstr "إضافة تصنيف مقاعد الملعب"
 
-#, fuzzy
-#| msgid "Checklist category updated."
 msgid "Venue seating category updated."
-msgstr "تم تحديث تصنيف قائمة التحقق."
+msgstr "تم تحديث تصنيف مقاعد الملعب."
 
-#, fuzzy
-#| msgid "Edit Category"
 msgid "Edit Venue Seating Category"
-msgstr "تعديل التصنيف"
+msgstr "تعديل تصنيف مقاعد الملعب"
 
 msgid "Please choose a venue and a club first."
-msgstr ""
+msgstr "يُرجى اختيار ملعب ونادٍ أولاً."
 
 msgid "Stadiums"
 msgstr "الملاعب"
@@ -1698,6 +1622,18 @@ msgstr "لا توجد عناصر في قائمة التحقق بعد."
 
 msgid "Home"
 msgstr "الرئيسية"
+
+msgid "Fixtures whose kickoff time is still marked Time TBC on the calendar are skipped, not imported with a guessed time."
+msgstr "يتم تخطي المباريات التي لا يزال وقت انطلاقها في التقويم غير محدد، ولا يتم استيرادها بوقت تخميني."
+
+msgid "A previously-known stadium is kept if the calendar's location briefly goes back to TBC."
+msgstr "يُحتفظ بالملعب المعروف سابقًا إذا عاد موقع المباراة في التقويم مؤقتًا إلى غير محدد."
+
+msgid "A previously-known stadium is kept if the calendar's location briefly goes back to TBC - a match's venue only ever gets replaced by a new real one."
+msgstr "يُحتفظ بالملعب المعروف سابقًا إذا عاد موقع المباراة في التقويم مؤقتًا إلى غير محدد - لا يتم استبدال ملعب المباراة إلا بملعب حقيقي جديد."
+
+msgid "To keep this running automatically, schedule python manage.py sync_roshan_calendar (e.g. via Windows Task Scheduler) instead of clicking this button by hand."
+msgstr "للإبقاء على هذا يعمل تلقائيًا، جدول تشغيل python manage.py sync_roshan_calendar (مثلاً عبر Windows Task Scheduler) بدلاً من الضغط على هذا الزر يدويًا."
 
 msgctxt "match side"
 msgid "Home"
@@ -1902,11 +1838,11 @@ msgstr "تعديل صلاحية التصنيف"
 
 #, python-format
 msgid "Unsupported file type. Allowed types: %(extensions)s."
-msgstr ""
+msgstr "نوع ملف غير مدعوم. الأنواع المسموح بها: %(extensions)s."
 
 #, python-format
 msgid "File is too large. Maximum size is %(max_mb)s MB."
-msgstr ""
+msgstr "حجم الملف كبير جدًا. الحد الأقصى للحجم %(max_mb)s ميجابايت."
 
 msgid "The staff member responsible for this club's matches."
 msgstr "الموظف المسؤول عن مباريات هذا النادي."
@@ -1932,9 +1868,6 @@ msgid ""
 "A copy of the imported rows is also saved as an Excel file for reference."
 msgstr ""
 
-msgid "To keep this running automatically, schedule \\"
-msgstr ""
-
 msgid "Operations Dashboard"
 msgstr "لوحة تحكم العمليات"
 
@@ -1947,10 +1880,8 @@ msgstr "تصدير الكل (CSV)"
 msgid "Download Import Template"
 msgstr "تنزيل قالب الاستيراد"
 
-#, fuzzy
-#| msgid "Export All (Excel)"
 msgid "Export Calendar Import (Excel)"
-msgstr "تصدير الكل (Excel)"
+msgstr "تصدير استيراد التقويم (إكسل)"
 
 msgid "Import matches"
 msgstr "استيراد المباريات"
@@ -2034,18 +1965,14 @@ msgstr "لوحة القيادة"
 msgid "Calendar"
 msgstr "التقويم"
 
-#, fuzzy
-#| msgid "Release Date"
 msgid "Release Schedule"
-msgstr "تاريخ الإصدار"
+msgstr "جدول الإصدار"
 
 msgid "SPL Report"
 msgstr "تقرير SPL"
 
-#, fuzzy
-#| msgid "SPL Approval"
 msgid "SPL Approvals"
-msgstr "موافقة SPL"
+msgstr "موافقات SPL"
 
 msgid "Missing items"
 msgstr "العناصر الناقصة"
@@ -2072,7 +1999,7 @@ msgid "Dashboard auto-refresh interval"
 msgstr "مدة التحديث التلقائي للوحة التحكم"
 
 msgid "Off"
-msgstr ""
+msgstr "إيقاف"
 
 msgid "Every 1 minute"
 msgstr "كل دقيقة"
@@ -2204,7 +2131,7 @@ msgid "Apply Filter"
 msgstr "تطبيق الفلتر"
 
 msgid "Legend"
-msgstr ""
+msgstr "وسيلة الإيضاح"
 
 msgid "Finished"
 msgstr "منتهية"
@@ -2303,10 +2230,10 @@ msgid "Click a team to preview their next home matches"
 msgstr "اضغط على فريق لمعاينة مبارياته القادمة كمضيف"
 
 msgid "Scroll left"
-msgstr ""
+msgstr "التمرير لليسار"
 
 msgid "Scroll right"
-msgstr ""
+msgstr "التمرير لليمين"
 
 msgid "Rounds"
 msgstr "الجولات"
@@ -2596,7 +2523,7 @@ msgid "Past"
 msgstr "السابقة"
 
 msgid "Happening"
-msgstr ""
+msgstr "جارية الآن"
 
 msgid "No matches found for this day."
 msgstr "لا توجد مباريات لهذا اليوم."
@@ -2684,10 +2611,8 @@ msgstr "الإعداد الإداري"
 msgid "Match Report"
 msgstr "تقرير المباراة"
 
-#, fuzzy
-#| msgid "Ticketing Plan"
 msgid "Ticket Link"
-msgstr "خطة التذاكر"
+msgstr "رابط التذاكر"
 
 #, python-format
 msgid "in %(hours)sh"
@@ -2710,22 +2635,20 @@ msgid "Reports Pending"
 msgstr "التقارير المعلقة"
 
 msgid "Buy Tickets on Webook"
-msgstr ""
+msgstr "شراء التذاكر عبر Webook"
 
 msgid "Add Ticket Link"
 msgstr "إضافة رابط التذاكر"
 
-#, fuzzy
-#| msgid "SPL Tickets"
 msgid "Buy Tickets"
-msgstr "تذاكر SPL"
+msgstr "شراء التذاكر"
 
 #, python-format
 msgid "No matches found for Round %(number)s."
 msgstr "لا توجد مباريات للجولة %(number)s."
 
 msgid "Round Statistics"
-msgstr ""
+msgstr "إحصاءات الجولة"
 
 msgid ""
 "Currently live - published on the CMS, or auto-detected live by the match "
@@ -2733,20 +2656,16 @@ msgid ""
 msgstr ""
 
 msgid "Has a match date, not live, not in progress, not finished yet."
-msgstr ""
+msgstr "لديها تاريخ مباراة، وليست مباشرة، وليست قيد التنفيذ، ولم تنتهِ بعد."
 
 msgid "Kickoff time has passed and the match is not finished yet."
-msgstr ""
+msgstr "حان موعد الانطلاق ولم تنتهِ المباراة بعد."
 
-#, fuzzy
-#| msgid "Match created."
 msgid "Match already finished."
-msgstr "تم إنشاء المباراة."
+msgstr "المباراة انتهت بالفعل."
 
-#, fuzzy
-#| msgid "No activity yet."
 msgid "No match date set yet."
-msgstr "لا يوجد نشاط بعد."
+msgstr "لم يتم تحديد تاريخ المباراة بعد."
 
 msgid "Operational Readiness"
 msgstr "الجاهزية التشغيلية"
@@ -2755,29 +2674,23 @@ msgid ""
 "Ticket sale went on sale on or before the 20-days-before-kickoff deadline."
 msgstr ""
 
-#, fuzzy
-#| msgid "Release Date"
 msgid "Released On Time"
-msgstr "تاريخ الإصدار"
+msgstr "تم الإصدار في الموعد"
 
 msgid ""
 "Released after the 20-days-before-kickoff deadline, or still unreleased with "
 "that deadline already passed."
 msgstr ""
 
-#, fuzzy
-#| msgid "Delay Reason"
 msgid "Delayed Release"
-msgstr "سبب التأخير"
+msgstr "إصدار متأخر"
 
 #, python-format
 msgid "%(approved)s of %(total)s matches approved this round."
-msgstr ""
+msgstr "تم اعتماد %(approved)s من أصل %(total)s مباراة في هذه الجولة."
 
-#, fuzzy
-#| msgid "SPL Approval"
 msgid "Plan Approvals"
-msgstr "موافقة SPL"
+msgstr "موافقات الخطط"
 
 msgid "Pick a round above to preview its matches."
 msgstr "اختر جولة أعلاه لمعاينة مبارياتها."
@@ -2786,7 +2699,7 @@ msgid "Thanks! Your feedback was submitted for review."
 msgstr "شكرًا لك! تم إرسال ملاحظاتك للمراجعة."
 
 msgid "LIVE"
-msgstr ""
+msgstr "مباشر"
 
 #, python-format
 msgid "%(done)s of %(total)s checklist items complete"
@@ -2953,12 +2866,10 @@ msgid "Published matches are shown as live on the dashboard."
 msgstr "تظهر المباريات المنشورة كمباشرة على لوحة القيادة."
 
 msgid "Webook Purchase Link"
-msgstr ""
+msgstr "رابط الشراء على Webook"
 
-#, fuzzy
-#| msgid "Save"
 msgid "Save Link"
-msgstr "حفظ"
+msgstr "حفظ الرابط"
 
 msgid "Sending..."
 msgstr "جارٍ الإرسال..."
@@ -2989,21 +2900,17 @@ msgstr ""
 "اختيار <strong>منشور</strong> هنا سيجعل المباراة تظهر مباشرة على لوحة "
 "القيادة فورًا."
 
-#, fuzzy
-#| msgid "Previous"
 msgid "Previous Round"
-msgstr "السابق"
+msgstr "الجولة السابقة"
 
 msgid "Current"
-msgstr ""
+msgstr "الحالي"
 
 msgid "All Rounds"
 msgstr "كل الجولات"
 
-#, fuzzy
-#| msgid "Round"
 msgid "Next Round"
-msgstr "الجولة"
+msgstr "الجولة القادمة"
 
 msgid "No delayed items."
 msgstr "لا توجد عناصر متأخرة."
@@ -3024,7 +2931,7 @@ msgid "No upcoming home matches scheduled for this team."
 msgstr "لا توجد مباريات قادمة على أرض هذا الفريق."
 
 msgid "Match Release Schedule"
-msgstr ""
+msgstr "جدول إصدار المباريات"
 
 msgid ""
 "Every match's ticket sale must go on sale <strong>20 days before kickoff</"
@@ -3049,7 +2956,7 @@ msgid ""
 msgstr ""
 
 msgid "Ticket sale release dates vs. the 20-day-before-kickoff rule."
-msgstr ""
+msgstr "تواريخ إصدار بيع التذاكر مقابل قاعدة العشرين يومًا قبل الانطلاق."
 
 #, python-format
 msgid ""
@@ -3057,25 +2964,17 @@ msgid ""
 "round below, or \"All\" to include past rounds too."
 msgstr ""
 
-#, fuzzy
-#| msgid "Release Date"
 msgid "Release Status"
-msgstr "تاريخ الإصدار"
+msgstr "حالة الإصدار"
 
-#, fuzzy
-#| msgid "Release Date"
 msgid "Live, Missing Release Date"
-msgstr "تاريخ الإصدار"
+msgstr "مباشرة، دون تاريخ إصدار"
 
-#, fuzzy
-#| msgid "Today"
 msgid "Due Today"
-msgstr "اليوم"
+msgstr "مستحق اليوم"
 
-#, fuzzy
-#| msgid "Release Date"
 msgid "Released Late"
-msgstr "تاريخ الإصدار"
+msgstr "تم الإصدار متأخرًا"
 
 msgid "Overdue (Delayed + Released Late)"
 msgstr "متأخر (مؤجل + صدر متأخر)"
@@ -3099,37 +2998,29 @@ msgstr[3] "%(counter)s مباريات"
 msgstr[4] "%(counter)s مباراة"
 msgstr[5] "%(counter)s مباراة"
 
-#, fuzzy
-#| msgid "Release Date"
 msgid "Planned Release Date"
-msgstr "تاريخ الإصدار"
+msgstr "تاريخ الإصدار المخطط"
 
 msgid "Live - No Release Date Recorded"
-msgstr ""
+msgstr "مباشرة - لا يوجد تاريخ إصدار مُسجَّل"
 
-#, fuzzy, python-format
-#| msgid "%(counter)s day"
-#| msgid_plural "%(counter)s days"
 msgid "%(counter)s day overdue"
 msgid_plural "%(counter)s days overdue"
-msgstr[0] "لا أيام"
-msgstr[1] "يوم واحد"
-msgstr[2] "يومان"
-msgstr[3] "%(counter)s أيام"
-msgstr[4] "%(counter)s يومًا"
-msgstr[5] "%(counter)s يوم"
+msgstr[0] "غير متأخرة"
+msgstr[1] "متأخرة بيوم واحد"
+msgstr[2] "متأخرة بيومين"
+msgstr[3] "متأخرة بـ %(counter)s أيام"
+msgstr[4] "متأخرة بـ %(counter)s يومًا"
+msgstr[5] "متأخرة بـ %(counter)s يوم"
 
-#, fuzzy, python-format
-#| msgid "%(counter)s day"
-#| msgid_plural "%(counter)s days"
 msgid "Released %(counter)s day late"
 msgid_plural "Released %(counter)s days late"
-msgstr[0] "لا أيام"
-msgstr[1] "يوم واحد"
-msgstr[2] "يومان"
-msgstr[3] "%(counter)s أيام"
-msgstr[4] "%(counter)s يومًا"
-msgstr[5] "%(counter)s يوم"
+msgstr[0] "صدرت في الموعد"
+msgstr[1] "صدرت متأخرة بيوم واحد"
+msgstr[2] "صدرت متأخرة بيومين"
+msgstr[3] "صدرت متأخرة بـ %(counter)s أيام"
+msgstr[4] "صدرت متأخرة بـ %(counter)s يومًا"
+msgstr[5] "صدرت متأخرة بـ %(counter)s يوم"
 
 msgid "Edit Reason"
 msgstr "تعديل السبب"
@@ -3137,20 +3028,14 @@ msgstr "تعديل السبب"
 msgid "Add Reason"
 msgstr "إضافة سبب"
 
-#, fuzzy
-#| msgid "Delay Reason"
 msgid "Select a reason"
-msgstr "سبب التأخير"
+msgstr "اختر سببًا"
 
-#, fuzzy
-#| msgid "Note (optional)"
 msgid "Notes (optional)"
-msgstr "ملاحظة (اختياري)"
+msgstr "ملاحظات (اختياري)"
 
-#, fuzzy
-#| msgid "No release notes yet."
 msgid "No reason set yet"
-msgstr "لا توجد ملاحظات إصدار حتى الآن."
+msgstr "لم يتم تحديد سبب بعد"
 
 msgid "Roshan League"
 msgstr "دوري روشن"
@@ -3163,16 +3048,6 @@ msgstr ""
 "هذه هي <strong>لوحة القيادة</strong> الخاصة بك — تصفّح كل مباريات "
 "%(competition_name)s حسب الفريق أو الجولة."
 
-#, fuzzy
-#| msgid ""
-#| "The Upcoming & Live Matches table shows everything ahead, filterable by "
-#| "club,\n"
-#| "        coordinator, round, SPL approval status, and Live/Upcoming. Click "
-#| "a team to see its next\n"
-#| "        home matches, or a round to preview every match in it. Use the "
-#| "export buttons to download\n"
-#| "        the schedule as a spreadsheet - the whole season, one round, or a "
-#| "single match."
 msgid ""
 "The Upcoming & Live Matches table shows everything ahead, filterable by "
 "club,\n"
@@ -3186,9 +3061,9 @@ msgid ""
 msgstr ""
 "يعرض جدول المباريات القادمة والمباشرة كل ما هو قادم، ويمكن تصفيته حسب النادي "
 "والمنسق والجولة وحالة اعتماد SPL وكونها مباشرة أو قادمة. انقر على فريق لعرض "
-"مبارياته المقبلة كمضيف، أو على جولة لمعاينة جميع مبارياتها. استخدم أزرار "
-"التصدير لتنزيل الجدول كملف إكسل - الموسم كاملاً، أو جولة واحدة، أو مباراة "
-"واحدة."
+"مبارياته المقبلة كمضيف، أو على جولة لمعاينة جميع مبارياتها إلى جانب إحصاءات "
+"جاهزية تلك الجولة. استخدم أزرار التصدير لتنزيل الجدول كملف إكسل - الموسم "
+"كاملاً، أو جولة واحدة، أو مباراة واحدة."
 
 #, python-format
 msgid "%(competition_name)s match schedule and readiness."
@@ -3206,10 +3081,8 @@ msgstr "تقرير"
 msgid "Export Full Schedule"
 msgstr "تصدير الجدول الكامل"
 
-#, fuzzy
-#| msgid "Update Status"
 msgid "League Stats"
-msgstr "تحديث الحالة"
+msgstr "إحصاءات الدوري"
 
 msgid "Search teams..."
 msgstr "البحث عن فريق..."
@@ -3233,7 +3106,7 @@ msgid "Tomorrow"
 msgstr "غدًا"
 
 msgid "Yesterday"
-msgstr ""
+msgstr "أمس"
 
 #, python-format
 msgid "In %(counter)s day"
@@ -3245,17 +3118,14 @@ msgstr[3] "خلال %(counter)s أيام"
 msgstr[4] "خلال %(counter)s يومًا"
 msgstr[5] "خلال %(counter)s يوم"
 
-#, fuzzy, python-format
-#| msgid "%(counter)s day"
-#| msgid_plural "%(counter)s days"
 msgid "%(counter)s day ago"
 msgid_plural "%(counter)s days ago"
-msgstr[0] "لا أيام"
-msgstr[1] "يوم واحد"
-msgstr[2] "يومان"
-msgstr[3] "%(counter)s أيام"
-msgstr[4] "%(counter)s يومًا"
-msgstr[5] "%(counter)s يوم"
+msgstr[0] "الآن"
+msgstr[1] "منذ يوم واحد"
+msgstr[2] "منذ يومين"
+msgstr[3] "منذ %(counter)s أيام"
+msgstr[4] "منذ %(counter)s يومًا"
+msgstr[5] "منذ %(counter)s يوم"
 
 msgid "Tickets Not Live Yet"
 msgstr "التذاكر غير متاحة بعد"
@@ -3294,20 +3164,16 @@ msgid "Match sent to CMS successfully."
 msgstr "تم إرسال المباراة إلى نظام إدارة المحتوى بنجاح."
 
 msgid "Could not update the link."
-msgstr ""
+msgstr "تعذّر تحديث الرابط."
 
-#, fuzzy
-#| msgid "Release note updated."
 msgid "Webook purchase link updated."
-msgstr "تم تحديث ملاحظة الإصدار."
+msgstr "تم تحديث رابط الشراء على Webook."
 
-#, fuzzy
-#| msgid "Release note updated."
 msgid "Delay reason updated."
-msgstr "تم تحديث ملاحظة الإصدار."
+msgstr "تم تحديث سبب التأخير."
 
 msgid "Could not update the delay reason."
-msgstr ""
+msgstr "تعذّر تحديث سبب التأخير."
 
 msgid "No pending items for this match."
 msgstr "لا توجد عناصر معلقة لهذه المباراة."
@@ -3519,7 +3385,7 @@ msgid "Matchweek"
 msgstr "الجولة"
 
 msgid "Confirms the SPL team has approved the match's ticketing release plan."
-msgstr ""
+msgstr "يؤكد أن فريق SPL قد اعتمد خطة إصدار تذاكر المباراة."
 
 msgid "Ticketing Plan Status"
 msgstr "حالة خطة التذاكر"
@@ -3531,12 +3397,10 @@ msgid "Coordinator (Webook)"
 msgstr "المنسق (Webook)"
 
 msgid "Received"
-msgstr ""
+msgstr "تم الاستلام"
 
-#, fuzzy
-#| msgid "Not Ready"
 msgid "Not Received"
-msgstr "غير جاهز"
+msgstr "لم يُستلم"
 
 msgid "Pending"
 msgstr "معلّق"
@@ -3547,139 +3411,101 @@ msgid ""
 "read-only overview."
 msgstr ""
 
-#, fuzzy
-#| msgid "Operations"
 msgid "Operations Center"
-msgstr "العمليات"
+msgstr "مركز العمليات"
 
 msgid ""
 "Review plans, approve club pricing, and confirm complimentary ticket "
 "delivery for every match."
 msgstr ""
 
-#, fuzzy
-#| msgid "Filtered Matches"
 msgid "Finished Matches"
-msgstr "المباريات المفلترة"
+msgstr "المباريات المنتهية"
 
-#, fuzzy
-#| msgid "SPL Report"
 msgid "View SPL Report"
-msgstr "تقرير SPL"
+msgstr "عرض تقرير SPL"
 
-#, fuzzy
-#| msgid "Match Report"
 msgid "Match Directory"
-msgstr "تقرير المباراة"
+msgstr "دليل المباريات"
 
-#, fuzzy
-#| msgid "Filtered Matches"
 msgid "Find a match"
-msgstr "المباريات المفلترة"
+msgstr "ابحث عن مباراة"
 
-#, fuzzy
-#| msgid "Clubs"
 msgid "All Clubs"
-msgstr "الأندية"
+msgstr "كل الأندية"
 
-#, fuzzy
-#| msgid "Coordinators"
 msgid "All Coordinators"
-msgstr "المنسقون"
+msgstr "كل المنسقين"
 
-#, fuzzy
-#| msgid "Apply Filter"
 msgid "Approval Queue"
-msgstr "تطبيق الفلتر"
+msgstr "قائمة انتظار الموافقات"
 
-#, fuzzy
-#| msgid "SPL Approval"
 msgid "Match approvals"
-msgstr "موافقة SPL"
+msgstr "موافقات المباريات"
 
-#, fuzzy
-#| msgid "Date"
 msgid "Date TBC"
-msgstr "التاريخ"
+msgstr "التاريخ غير محدد"
 
-#, fuzzy
-#| msgid "Open Full Match Page"
 msgid "Open Match"
-msgstr "فتح صفحة المباراة الكاملة"
+msgstr "فتح المباراة"
 
 msgid "SPL confirmation and attachment"
-msgstr ""
+msgstr "تأكيد SPL والمرفق"
 
-#, fuzzy, python-format
-#| msgid "Confirm Plan"
 msgid "Confirmed %(when)s"
-msgstr "تأكيد الخطة"
+msgstr "تم التأكيد %(when)s"
 
-#, fuzzy, python-format
-#| msgid "Uploaded On"
 msgid "Uploaded %(when)s"
-msgstr "تاريخ الرفع"
+msgstr "تم الرفع %(when)s"
 
 msgid "Confirm Plan"
 msgstr "تأكيد الخطة"
 
-#, fuzzy
-#| msgid "Apply Filter"
 msgid "Choose Approval File"
-msgstr "تطبيق الفلتر"
+msgstr "اختر ملف الموافقة"
 
 msgid "Club submission and SPL decision"
-msgstr ""
+msgstr "إرسال النادي وقرار SPL"
 
-#, fuzzy
-#| msgid "Not Submitted Yet"
 msgid "Not Submitted"
-msgstr "لم تُرسل بعد"
+msgstr "لم تُرسل"
 
 #, python-format
 msgid "Version %(version)s"
-msgstr ""
+msgstr "الإصدار %(version)s"
 
-#, fuzzy
-#| msgid "Upload Pricing Plan"
 msgid "Download pricing plan"
-msgstr "رفع خطة الأسعار"
+msgstr "تنزيل خطة التسعير"
 
 msgid "Decision note"
-msgstr ""
+msgstr "ملاحظة القرار"
 
-#, fuzzy
-#| msgid "Approved"
 msgid "Approve Pricing"
-msgstr "معتمد"
+msgstr "اعتماد التسعير"
 
 msgid "Reason for rejection"
 msgstr "سبب الرفض"
 
 msgid "Reject"
-msgstr ""
+msgstr "رفض"
 
 msgid "The club has not submitted a pricing plan yet."
-msgstr ""
+msgstr "لم يقم النادي بإرسال خطة تسعير بعد."
 
 msgid "Delivery confirmation"
-msgstr ""
+msgstr "تأكيد التسليم"
 
 msgid "Confirm Tickets Sent"
 msgstr "تأكيد إرسال التذاكر"
 
-#, fuzzy
-#| msgid "No matches found."
 msgid "No matches found"
-msgstr "لم يتم العثور على مباريات."
+msgstr "لم يتم العثور على مباريات"
 
 msgid "Try changing the selected round or filters."
-msgstr ""
+msgstr "جرّب تغيير الجولة المحددة أو الفلاتر."
 
-#, fuzzy
-#| msgid "Live Matches"
 msgid "SPL Finished Matches"
-msgstr "المباريات المباشرة"
+msgstr "مباريات SPL المنتهية"
 
 msgid ""
 "A read-only history of finished matches - whether the ticketing plan was\n"
@@ -3691,28 +3517,24 @@ msgid ""
 msgstr ""
 
 msgid "Approval history for matches that have already been played."
-msgstr ""
+msgstr "سجل الموافقات للمباريات التي أُقيمت بالفعل."
 
-#, fuzzy
-#| msgid "Apply Filter"
 msgid "Approval File"
-msgstr "تطبيق الفلتر"
+msgstr "ملف الموافقة"
 
 #, python-format
 msgid "on %(when)s"
-msgstr ""
+msgstr "في %(when)s"
 
 #, python-format
 msgid "uploaded %(when)s"
-msgstr ""
+msgstr "تم الرفع %(when)s"
 
 msgid "No File Uploaded"
-msgstr ""
+msgstr "لم يتم رفع ملف"
 
-#, fuzzy
-#| msgid "No matches found for this filter."
 msgid "No finished matches found for this filter."
-msgstr "لا توجد مباريات مطابقة لهذا الفلتر."
+msgstr "لا توجد مباريات منتهية مطابقة لهذا الفلتر."
 
 msgid "SPL ticketing plan confirmed."
 msgstr "تم تأكيد خطة تذاكر SPL."
@@ -3721,22 +3543,20 @@ msgid "SPL complimentary tickets confirmed."
 msgstr "تم تأكيد التذاكر المجانية لـ SPL."
 
 msgid "Plan approval file uploaded."
-msgstr ""
+msgstr "تم رفع ملف اعتماد الخطة."
 
 msgid "Could not upload the file."
 msgstr "تعذّر رفع الملف."
 
-#, fuzzy
-#| msgid "No pricing plan uploaded yet."
 msgid "Pricing plan approved."
-msgstr "لم يتم رفع خطة أسعار بعد."
+msgstr "تم اعتماد خطة التسعير."
 
 msgid ""
 "A note explaining what needs to change is required to reject a pricing plan."
 msgstr ""
 
 msgid "Pricing plan rejected. The club can now upload a corrected version."
-msgstr ""
+msgstr "تم رفض خطة التسعير. يمكن للنادي الآن رفع نسخة مصححة."
 
 #, fuzzy, python-format
 #~| msgid "%(obj)s %(state)s."
