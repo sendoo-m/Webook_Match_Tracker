@@ -1250,6 +1250,12 @@ msgstr ""
 msgid "No venue seating categories found."
 msgstr "لم يتم العثور على تصنيفات قائمة تحقق."
 
+msgid "No venue seating categories match your filters."
+msgstr "لا توجد تصنيفات مطابقة لعوامل التصفية."
+
+msgid "Grouped by club - use the filters below to jump straight to one club or coordinator."
+msgstr "مجمّعة حسب النادي - استخدم عوامل التصفية أدناه للانتقال مباشرة إلى نادٍ أو منسّق معيّن."
+
 #, python-format
 msgid "%(obj)s %(state)s."
 msgstr "%(obj)s %(state)s."

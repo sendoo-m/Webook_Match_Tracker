@@ -1,46 +1,124 @@
 {# control_panel/venueseatingcategory_list.html #}
-{% extends "control_panel/list.html" %}
+{% extends "operations/base.html" %}
+{% load static %}
+{% load display_helpers %}
 {% load i18n %}
 
-{% block page_subtitle %}
-    <p class="page-subtitle">{% trans "The seating category codes (e.g. CAT 1, CAT 1 N) clubs price against on the pricing-plan page." %}</p>
+{% block title %}{{ page_title }} · {% trans "Control Panel" %}{% endblock %}
+
+{% block page_help %}
+    <p>{% trans "The seating category codes (e.g. CAT 1, CAT 1 N) clubs price against on the pricing-plan page." %}</p>
 {% endblock %}
 
-{% block extra_content %}
-<div class="filter-bar" style="margin-bottom: var(--space-4);">
-    <a class="btn btn-secondary" href="{% url 'control_panel:venue-category-import' %}">{% trans "Import / Export" %}</a>
+{% block content %}
+{% include "control_panel/_subnav.html" %}
+
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">{{ page_title }}</h1>
+            <p class="page-subtitle">{% trans "Grouped by club - use the filters below to jump straight to one club or coordinator." %}</p>
+        </div>
+        <div class="filter-bar">
+            <a class="btn btn-secondary" href="{% url 'control_panel:venue-category-import' %}">{% trans "Import / Export" %}</a>
+            <a class="btn btn-primary" href="{{ create_url }}"><i class="ti ti-plus"></i>&nbsp; {{ create_label }}</a>
+        </div>
+    </div>
 </div>
+
+<div class="card panel filter-toolbar" style="margin-bottom: var(--space-4);">
+    <form method="get" class="filters" data-autosubmit>
+        <div class="field-group">
+            <label>{% trans "Club" %}</label>
+            <select name="club" data-searchable>
+                <option value="">{% trans "All" %}</option>
+                {% for club in club_choices %}
+                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>{% trans "Coordinator" %}</label>
+            <select name="coordinator" data-searchable>
+                <option value="">{% trans "All" %}</option>
+                {% for coordinator in coordinator_choices %}
+                    <option value="{{ coordinator.id }}" {% if selected_coordinator == coordinator.id|stringformat:"s" %}selected{% endif %}>{{ coordinator|display_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn-apply-filters"><i class="ti ti-filter"></i> {% trans "Apply Filters" %}</button>
+        </div>
+
+        {% if has_active_filters %}
+            <div class="field-group">
+                <label>&nbsp;</label>
+                <a href="{% url 'control_panel:venue-category-list' %}" class="btn btn-ghost btn-sm">{% trans "Clear filters" %}</a>
+            </div>
+        {% endif %}
+    </form>
+</div>
+
+{% for group in grouped_categories %}
+    <details class="card panel collapsible-section" open style="margin-bottom: var(--space-4);">
+        <summary class="panel-title">
+            <i class="ti ti-shield"></i>&nbsp; {{ group.club|localized_name }}
+            <span class="mini-badge mini-badge-info">{{ group.categories|length }}</span>
+            {% if group.club.owner %}<span class="help-text">&nbsp;· {{ group.club.owner|display_name }}</span>{% endif %}
+            <i class="ti ti-chevron-down collapsible-caret"></i>
+        </summary>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>{% trans "Venue" %}</th>
+                        <th>{% trans "Code" %}</th>
+                        <th>{% trans "Seat Count" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in group.categories %}
+                        <tr>
+                            <td>{{ category.venue|localized_name }}</td>
+                            <td>{{ category.code }}</td>
+                            <td>{{ category.seat_count|default:"—" }}</td>
+                            <td>
+                                <span class="badge {% if category.is_active %}badge-published{% else %}badge-draft{% endif %}">
+                                    {% if category.is_active %}{% trans "Active" %}{% else %}{% trans "Inactive" %}{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:venue-category-update' category.pk %}">{% trans "Edit" %}</a>
+                                    {% include "control_panel/_toggle_active_button.html" with obj=category toggle_url_name="control_panel:venue-category-toggle-active" %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </details>
+{% empty %}
+    <div class="card panel">
+        <p class="help-text">
+            {% if has_active_filters %}
+                {% trans "No venue seating categories match your filters." %}
+                <br><a href="{% url 'control_panel:venue-category-list' %}">{% trans "Clear filters" %}</a>
+            {% else %}
+                {% trans "No venue seating categories found." %}
+            {% endif %}
+        </p>
+    </div>
+{% endfor %}
 {% endblock %}
 
-{% block table_head %}
-    <th>{% trans "Venue" %}</th>
-    <th>{% trans "Club" %}</th>
-    <th>{% trans "Code" %}</th>
-    <th>{% trans "Seat Count" %}</th>
-    <th>{% trans "Status" %}</th>
-    <th></th>
-{% endblock %}
-
-{% block table_body %}
-    {% for category in categories %}
-        <tr>
-            <td>{{ category.venue.name_en|default:category.venue.name_ar }}</td>
-            <td>{{ category.club.name_en|default:category.club.name_ar }}</td>
-            <td>{{ category.code }}</td>
-            <td>{{ category.seat_count|default:"—" }}</td>
-            <td>
-                <span class="badge {% if category.is_active %}badge-published{% else %}badge-draft{% endif %}">
-                    {% if category.is_active %}{% trans "Active" %}{% else %}{% trans "Inactive" %}{% endif %}
-                </span>
-            </td>
-            <td>
-                <div class="row-actions">
-                    <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:venue-category-update' category.pk %}">{% trans "Edit" %}</a>
-                    {% include "control_panel/_toggle_active_button.html" with obj=category toggle_url_name="control_panel:venue-category-toggle-active" %}
-                </div>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="6">{% trans "No venue seating categories found." %}</td></tr>
-    {% endfor %}
+{% block extra_js %}
+    <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
+    <script src="{% static 'operations/js/searchable-select.js' %}"></script>
 {% endblock %}

@@ -5,6 +5,9 @@
 # here by coordinators/admin; consumed read-only on the club-facing
 # pricing-plan page (Phase 3 of the venue-seating/pricing plan).
 
+from itertools import groupby
+
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from django.urls import reverse, reverse_lazy
@@ -14,12 +17,14 @@ from django.views.generic import FormView
 
 from control_panel.forms import VenueCategoryImportForm, VenueImageForm, VenueSeatingCategoryForm
 from control_panel.permissions import ControlPanelAccessMixin
-from matches.models import VenueImage, VenueSeatingCategory
+from matches.models import Club, VenueImage, VenueSeatingCategory
 from matches.venue_category_import_export import (
     build_venue_category_import_template_xlsx,
     export_venue_categories_xlsx,
     import_venue_categories_xlsx,
 )
+
+User = get_user_model()
 
 from .base import PanelCreateView, PanelListView, PanelToggleActiveView, PanelUpdateView
 
@@ -63,16 +68,50 @@ class VenueImageToggleActiveView(PanelToggleActiveView):
 
 
 class VenueSeatingCategoryListView(PanelListView):
+    """Grouped by club rather than one flat table - with 18 clubs and up to
+    ~200 categories for a single club, a flat paginated list makes it hard
+    to find anything. Ordering by club first (not venue first, as before)
+    is what makes the groupby() in get_context_data valid - groupby only
+    groups consecutive items, so the queryset's own ordering has to match
+    the grouping key."""
+
     model = VenueSeatingCategory
     template_name = "control_panel/venueseatingcategory_list.html"
     context_object_name = "categories"
-    ordering = ["venue__name_ar", "sort_order", "code"]
+    ordering = ["club__name_ar", "sort_order", "code"]
     page_title = _("Venue Seating Categories")
     create_url_name = "control_panel:venue-category-create"
     create_label = _("Add Category")
+    paginate_by = None
 
     def get_queryset(self):
-        return super().get_queryset().select_related("venue", "club")
+        queryset = super().get_queryset().select_related("venue", "club")
+
+        club = self.request.GET.get("club", "").strip()
+        if club:
+            queryset = queryset.filter(club_id=club)
+
+        coordinator = self.request.GET.get("coordinator", "").strip()
+        if coordinator:
+            queryset = queryset.filter(club__owner_id=coordinator)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        categories = context[self.context_object_name]
+        context["grouped_categories"] = [
+            {"club": club, "categories": list(group)}
+            for club, group in groupby(categories, key=lambda category: category.club)
+        ]
+        context["club_choices"] = Club.objects.filter(is_active=True).order_by("name_ar")
+        context["coordinator_choices"] = User.objects.filter(
+            owned_clubs__isnull=False, is_active=True
+        ).distinct().order_by("username")
+        context["selected_club"] = self.request.GET.get("club", "")
+        context["selected_coordinator"] = self.request.GET.get("coordinator", "")
+        context["has_active_filters"] = any([context["selected_club"], context["selected_coordinator"]])
+        return context
 
 
 class VenueSeatingCategoryCreateView(PanelCreateView):
