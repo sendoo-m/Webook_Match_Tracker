@@ -80,10 +80,16 @@ class ClubPricingPlan(models.Model):
         related_name="pricing_plans",
         on_delete=models.PROTECT,
     )
+    # Nullable - a plan submitted via structured per-category prices (see
+    # ClubPricingPlanCategoryPrice) may have no attached document at all.
+    # Still supported/optional for a club that just wants to attach a file
+    # instead of/alongside entering prices per category.
     file = models.FileField(
         upload_to="club_pricing_plans/",
         validators=[validate_plan_approval_file],
-        help_text="Pricing plan document uploaded by the home club (same allowed types/size as the SPL plan approval file).",
+        null=True,
+        blank=True,
+        help_text="Pricing plan document uploaded by the home club (same allowed types/size as the SPL plan approval file). Optional if category prices were entered instead.",
     )
     version = models.PositiveIntegerField(
         help_text="1 for a match's first upload, incrementing per match - never reused or edited after creation.",
@@ -138,3 +144,35 @@ class ClubPricingPlan(models.Model):
 
     def __str__(self):
         return f"{self.match} - v{self.version} ({self.club})"
+
+
+class ClubPricingPlanCategoryPrice(models.Model):
+    """One category's price for a specific ClubPricingPlan version - the
+    structured alternative (or complement) to just attaching a raw file.
+    Prices against VenueSeatingCategory codes, which are scoped to
+    (venue, club) and managed in the Control Panel; PROTECT on delete so
+    a coordinator can't remove a category out from under a plan that
+    already priced against it."""
+
+    plan = models.ForeignKey(
+        ClubPricingPlan,
+        related_name="category_prices",
+        on_delete=models.CASCADE,
+    )
+    category = models.ForeignKey(
+        "matches.VenueSeatingCategory",
+        related_name="pricing_plan_prices",
+        on_delete=models.PROTECT,
+    )
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["plan", "category"], name="unique_category_price_per_plan"),
+        ]
+        ordering = ("category__sort_order", "category__code")
+        verbose_name = "Club Pricing Plan Category Price"
+        verbose_name_plural = "Club Pricing Plan Category Prices"
+
+    def __str__(self):
+        return f"{self.plan} - {self.category.code}: {self.price}"

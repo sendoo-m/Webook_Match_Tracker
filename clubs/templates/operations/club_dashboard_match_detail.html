@@ -144,9 +144,13 @@
                 <div class="summary-tile">
                     <div class="help-text">{% trans "Current File" %}</div>
                     <div class="summary-tile-value">
-                        <a href="{% url 'operations:club-pricing-plan-download' current_pricing_plan.pk %}">
-                            {{ current_pricing_plan.file.name|cut:"club_pricing_plans/" }}
-                        </a>
+                        {% if current_pricing_plan.file %}
+                            <a href="{% url 'operations:club-pricing-plan-download' current_pricing_plan.pk %}">
+                                {{ current_pricing_plan.file.name|cut:"club_pricing_plans/" }}
+                            </a>
+                        {% else %}
+                            <span class="help-text">{% trans "No file attached" %}</span>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="summary-tile">
@@ -164,6 +168,27 @@
                     </div>
                 </div>
             </div>
+
+            {% if current_pricing_plan.category_prices.all %}
+                <div class="table-wrap" style="margin-top: var(--space-3);">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>{% trans "Category" %}</th>
+                                <th>{% trans "Price" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category_price in current_pricing_plan.category_prices.all %}
+                                <tr>
+                                    <td>{{ category_price.category.code }}</td>
+                                    <td>{{ category_price.price }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
 
             {% if current_pricing_plan.submitted_at %}
                 <p class="help-text" style="margin-top: var(--space-3);">

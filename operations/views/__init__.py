@@ -34,6 +34,7 @@ from spl.views import (  # noqa: F401 - re-exported for backward compatibility
 from clubs.views import (  # noqa: F401 - re-exported for backward compatibility
     ClubDashboardMatchDetailView,
     ClubDashboardView,
+    ClubPricingPlanCategoryImportView,
     ClubPricingPlanConfirmSubmissionView,
     ClubPricingPlanDownloadView,
     ClubPricingPlanSubmitView,
@@ -62,6 +63,7 @@ __all__ = [
     "ChecklistItemUpdateView",
     "ClubDashboardMatchDetailView",
     "ClubDashboardView",
+    "ClubPricingPlanCategoryImportView",
     "ClubPricingPlanConfirmSubmissionView",
     "ClubPricingPlanDownloadView",
     "ClubPricingPlanSubmitView",

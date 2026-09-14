@@ -29,31 +29,136 @@
 
 {% if current_plan %}
     <div class="card panel">
-        <h2 class="panel-title">{% trans "Current File" %}</h2>
-        <p>
-            <a href="{% url 'operations:club-pricing-plan-download' current_plan.pk %}">
-                {{ current_plan.file.name|cut:"club_pricing_plans/" }}
-            </a>
-            <span class="help-text">(v{{ current_plan.version }} — {{ current_plan.uploaded_at }})</span>
+        <h2 class="panel-title">{% trans "Current Plan" %}</h2>
+        {% if current_plan.file %}
+            <p>
+                <a href="{% url 'operations:club-pricing-plan-download' current_plan.pk %}">
+                    {{ current_plan.file.name|cut:"club_pricing_plans/" }}
+                </a>
+                <span class="help-text">(v{{ current_plan.version }} — {{ current_plan.uploaded_at }})</span>
+            </p>
+        {% else %}
+            <p class="help-text">{% trans "No file attached" %} (v{{ current_plan.version }} — {{ current_plan.uploaded_at }})</p>
+        {% endif %}
+        {% if current_plan.category_prices.all %}
+            <div class="table-wrap" style="margin-top: var(--space-3);">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>{% trans "Category" %}</th>
+                            <th>{% trans "Price" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category_price in current_plan.category_prices.all %}
+                            <tr>
+                                <td>{{ category_price.category.code }}</td>
+                                <td>{{ category_price.price }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+{% endif %}
+
+{% if match.venue.images.all %}
+    <div class="card panel">
+        <h2 class="panel-title">{% trans "Venue Seating Map" %}</h2>
+        {% for venue_image in match.venue.images.all %}
+            {% if venue_image.is_active %}
+                <figure style="margin: 0 0 var(--space-3);">
+                    <img src="{{ venue_image.image.url }}" alt="{{ venue_image.caption|default:match.venue.name_ar }}" style="max-width:100%;">
+                    {% if venue_image.caption %}<figcaption class="help-text">{{ venue_image.caption }}</figcaption>{% endif %}
+                </figure>
+            {% endif %}
+        {% endfor %}
+        <p class="help-text">
+            {% blocktrans with seat_type=match.venue.get_seat_type_display %}Seating: {{ seat_type }}{% endblocktrans %}
         </p>
     </div>
 {% endif %}
 
 <div class="card panel">
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="field-group">
-            <label for="{{ form.file.id_for_label }}">
-                {% if current_plan %}{% trans "Upload a New Version" %}{% else %}{% trans "Pricing Plan File" %}{% endif %}
-            </label>
-            {{ form.file }}
-            {% if form.file.errors %}
-                <p class="help-text" style="color: var(--danger);">{{ form.file.errors|join:", " }}</p>
-            {% endif %}
-        </div>
-        <button type="submit" class="btn btn-primary" style="margin-top: var(--space-4);">
-            <i class="ti ti-upload"></i> {% trans "Upload" %}
-        </button>
-    </form>
+    <h2 class="panel-title">{% trans "Enter Prices by Category" %}</h2>
+    {% if categories %}
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>{% trans "Category" %}</th>
+                            <th>{% trans "Seat Count" %}</th>
+                            <th>{% trans "Price" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category, price_field in form.category_price_fields %}
+                            <tr>
+                                <td>{{ category.code }}</td>
+                                <td>{{ category.seat_count|default:"—" }}</td>
+                                <td>
+                                    {{ price_field }}
+                                    {% if price_field.errors %}
+                                        <p class="help-text" style="color: var(--danger);">{{ price_field.errors|join:", " }}</p>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="field-group" style="margin-top: var(--space-4);">
+                <label for="{{ form.file.id_for_label }}">{% trans "Attach a file (optional)" %}</label>
+                {{ form.file }}
+                {% if form.file.errors %}
+                    <p class="help-text" style="color: var(--danger);">{{ form.file.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: var(--space-4);">
+                <i class="ti ti-device-floppy"></i> {% trans "Save Pricing Plan" %}
+            </button>
+        </form>
+
+        <hr style="margin: var(--space-5) 0;">
+
+        <h3 class="panel-title">{% trans "Or Upload an Excel File" %}</h3>
+        <p class="help-text">
+            {% blocktrans %}Columns: "code" (or "Ticket Name") and "price". Only categories listed above are accepted.{% endblocktrans %}
+        </p>
+        <form method="post" enctype="multipart/form-data" action="{% url 'operations:club-pricing-plan-category-import' match.pk %}">
+            {% csrf_token %}
+            <div class="field-group">
+                {{ import_form.import_file }}
+                {% if import_form.import_file.errors %}
+                    <p class="help-text" style="color: var(--danger);">{{ import_form.import_file.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn btn-secondary" style="margin-top: var(--space-3);">
+                <i class="ti ti-file-spreadsheet"></i> {% trans "Import Excel" %}
+            </button>
+        </form>
+    {% else %}
+        <p class="help-text">
+            {% trans "No seating categories are set up yet for this venue/club - a coordinator needs to add them in the Control Panel first. You can still attach a file below." %}
+        </p>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="field-group">
+                <label for="{{ form.file.id_for_label }}">{% trans "Pricing Plan File" %}</label>
+                {{ form.file }}
+                {% if form.file.errors %}
+                    <p class="help-text" style="color: var(--danger);">{{ form.file.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: var(--space-4);">
+                <i class="ti ti-upload"></i> {% trans "Upload" %}
+            </button>
+        </form>
+    {% endif %}
 </div>
 {% endblock %}

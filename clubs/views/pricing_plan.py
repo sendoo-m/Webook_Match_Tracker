@@ -10,14 +10,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Max
-from django.http import FileResponse
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views import View
 
-from matches.models import Match
-from operations.models import ClubPricingPlan, MatchActivityLog
+from matches.models import Match, VenueSeatingCategory
+from operations.models import ClubPricingPlan, ClubPricingPlanCategoryPrice, MatchActivityLog
 from operations.permissions import (
     can_confirm_home_match_submission,
     can_manage_home_match,
@@ -26,7 +26,16 @@ from operations.permissions import (
 )
 from operations.views.helpers import log_match_activity
 
-from ..forms import ClubPricingPlanUploadForm
+from ..forms import ClubPricingPlanCategoryImportForm, ClubPricingPlanUploadForm
+from ..pricing_import_export import parse_plan_category_prices_xlsx
+
+
+def _get_categories_for_match(match):
+    if not match.venue_id:
+        return VenueSeatingCategory.objects.none()
+    return VenueSeatingCategory.objects.filter(
+        venue_id=match.venue_id, club_id=match.home_club_id, is_active=True
+    ).order_by("sort_order", "code")
 
 
 class ClubPricingPlanUploadView(LoginRequiredMixin, View):
@@ -42,37 +51,54 @@ class ClubPricingPlanUploadView(LoginRequiredMixin, View):
     template_name = "operations/club_pricing_plan_upload.html"
 
     def _get_match_or_403(self, request, pk):
-        match = get_object_or_404(Match.objects.select_related("home_club", "away_club"), pk=pk)
+        match = get_object_or_404(Match.objects.select_related("home_club", "away_club", "venue"), pk=pk)
         if not can_upload_home_match_pricing_plan(request.user, match):
             raise PermissionDenied("You don't have permission to upload a pricing plan for this match.")
         return match
 
     def get(self, request, pk, *args, **kwargs):
         match = self._get_match_or_403(request, pk)
-        form = ClubPricingPlanUploadForm()
+        categories = _get_categories_for_match(match)
+        form = ClubPricingPlanUploadForm(categories=categories)
+        import_form = ClubPricingPlanCategoryImportForm()
         current_plan = match.club_pricing_plans.order_by("-version").first()
-        return self._render(request, match, form, current_plan)
+        return self._render(request, match, form, import_form, current_plan, categories)
 
     def post(self, request, pk, *args, **kwargs):
         match = self._get_match_or_403(request, pk)
-        form = ClubPricingPlanUploadForm(request.POST, request.FILES)
+        categories = _get_categories_for_match(match)
+        form = ClubPricingPlanUploadForm(request.POST, request.FILES, categories=categories)
+        import_form = ClubPricingPlanCategoryImportForm()
+        current_plan = match.club_pricing_plans.order_by("-version").first()
+
         if not form.is_valid():
             error_text = " ".join(str(error) for errors in form.errors.values() for error in errors)
-            messages.error(request, error_text or _("Could not upload the file."))
-            current_plan = match.club_pricing_plans.order_by("-version").first()
-            return self._render(request, match, form, current_plan)
+            messages.error(request, error_text or _("Could not save the pricing plan."))
+            return self._render(request, match, form, import_form, current_plan, categories)
+
+        if not form.has_any_pricing_input():
+            messages.error(request, _("Enter at least one category price or attach a file before saving."))
+            return self._render(request, match, form, import_form, current_plan, categories)
 
         next_version = (
             ClubPricingPlan.objects.filter(match=match).aggregate(Max("version"))["version__max"] or 0
         ) + 1
 
-        plan = form.save(commit=False)
-        plan.match = match
-        plan.club_id = match.home_club_id
-        plan.version = next_version
-        plan.status = ClubPricingPlan.Status.UPLOADED
-        plan.uploaded_by = request.user
-        plan.save()
+        with transaction.atomic():
+            plan = form.save(commit=False)
+            plan.match = match
+            plan.club_id = match.home_club_id
+            plan.version = next_version
+            plan.status = ClubPricingPlan.Status.UPLOADED
+            plan.uploaded_by = request.user
+            plan.save()
+
+            entered_prices = form.get_entered_prices()
+            if entered_prices:
+                ClubPricingPlanCategoryPrice.objects.bulk_create(
+                    ClubPricingPlanCategoryPrice(plan=plan, category_id=category_id, price=price)
+                    for category_id, price in entered_prices.items()
+                )
 
         log_match_activity(
             match=match,
@@ -83,12 +109,81 @@ class ClubPricingPlanUploadView(LoginRequiredMixin, View):
         messages.success(request, _("Pricing plan uploaded. This does not approve it - SPL review still applies."))
         return redirect("operations:club-dashboard-match-detail", pk=match.pk)
 
-    def _render(self, request, match, form, current_plan):
+    def _render(self, request, match, form, import_form, current_plan, categories):
         return render(
             request,
             self.template_name,
-            {"match": match, "form": form, "current_plan": current_plan},
+            {
+                "match": match,
+                "form": form,
+                "import_form": import_form,
+                "current_plan": current_plan,
+                "categories": categories,
+            },
         )
+
+
+class ClubPricingPlanCategoryImportView(LoginRequiredMixin, View):
+    """The Excel-upload alternative to typing prices in one by one on the
+    same page - parses the whole file first and only creates a new
+    ClubPricingPlan version if every row resolves cleanly, so a bad file
+    never creates a partially-priced version."""
+
+    def post(self, request, pk, *args, **kwargs):
+        match = get_object_or_404(Match.objects.select_related("home_club", "away_club", "venue"), pk=pk)
+        if not can_upload_home_match_pricing_plan(request.user, match):
+            raise PermissionDenied("You don't have permission to upload a pricing plan for this match.")
+
+        form = ClubPricingPlanCategoryImportForm(request.POST, request.FILES)
+        if not form.is_valid():
+            error_text = " ".join(str(error) for errors in form.errors.values() for error in errors)
+            messages.error(request, error_text or _("Could not read the file."))
+            return redirect("operations:club-pricing-plan-upload", pk=match.pk)
+
+        if not match.venue_id:
+            messages.error(request, _("This match has no venue set, so it has no seating categories to price against."))
+            return redirect("operations:club-pricing-plan-upload", pk=match.pk)
+
+        prices_by_category_id, result = parse_plan_category_prices_xlsx(
+            form.cleaned_data["import_file"], match.venue, match.home_club
+        )
+
+        if result.errors or not prices_by_category_id:
+            for row_number, message in result.errors:
+                messages.error(request, f"Row {row_number}: {message}")
+            if not result.errors:
+                messages.error(request, _("No valid category prices found in the file."))
+            return redirect("operations:club-pricing-plan-upload", pk=match.pk)
+
+        next_version = (
+            ClubPricingPlan.objects.filter(match=match).aggregate(Max("version"))["version__max"] or 0
+        ) + 1
+
+        with transaction.atomic():
+            plan = ClubPricingPlan.objects.create(
+                match=match,
+                club_id=match.home_club_id,
+                version=next_version,
+                status=ClubPricingPlan.Status.UPLOADED,
+                uploaded_by=request.user,
+            )
+            ClubPricingPlanCategoryPrice.objects.bulk_create(
+                ClubPricingPlanCategoryPrice(plan=plan, category_id=category_id, price=price)
+                for category_id, price in prices_by_category_id.items()
+            )
+
+        log_match_activity(
+            match=match,
+            action=MatchActivityLog.Action.STATUS_CHANGED,
+            description=f"Club pricing plan uploaded via Excel import (v{plan.version}, {len(prices_by_category_id)} categories).",
+            user=request.user,
+        )
+        messages.success(
+            request,
+            _("Pricing plan imported (%(count)s categories). This does not approve it - SPL review still applies.")
+            % {"count": len(prices_by_category_id)},
+        )
+        return redirect("operations:club-dashboard-match-detail", pk=match.pk)
 
 
 class ClubPricingPlanDownloadView(LoginRequiredMixin, View):
@@ -103,6 +198,8 @@ class ClubPricingPlanDownloadView(LoginRequiredMixin, View):
         plan = get_object_or_404(ClubPricingPlan.objects.select_related("match", "club"), pk=pk)
         if not can_manage_home_match(request.user, plan.match):
             raise PermissionDenied("You don't have permission to download this file.")
+        if not plan.file:
+            raise Http404("This pricing plan version has no attached file (it was entered as category prices).")
         return FileResponse(plan.file.open("rb"), as_attachment=True, filename=plan.file.name.rsplit("/", 1)[-1])
 
 
