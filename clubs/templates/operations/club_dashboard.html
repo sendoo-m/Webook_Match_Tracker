@@ -21,7 +21,7 @@
 <div class="page-header">
     <h1 class="page-title">{% trans "Club Dashboard" %}</h1>
     <p class="page-subtitle">
-        {% for club in clubs %}{{ club|localized_name }}{% if not forloop.last %}، {% endif %}{% endfor %}
+        {% for club in clubs %}{{ club|localized_name }}{% if not forloop.last %}{% trans ", " %}{% endif %}{% endfor %}
     </p>
 </div>
 

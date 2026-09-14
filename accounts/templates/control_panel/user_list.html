@@ -1,14 +1,67 @@
 {# control_panel/user_list.html #}
 {% extends "control_panel/list.html" %}
+{% load static %}
 {% load display_helpers %}
 {% load i18n %}
 
+{% block extra_content %}
+<div class="card panel filter-toolbar" style="margin-bottom: var(--space-4);">
+    <form method="get" class="filters" data-autosubmit>
+        <div class="field-group">
+            <label>{% trans "Search" %}</label>
+            <input type="text" name="q" value="{{ selected_q }}" placeholder="{% trans 'Username or name…' %}">
+        </div>
+
+        <div class="field-group">
+            <label>{% trans "Role" %}</label>
+            <select name="role">
+                <option value="">{% trans "All" %}</option>
+                {% for role in role_choices %}
+                    <option value="{{ role.id }}" {% if selected_role == role.id|stringformat:"s" %}selected{% endif %}>{{ role.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>{% trans "Club" %}</label>
+            <select name="club" data-searchable>
+                <option value="">{% trans "All" %}</option>
+                {% for club in club_choices %}
+                    <option value="{{ club.id }}" {% if selected_club == club.id|stringformat:"s" %}selected{% endif %}>{{ club|localized_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>{% trans "Status" %}</label>
+            <select name="status">
+                <option value="">{% trans "All" %}</option>
+                <option value="active" {% if selected_status == "active" %}selected{% endif %}>{% trans "Active" %}</option>
+                <option value="inactive" {% if selected_status == "inactive" %}selected{% endif %}>{% trans "Inactive" %}</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn-apply-filters"><i class="ti ti-filter"></i> {% trans "Apply Filters" %}</button>
+        </div>
+
+        {% if has_active_filters %}
+            <div class="field-group">
+                <label>&nbsp;</label>
+                <a href="{% url 'control_panel:user-list' %}" class="btn btn-ghost btn-sm">{% trans "Clear filters" %}</a>
+            </div>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}
+
 {% block table_head %}
-    <th>{% trans "Username" %}</th>
+    <th>{% trans "User" %}</th>
     <th>{% trans "Role" %}</th>
-    <th>{% trans "Owned Clubs" %}</th>
-    <th>{% trans "Club Account" %}</th>
+    <th>{% trans "Access Scope" %}</th>
     <th>{% trans "Status" %}</th>
+    <th>{% trans "Last Login" %}</th>
     <th></th>
 {% endblock %}
 
@@ -17,27 +70,52 @@
         <tr>
             <td>
                 {{ user.username }}
-                {% if user.get_full_name %}<span class="help-text">({{ user.get_full_name }})</span>{% endif %}
+                {% if user.get_full_name %}<br><span class="help-text">{{ user.get_full_name }}</span>{% endif %}
                 {% if user.is_superuser %} <span class="mini-badge mini-badge-info">{% trans "Superuser" %}</span>{% endif %}
             </td>
             <td>
-                {% for group in user.groups.all %}{{ group.name }}{% if not forloop.last %}, {% endif %}
+                {% for group in user.groups.all %}
+                    <span class="mini-badge mini-badge-info">{{ group.name }}</span>
                 {% empty %}
                     {% if user.is_active %}
                         <span class="mini-badge mini-badge-warning" title="{% trans 'Active account with no assigned role - a permissions-hygiene gap worth reviewing.' %}">
                             <i class="ti ti-alert-circle"></i> {% trans "No role" %}
                         </span>
                     {% else %}
-                        —
+                        <span class="help-text">—</span>
                     {% endif %}
                 {% endfor %}
             </td>
-            <td>{{ user.owned_clubs.count }}</td>
-            <td>{{ user.own_club|default:"—" }}</td>
+            <td>
+                {% if user.owned_clubs.all %}
+                    <div>
+                        <i class="ti ti-shield-check" title="{% trans 'Coordinates' %}"></i>
+                        {% blocktrans count counter=user.owned_clubs.all|length %}{{ counter }} club{% plural %}{{ counter }} clubs{% endblocktrans %}
+                    </div>
+                {% endif %}
+                {% if user.own_club %}
+                    <div class="help-text"><i class="ti ti-building-stadium"></i> {{ user.own_club|localized_name }}</div>
+                {% endif %}
+                {% if user.competition_access.all %}
+                    <div class="help-text">
+                        {% blocktrans count counter=user.competition_access.all|length %}{{ counter }} section{% plural %}{{ counter }} sections{% endblocktrans %}
+                    </div>
+                {% endif %}
+                {% if not user.owned_clubs.all and not user.own_club and not user.competition_access.all %}
+                    <span class="help-text">{% trans "Every match" %}</span>
+                {% endif %}
+            </td>
             <td>
                 <span class="badge {% if user.is_active %}badge-published{% else %}badge-draft{% endif %}">
                     {% if user.is_active %}{% trans "Active" %}{% else %}{% trans "Inactive" %}{% endif %}
                 </span>
+            </td>
+            <td>
+                {% if user.last_login %}
+                    <span class="help-text">{{ user.last_login|date:"Y-m-d" }}</span>
+                {% else %}
+                    <span class="help-text">{% trans "Never" %}</span>
+                {% endif %}
             </td>
             <td>
                 <div class="row-actions">
@@ -65,6 +143,22 @@
             </td>
         </tr>
     {% empty %}
-        <tr><td colspan="6">{% trans "No users found." %}</td></tr>
+        <tr>
+            <td colspan="6">
+                <div class="empty-state">
+                    {% if has_active_filters %}
+                        {% trans "No users match your filters." %}
+                        <br><a href="{% url 'control_panel:user-list' %}">{% trans "Clear filters" %}</a>
+                    {% else %}
+                        {% trans "No users found." %}
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
     {% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
+    <script src="{% static 'operations/js/searchable-select.js' %}"></script>
 {% endblock %}

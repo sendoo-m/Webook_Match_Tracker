@@ -1,5 +1,6 @@
 {# control_panel/user_form.html #}
 {% extends "operations/base.html" %}
+{% load static %}
 {% load i18n %}
 
 {% block title %}{{ page_title }} · {% trans "Control Panel" %}{% endblock %}
@@ -11,9 +12,15 @@
     <h1 class="page-title">{{ page_title }}</h1>
 </div>
 
-<div class="card panel" style="max-width:720px;">
-    <form method="post" class="form-stack">
-        {% csrf_token %}
+{{ role_info|json_script:"role-info-data" }}
+{{ ui_strings|json_script:"ui-strings-data" }}
+
+<form method="post" enctype="multipart/form-data" class="form-stack" id="user-form" data-prevent-double-submit style="max-width:760px;">
+    {% csrf_token %}
+
+    {# --- البيانات الأساسية -------------------------------------------- #}
+    <div class="card panel">
+        <h2 class="panel-title">{% trans "Basic Information" %}</h2>
 
         <div class="form-group">
             {{ form.username.label_tag }}
@@ -32,6 +39,11 @@
             {{ form.last_name }}
             {% for error in form.last_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
         </div>
+    </div>
+
+    {# --- الحساب وتسجيل الدخول ------------------------------------------ #}
+    <div class="card panel">
+        <h2 class="panel-title">{% trans "Account & Login" %}</h2>
 
         <div class="form-group">
             {{ form.password.label_tag }}
@@ -41,8 +53,14 @@
         </div>
 
         <div class="form-group">
-            <label>{{ form.is_active.label_tag }} {{ form.is_active }}</label>
+            <label>{{ form.is_active }} {{ form.is_active.label_tag }}</label>
+            <p class="help-text">{% trans "An inactive account can't log in at all, regardless of its role or access below." %}</p>
         </div>
+    </div>
+
+    {# --- الدور الرئيسي -------------------------------------------------- #}
+    <div class="card panel">
+        <h2 class="panel-title">{% trans "Main Role" %}</h2>
 
         <div class="form-group">
             {{ form.group.label_tag }}
@@ -50,100 +68,96 @@
             {% for error in form.group.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
         </div>
 
+        <div class="card panel alert-card alert-info" id="role-description-box" style="margin-top: var(--space-3);">
+            <div class="alert-head">
+                <div>
+                    <div class="alert-title"><i class="ti ti-info-circle"></i> {% trans "What this role means" %}</div>
+                    <p class="help-text" id="role-description-text"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# --- نطاق الوصول --------------------------------------------------- #}
+    <div class="card panel">
+        <h2 class="panel-title">{% trans "Access Scope" %}</h2>
         <p class="help-text">
-            {% blocktrans %}Club Manager accounts are scoped to the clubs and sections picked below.
-            Operations Manager and Viewer accounts always see every match, regardless of what's picked here.{% endblocktrans %}
+            {% blocktrans %}A Club Manager account only sees matches for the clubs and sections picked below. Operations Manager and Viewer accounts always see every match, regardless of what's picked here - the fields still matter for a Club Manager or Club Viewer account.{% endblocktrans %}
         </p>
 
-        <div class="form-group">
+        <div class="form-group" style="margin-top: var(--space-3);">
             <label>{{ form.owned_clubs.label_tag }}</label>
             <p class="help-text">{{ form.owned_clubs.help_text }}</p>
-            <div class="checkbox-list">{{ form.owned_clubs }}</div>
+            <input type="text" placeholder="{% trans 'Filter clubs…' %}" data-filter-target="#owned-clubs-list" style="max-width:280px;">
+            <div class="checkbox-list" id="owned-clubs-list">{{ form.owned_clubs }}</div>
+            <p class="help-text" data-filter-empty hidden>{% trans "No clubs match your filter." %}</p>
             {% for error in form.owned_clubs.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
         </div>
 
-        <div class="form-group">
+        <div class="form-group" style="margin-top: var(--space-4);">
             {{ form.club_account.label_tag }}
             {{ form.club_account }}
             <p class="help-text">{{ form.club_account.help_text }}</p>
             {% for error in form.club_account.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
         </div>
 
-        <div class="form-group">
+        <div class="form-group" style="margin-top: var(--space-4);">
             <label>{{ form.competitions.label_tag }}</label>
+            <p class="help-text">{% trans "Section access this account is granted, combined with the clubs above - both are needed for a Club Manager to see a match." %}</p>
             <div class="checkbox-list">{{ form.competitions }}</div>
         </div>
+    </div>
 
-        <div class="form-actions">
-            <a class="btn btn-secondary" href="{{ list_url }}">{% trans "Cancel" %}</a>
-            <button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
+    {# --- الصلاحيات الحساسة ---------------------------------------------- #}
+    <div class="card panel alert-card alert-warning" id="sensitive-permissions-box" hidden>
+        <div class="alert-head">
+            <div>
+                <div class="alert-title"><i class="ti ti-shield-exclamation"></i> {% trans "This role grants sensitive access" %}</div>
+                <p class="help-text">{% trans "Review before saving:" %}</p>
+                <ul id="sensitive-permissions-list" style="margin: var(--space-2) 0 0; padding-inline-start: 20px;"></ul>
+            </div>
         </div>
-    </form>
-</div>
+    </div>
+
+    {# --- المراجعة قبل الحفظ ---------------------------------------------- #}
+    <div class="card panel peak-end-summary">
+        <i class="ti ti-clipboard-check peak-end-summary-icon"></i>
+        <div style="flex: 1 1 auto;">
+            <div class="block-title">{% trans "Review before saving" %}</div>
+            <div class="summary-grid summary-grid-2" style="margin-top: var(--space-3);">
+                <div class="summary-tile">
+                    <div class="help-text">{% trans "Role" %}</div>
+                    <div class="summary-tile-value" id="review-role">—</div>
+                </div>
+                <div class="summary-tile">
+                    <div class="help-text">{% trans "Account status" %}</div>
+                    <div class="summary-tile-value" id="review-status">—</div>
+                </div>
+                <div class="summary-tile">
+                    <div class="help-text">{% trans "Coordinated clubs" %}</div>
+                    <div class="summary-tile-value" id="review-clubs">—</div>
+                </div>
+                <div class="summary-tile">
+                    <div class="help-text">{% trans "Club account" %}</div>
+                    <div class="summary-tile-value" id="review-club-account">—</div>
+                </div>
+                <div class="summary-tile">
+                    <div class="help-text">{% trans "Section access" %}</div>
+                    <div class="summary-tile-value" id="review-competitions">—</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <a class="btn btn-secondary" href="{{ list_url }}">{% trans "Cancel" %}</a>
+        <button type="submit" class="btn btn-primary" data-saving-label="{% trans 'Saving…' %}">{% trans "Save" %}</button>
+    </div>
+</form>
 {% endblock %}
-{% comment %} {% extends "operations/base.html" %}
 
-{% block title %}{{ page_title }} · Control Panel{% endblock %}
-
-{% block content %}
-<div class="page-header">
-    <h1 class="page-title">{{ page_title }}</h1>
-</div>
-
-<div class="card panel" style="max-width:720px;">
-    <form method="post" class="form-stack">
-        {% csrf_token %}
-
-        <div class="form-group">
-            {{ form.username.label_tag }}
-            {{ form.username }}
-            {% for error in form.username.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-        </div>
-
-        <div class="form-group">
-            {{ form.first_name.label_tag }}
-            {{ form.first_name }}
-            {% for error in form.first_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-        </div>
-
-        <div class="form-group">
-            {{ form.last_name.label_tag }}
-            {{ form.last_name }}
-            {% for error in form.last_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-        </div>
-
-        <div class="form-group">
-            {{ form.password.label_tag }}
-            {{ form.password }}
-            <p class="help-text">{{ form.password.help_text }}</p>
-            {% for error in form.password.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-        </div>
-
-        <div class="form-group">
-            <label>{{ form.is_active.label_tag }} {{ form.is_active }}</label>
-        </div>
-
-        <div class="form-group">
-            {{ form.group.label_tag }}
-            {{ form.group }}
-            {% for error in form.group.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-        </div>
-
-        <div class="form-group">
-            <label>{{ form.owned_clubs.label_tag }}</label>
-            <div class="checkbox-list">{{ form.owned_clubs }}</div>
-        </div>
-
-        <div class="form-group">
-            <label>{{ form.competitions.label_tag }}</label>
-            <p class="help-text">A user only sees matches for clubs they own AND sections they're granted here.</p>
-            <div class="checkbox-list">{{ form.competitions }}</div>
-        </div>
-
-        <div class="form-actions">
-            <a class="btn btn-secondary" href="{{ list_url }}">Cancel</a>
-            <button type="submit" class="btn btn-primary">Save</button>
-        </div>
-    </form>
-</div>
-{% endblock %} {% endcomment %}
+{% block extra_js %}
+    <script src="{% static 'operations/js/checkbox-list-filter.js' %}"></script>
+    <script src="{% static 'operations/js/prevent-double-submit.js' %}"></script>
+    <script src="{% static 'operations/js/user-role-summary.js' %}"></script>
+{% endblock %}

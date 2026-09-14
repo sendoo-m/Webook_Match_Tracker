@@ -4,8 +4,12 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.shortcuts import redirect
+from django.utils.translation import gettext_lazy as _
 
-DEFAULT_MESSAGE = "معندكش صلاحية تعمل الحاجة دي — حسابك للعرض بس."
+# A lazy translation proxy resolves to the correct language at str()-time,
+# not at import time - previously this was a raw Arabic literal with no
+# language switching at all, showing Arabic even on an English-language page.
+DEFAULT_MESSAGE = _("You don't have permission to do this - your account is view-only.")
 
 
 class FriendlyPermissionDeniedMiddleware:
@@ -36,7 +40,7 @@ class FriendlyPermissionDeniedMiddleware:
         if not isinstance(exception, PermissionDenied):
             return None
 
-        message = str(exception) or DEFAULT_MESSAGE
+        message = str(exception) or str(DEFAULT_MESSAGE)
 
         if request.headers.get("HX-Request") == "true":
             html = (

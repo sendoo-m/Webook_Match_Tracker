@@ -3,10 +3,23 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import get_language
 from django.utils.translation import gettext_lazy as _
 
 PLAN_APPROVAL_ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png", "pdf", "doc", "docx", "xls", "xlsx"]
 PLAN_APPROVAL_MAX_SIZE_MB = 10
+
+
+def localized_str(name_ar, name_en):
+    """Same rule as operations.templatetags.display_helpers.localized_name,
+    applied to __str__ itself - without this, str(obj) (used by Django
+    admin, ModelChoiceField/ModelMultipleChoiceField widget labels, and any
+    f-string interpolation) would show the Arabic name unconditionally even
+    on an English-language page, since Python's `or` doesn't know about the
+    active request language at all."""
+    if get_language() == "ar":
+        return name_ar or name_en
+    return name_en or name_ar
 
 
 def validate_plan_approval_file(value):
@@ -35,7 +48,7 @@ class Competition(models.Model):
         ordering = ["sort_order", "name_ar"]
 
     def __str__(self):
-        return self.name_ar or self.name_en
+        return localized_str(self.name_ar, self.name_en)
 
 
 class UserCompetitionAccess(models.Model):
@@ -85,7 +98,7 @@ class Club(models.Model):
         related_name="owned_clubs",
         null=True,
         blank=True,
-        help_text="الموظف المسؤول عن مباريات هذا النادي.",
+        help_text=_("The staff member responsible for this club's matches."),
     )
 
     # The club's OWN dedicated login (the "Club Viewer" group) - entirely
@@ -98,14 +111,14 @@ class Club(models.Model):
         related_name="own_club",
         null=True,
         blank=True,
-        help_text="حساب النادي المباشر (Club Viewer) - مستقل عن المنسق.",
+        help_text=_("The club's own direct account (Club Viewer) - independent of the coordinator."),
     )
 
     class Meta:
         ordering = ["name_ar"]
 
     def __str__(self):
-        return self.name_ar or self.name_en
+        return localized_str(self.name_ar, self.name_en)
 
 
 class Venue(models.Model):
@@ -127,7 +140,7 @@ class Venue(models.Model):
         ordering = ["name_ar"]
 
     def __str__(self):
-        return self.name_ar or self.name_en
+        return localized_str(self.name_ar, self.name_en)
 
 
 VENUE_IMAGE_MAX_DIMENSION = 1920
