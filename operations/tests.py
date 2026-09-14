@@ -485,6 +485,101 @@ class ClubDashboardUITests(ClubDashboardPermissionsTestBase):
         self.assertNotContains(response2, "/operations/club-dashboard/")
 
 
+class ClubViewerAccessRestrictionTests(TestCase):
+    """The Operations Dashboard, the full Events/match list, and the
+    Missing Requirements report are blocked entirely for accounts in the
+    "Club Viewer" group - the real football-club audience, who have
+    their own dedicated Club Dashboard instead. Release Schedule and
+    Calendar stay open to everyone, Club Viewer included (see
+    operations/views/release_schedule.py's own header comment and this
+    session's explicit "التقويم كما هو الان" instruction).
+
+    Deliberately a separate fixture from ClubDashboardPermissionsTestBase
+    (whose users sit in "Club Manager", the internal-coordinator group)
+    to prove the restriction is scoped to "Club Viewer" specifically and
+    does not accidentally also catch "Club Manager" - that exact mix-up
+    is what caused the incident this group split fixes (see commit
+    c1bdee6 and its revert eb2bf61)."""
+
+    @classmethod
+    def setUpTestData(cls):
+        club_viewer_group, _ = Group.objects.get_or_create(name="Club Viewer")
+        cls.club_viewer_user = User.objects.create_user(username="_test_club_viewer", password="pw")
+        cls.club_viewer_user.groups.add(club_viewer_group)
+        Club.objects.create(name_ar="نادي متابعة", name_en="Follow Club", owner=cls.club_viewer_user)
+
+        operations_manager_group, _ = Group.objects.get_or_create(name="Operations Manager")
+        cls.ops_manager_user = User.objects.create_user(username="_test_ops_manager_cv", password="pw")
+        cls.ops_manager_user.groups.add(operations_manager_group)
+
+        club_manager_group, _ = Group.objects.get_or_create(name="Club Manager")
+        cls.club_manager_user = User.objects.create_user(username="_test_club_manager_cv", password="pw")
+        cls.club_manager_user.groups.add(club_manager_group)
+        Club.objects.create(name_ar="نادي منسق", name_en="Coordinator Club", owner=cls.club_manager_user)
+
+    def test_club_viewer_blocked_from_dashboard(self):
+        client = Client()
+        client.login(username="_test_club_viewer", password="pw")
+        response = client.get("/operations/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_club_viewer_blocked_from_match_list(self):
+        client = Client()
+        client.login(username="_test_club_viewer", password="pw")
+        response = client.get("/operations/matches/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_club_viewer_blocked_from_missing_requirements_report(self):
+        client = Client()
+        client.login(username="_test_club_viewer", password="pw")
+        response = client.get("/operations/reports/missing-requirements/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_club_viewer_not_blocked_from_release_schedule(self):
+        client = Client()
+        client.login(username="_test_club_viewer", password="pw")
+        response = client.get("/operations/release-schedule/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_club_viewer_not_blocked_from_calendar(self):
+        client = Client()
+        client.login(username="_test_club_viewer", password="pw")
+        response = client.get("/operations/calendar/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_club_viewer_not_blocked_from_own_club_dashboard(self):
+        client = Client()
+        client.login(username="_test_club_viewer", password="pw")
+        response = client.get("/operations/club-dashboard/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_club_manager_not_blocked_by_this_restriction(self):
+        """Regression check - "Club Manager" (internal coordinators) must
+        stay fully unaffected. This is the exact scenario the revert of
+        commit c1bdee6 was about."""
+        client = Client()
+        client.login(username="_test_club_manager_cv", password="pw")
+        for path in ("/operations/", "/operations/matches/", "/operations/reports/missing-requirements/"):
+            response = client.get(path)
+            self.assertEqual(response.status_code, 200, path)
+
+    def test_operations_manager_not_blocked_by_this_restriction(self):
+        client = Client()
+        client.login(username="_test_ops_manager_cv", password="pw")
+        for path in ("/operations/", "/operations/matches/", "/operations/reports/missing-requirements/"):
+            response = client.get(path)
+            self.assertEqual(response.status_code, 200, path)
+
+    def test_login_redirects_club_viewer_to_club_dashboard(self):
+        """Landing a Club Viewer on the (now-blocked) Operations Dashboard
+        right after login would just bounce them straight back out - see
+        HtmxLoginView.get_default_redirect_url."""
+        client = Client()
+        response = client.post("/login/", {"username": "_test_club_viewer", "password": "pw"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/operations/club-dashboard/")
+
+
 # --- Phase 4: Club Pricing Plan tests -------------------------------------
 
 

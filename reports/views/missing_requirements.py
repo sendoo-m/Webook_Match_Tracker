@@ -10,7 +10,12 @@ from django.views.generic import TemplateView
 from checklists.models import MatchChecklistItem
 from matches.models import Competition, Match
 from matches.utils import combine_match_datetime
-from operations.permissions import ExcludeViewerAccessMixin, MatchScopedQuerysetMixin, can_view_all_matches
+from operations.permissions import (
+    ExcludeClubViewerAccessMixin,
+    ExcludeViewerAccessMixin,
+    MatchScopedQuerysetMixin,
+    can_view_all_matches,
+)
 
 from operations.views.helpers import (
     get_match_detail_prefetch,
@@ -20,7 +25,13 @@ from operations.views.helpers import (
     is_kv_ready,
 )
 
-class MissingRequirementsReportView(LoginRequiredMixin, ExcludeViewerAccessMixin, MatchScopedQuerysetMixin, TemplateView):
+class MissingRequirementsReportView(
+    LoginRequiredMixin,
+    ExcludeViewerAccessMixin,
+    ExcludeClubViewerAccessMixin,
+    MatchScopedQuerysetMixin,
+    TemplateView,
+):
     template_name = "operations/reports/missing_requirements.html"
     partial_template_name = "operations/reports/partials/missing_requirements_results.html"
 

@@ -52,6 +52,29 @@ def is_super_admin(user):
     return user.is_superuser or user.groups.filter(name="Super Admin").exists()
 
 
+def is_club_viewer(user):
+    """
+    True for any account in the "Club Viewer" group specifically, checked
+    on group membership alone - regardless of is_superuser or any other
+    group the account might also carry. This is the real football-club
+    audience's own account type: it gets exactly the Club Dashboard,
+    Calendar, and Release Schedule pages, never the internal Operations
+    Dashboard/Events/Missing Requirements pages (see
+    operations.permissions.ExcludeClubViewerAccessMixin).
+
+    Deliberately separate from "Club Manager", which is used by internal
+    coordinators who need full operations access AND happen to also own
+    a club's data - conflating the two groups previously caused a real
+    incident where a restriction meant for real club accounts also
+    locked out coordinators (see the revert of commit c1bdee6). Do not
+    reuse this function's group check for anything coordinator-facing.
+    """
+    if not getattr(user, "is_authenticated", False):
+        return False
+
+    return user.groups.filter(name="Club Viewer").exists()
+
+
 def is_viewer_only(user):
     """
     True for accounts whose ENTIRE access is the read-only Viewer role (the

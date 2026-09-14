@@ -9,8 +9,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         Group.objects.get_or_create(name="Club Manager")
+        Group.objects.get_or_create(name="Club Viewer")
         Group.objects.get_or_create(name="Operations Manager")
         Group.objects.get_or_create(name="Super Admin")
         Group.objects.get_or_create(name="Viewer")
-        self.stdout.write(self.style.SUCCESS("Groups created: Club Manager, Operations Manager, Super Admin, Viewer"))
+        self.stdout.write(self.style.SUCCESS(
+            "Groups created: Club Manager, Club Viewer, Operations Manager, Super Admin, Viewer"
+        ))
 

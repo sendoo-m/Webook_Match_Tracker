@@ -8,7 +8,7 @@ from matches.models import Club, Competition, UserCompetitionAccess
 
 User = get_user_model()
 
-MANAGEABLE_GROUP_NAMES = ("Club Manager", "Operations Manager", "Viewer", "Events Manager")
+MANAGEABLE_GROUP_NAMES = ("Club Manager", "Club Viewer", "Operations Manager", "Viewer", "Events Manager")
 
 
 class UserForm(forms.ModelForm):

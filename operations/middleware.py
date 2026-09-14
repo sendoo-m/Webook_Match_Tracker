@@ -48,4 +48,11 @@ class FriendlyPermissionDeniedMiddleware:
 
         messages.error(request, message)
         referer = request.META.get("HTTP_REFERER")
-        return redirect(referer or "operations:dashboard")
+        if referer:
+            return redirect(referer)
+
+        from core.permissions import is_club_viewer
+
+        if is_club_viewer(request.user):
+            return redirect("operations:club-dashboard")
+        return redirect("operations:dashboard")
