@@ -185,23 +185,8 @@
             {% endif %}
 
             {% if current_pricing_plan.category_prices.all %}
-                <div class="table-wrap" style="margin-top: var(--space-3);">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>{% trans "Category" %}</th>
-                                <th>{% trans "Price" %}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for category_price in current_pricing_plan.category_prices.all %}
-                                <tr>
-                                    <td>{{ category_price.category.code }}</td>
-                                    <td>{{ category_price.price }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div style="margin-top: var(--space-3);">
+                    {% include "operations/partials/pricing_plan_categories.html" with plan=current_pricing_plan %}
                 </div>
             {% endif %}
 

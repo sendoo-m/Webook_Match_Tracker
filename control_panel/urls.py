@@ -29,6 +29,12 @@ urlpatterns = [
     path("venue-images/new/", views.VenueImageCreateView.as_view(), name="venue-image-create"),
     path("venue-images/<int:pk>/edit/", views.VenueImageUpdateView.as_view(), name="venue-image-update"),
     path("venue-images/<int:pk>/toggle-active/", views.VenueImageToggleActiveView.as_view(), name="venue-image-toggle-active"),
+    path("venue-images/<int:pk>/positions/", views.VenueImagePositionEditorView.as_view(), name="venue-image-positions"),
+    path(
+        "venue-images/<int:image_pk>/positions/<int:category_pk>/save/",
+        views.VenueCategoryPositionSaveView.as_view(),
+        name="venue-category-position-save",
+    ),
 
     path("venue-categories/", views.VenueSeatingCategoryListView.as_view(), name="venue-category-list"),
     path("venue-categories/new/", views.VenueSeatingCategoryCreateView.as_view(), name="venue-category-create"),

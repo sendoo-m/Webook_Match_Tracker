@@ -224,6 +224,24 @@ class VenueSeatingCategory(models.Model):
     sort_order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
 
+    # Where this block's price badge is placed on a seating-map image, set
+    # via the Control Panel's block-position editor (one point per block,
+    # not a drawn region - the map image itself already shows each block's
+    # shape/boundary). x/y are percentages (0-100) of the image's own
+    # width/height, not pixels, so the same position renders correctly
+    # regardless of how large the image is shown. Scoped per (venue, club)
+    # like the category itself, since two clubs at the same venue can use
+    # different images or place the same code differently.
+    position_image = models.ForeignKey(
+        "VenueImage",
+        related_name="category_positions",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    position_x = models.FloatField(null=True, blank=True)
+    position_y = models.FloatField(null=True, blank=True)
+
     class Meta:
         ordering = ["venue__name_ar", "club__name_ar", "sort_order", "code"]
         constraints = [
@@ -236,6 +254,10 @@ class VenueSeatingCategory(models.Model):
 
     def __str__(self):
         return f"{self.venue} - {self.club} - {self.code}"
+
+    @property
+    def has_position(self):
+        return self.position_image_id is not None and self.position_x is not None and self.position_y is not None
 
 
 class Match(models.Model):

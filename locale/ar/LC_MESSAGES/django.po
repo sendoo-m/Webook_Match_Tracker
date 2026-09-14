@@ -1256,6 +1256,36 @@ msgstr "لا توجد تصنيفات مطابقة لعوامل التصفية."
 msgid "Grouped by club - use the filters below to jump straight to one club or coordinator."
 msgstr "مجمّعة حسب النادي - استخدم عوامل التصفية أدناه للانتقال مباشرة إلى نادٍ أو منسّق معيّن."
 
+msgid "Block Positions"
+msgstr "مواقع الفئات على الصورة"
+
+msgid "Back to Venue Images"
+msgstr "العودة لصور الملاعب"
+
+msgid "Pick a club, then click the image to place each of its blocks - the same spot is used later to show that block's price to the club and to SPL."
+msgstr "اختر ناديًا، ثم انقر على الصورة لتحديد مكان كل فئة - نفس المكان يُستخدم لاحقًا لعرض سعر هذه الفئة للنادي ولـ SPL."
+
+msgid "Choose a club…"
+msgstr "اختر ناديًا…"
+
+msgid "Choose a club above to place or edit its block positions."
+msgstr "اختر ناديًا أعلاه لتحديد أو تعديل مواقع فئاته."
+
+msgid "This club has no seating categories at this venue yet."
+msgstr "لا توجد فئات مقاعد لهذا النادي في هذا الملعب بعد."
+
+msgid "Blocks"
+msgstr "الفئات"
+
+msgid "Click a block in the list, then click its spot on the image. Click an already-placed marker's × to remove it."
+msgstr "انقر على فئة من القائمة، ثم انقر على مكانها في الصورة. انقر على علامة × لإزالة فئة محددة مسبقًا."
+
+msgid "Placed"
+msgstr "تم التحديد"
+
+msgid "Not placed"
+msgstr "لم يُحدد"
+
 #, python-format
 msgid "%(obj)s %(state)s."
 msgstr "%(obj)s %(state)s."

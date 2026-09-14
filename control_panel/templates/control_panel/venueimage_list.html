@@ -1,5 +1,6 @@
 {# control_panel/venueimage_list.html #}
 {% extends "control_panel/list.html" %}
+{% load display_helpers %}
 {% load i18n %}
 
 {% block page_subtitle %}
@@ -17,7 +18,7 @@
 {% block table_body %}
     {% for venue_image in venue_images %}
         <tr>
-            <td>{{ venue_image.venue.name_en|default:venue_image.venue.name_ar }}</td>
+            <td>{{ venue_image.venue|localized_name }}</td>
             <td>
                 {% if venue_image.image %}
                     <img src="{{ venue_image.image.url }}" alt="{{ venue_image.caption }}" class="club-logo-thumb">
@@ -32,6 +33,7 @@
             <td>
                 <div class="row-actions">
                     <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:venue-image-update' venue_image.pk %}">{% trans "Edit" %}</a>
+                    <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:venue-image-positions' venue_image.pk %}">{% trans "Block Positions" %}</a>
                     {% include "control_panel/_toggle_active_button.html" with obj=venue_image toggle_url_name="control_panel:venue-image-toggle-active" %}
                 </div>
             </td>

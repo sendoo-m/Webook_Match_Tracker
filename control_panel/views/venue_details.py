@@ -5,11 +5,13 @@
 # here by coordinators/admin; consumed read-only on the club-facing
 # pricing-plan page (Phase 3 of the venue-seating/pricing plan).
 
+import json
 from itertools import groupby
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -65,6 +67,83 @@ class VenueImageUpdateView(PanelUpdateView):
 class VenueImageToggleActiveView(PanelToggleActiveView):
     model = VenueImage
     success_url_name = "control_panel:venue-image-list"
+
+
+class VenueImagePositionEditorView(LoginRequiredMixin, ControlPanelAccessMixin, View):
+    """Lets a coordinator/admin click on a venue's seating-map image to
+    place one point per seating category (block) - the price badge shown
+    to clubs/SPL later gets positioned there. One club at a time (a venue
+    image is shared, but categories and their positions are scoped per
+    (venue, club) - see VenueSeatingCategory's own docstring), picked via
+    the `club` GET param."""
+
+    template_name = "control_panel/venue_image_positions.html"
+
+    def get(self, request, pk, *args, **kwargs):
+        image = get_object_or_404(VenueImage, pk=pk)
+        club_choices = Club.objects.filter(
+            venue_seating_categories__venue_id=image.venue_id, is_active=True
+        ).distinct().order_by("name_ar")
+
+        selected_club_id = request.GET.get("club", "").strip()
+        selected_club = club_choices.filter(pk=selected_club_id).first() if selected_club_id else None
+
+        categories = []
+        if selected_club:
+            categories = list(
+                VenueSeatingCategory.objects.filter(venue_id=image.venue_id, club=selected_club)
+                .order_by("sort_order", "code")
+            )
+
+        return render(request, self.template_name, {
+            "page_title": _("Block Positions"),
+            "image": image,
+            "club_choices": club_choices,
+            "selected_club": selected_club,
+            "categories": categories,
+            "categories_json": json.dumps([
+                {
+                    "id": category.id,
+                    "code": category.code,
+                    "x": category.position_x,
+                    "y": category.position_y,
+                    "placed": category.has_position and category.position_image_id == image.id,
+                }
+                for category in categories
+            ]),
+        })
+
+
+class VenueCategoryPositionSaveView(LoginRequiredMixin, ControlPanelAccessMixin, View):
+    """AJAX-only: saves (or clears, when x/y are omitted) one category's
+    point on one venue image. Immediate-save-on-click rather than a batch
+    "Save" button, so a placement is never lost if the coordinator
+    navigates away mid-session."""
+
+    def post(self, request, image_pk, category_pk, *args, **kwargs):
+        image = get_object_or_404(VenueImage, pk=image_pk)
+        category = get_object_or_404(VenueSeatingCategory, pk=category_pk)
+        if category.venue_id != image.venue_id:
+            raise Http404("This category doesn't belong to this venue's image.")
+
+        x = request.POST.get("x")
+        y = request.POST.get("y")
+        if x is None or y is None:
+            category.position_image = None
+            category.position_x = None
+            category.position_y = None
+        else:
+            try:
+                x = max(0.0, min(100.0, float(x)))
+                y = max(0.0, min(100.0, float(y)))
+            except ValueError:
+                return JsonResponse({"ok": False, "error": "Invalid coordinates."}, status=400)
+            category.position_image = image
+            category.position_x = x
+            category.position_y = y
+
+        category.save(update_fields=["position_image", "position_x", "position_y"])
+        return JsonResponse({"ok": True})
 
 
 class VenueSeatingCategoryListView(PanelListView):

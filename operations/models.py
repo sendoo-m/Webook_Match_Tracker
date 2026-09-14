@@ -171,6 +171,27 @@ class ClubPricingPlan(models.Model):
     def __str__(self):
         return f"{self.match} - v{self.version} ({self.club})"
 
+    def seat_map_groups(self):
+        """Splits this plan's category prices into {"image": VenueImage,
+        "prices": [...]} groups (one per seating-map image a block was
+        positioned on - normally just one) plus a leftover "unplaced" list
+        for any category price whose block has no on-image position yet, so
+        the seat-map display degrades to a plain price table instead of
+        silently dropping those categories."""
+        prices = self.category_prices.select_related("category", "category__position_image").all()
+        images_by_id = {}
+        unplaced = []
+        for category_price in prices:
+            category = category_price.category
+            if category.has_position:
+                image_id = category.position_image_id
+                if image_id not in images_by_id:
+                    images_by_id[image_id] = {"image": category.position_image, "prices": []}
+                images_by_id[image_id]["prices"].append(category_price)
+            else:
+                unplaced.append(category_price)
+        return {"images": list(images_by_id.values()), "unplaced": unplaced}
+
 
 class ClubPricingPlanCategoryPrice(models.Model):
     """One category's price for a specific ClubPricingPlan version - the
