@@ -1,9 +1,11 @@
 {# operations/partials/pricing_plan_categories.html #}
-{# Renders one ClubPricingPlan's category prices - as a seat-map image with
-   price badges overlaid at each block's saved position when available,
-   falling back to a plain table for any category with no position set yet.
-   Included from both club_dashboard_match_detail.html (club-facing) and
-   spl_approvals.html (SPL-facing) so both sides see the identical layout. #}
+{% comment %}
+Renders one ClubPricingPlan's category prices - as a seat-map image with
+price badges overlaid at each block's saved position when available,
+falling back to a plain table for any category with no position set yet.
+Included from both club_dashboard_match_detail.html (club-facing) and
+spl_approvals.html (SPL-facing) so both sides see the identical layout.
+{% endcomment %}
 {% load i18n %}
 {% with groups=plan.seat_map_groups %}
     {% for group in groups.images %}
