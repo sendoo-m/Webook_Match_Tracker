@@ -2486,6 +2486,154 @@ th {
     color: var(--muted);
 }
 
+/* Club Dashboard hero (homepage identity card: logo, name, venue facts,
+   seating-map thumbnail) - see clubs/templates/operations/club_dashboard.html */
+.club-hero {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-10);
+    flex-wrap: wrap;
+}
+
+.club-hero-identity {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-7);
+    min-width: 0;
+}
+
+.club-hero-logo {
+    width: 88px;
+    height: 88px;
+    object-fit: contain;
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: var(--space-3);
+    flex: 0 0 auto;
+}
+
+.club-hero-logo-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: var(--muted);
+}
+
+.club-hero-name {
+    margin: 0 0 var(--space-2);
+    font-size: 24px;
+}
+
+.club-hero-venue {
+    margin: 0 0 var(--space-6);
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+}
+
+.club-hero-facts {
+    display: flex;
+    gap: var(--space-8);
+    margin: 0;
+    flex-wrap: wrap;
+}
+
+.club-hero-fact dt {
+    margin: 0 0 4px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+}
+
+.club-hero-fact dd {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.club-hero-fact-unit {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--muted);
+}
+
+.club-hero-fact-empty {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted);
+}
+
+.club-hero-seatmap {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    flex: 0 0 auto;
+}
+
+.club-hero-seatmap-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+}
+
+.club-hero-seatmap-frame {
+    display: block;
+    width: 220px;
+    height: 140px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    background: var(--surface-2);
+}
+
+.club-hero-seatmap-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.club-hero-seatmap-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+    padding: var(--space-4);
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.club-hero-seatmap-empty i {
+    font-size: 22px;
+}
+
+@media (max-width: 720px) {
+    .club-hero {
+        flex-direction: column;
+    }
+
+    .club-hero-identity {
+        width: 100%;
+    }
+
+    .club-hero-seatmap {
+        width: 100%;
+    }
+
+    .club-hero-seatmap-frame {
+        width: 100%;
+    }
+}
+
 .match-row-link {
     display: flex;
     align-items: center;

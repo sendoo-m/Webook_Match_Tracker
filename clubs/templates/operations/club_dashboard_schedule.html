@@ -1,0 +1,201 @@
+{% extends "operations/base.html" %}
+{% load static %}
+{% load display_helpers %}
+{% load i18n %}
+<!-- File: templates/operations/club_dashboard_schedule.html -->
+<!-- The club's full, filterable match list - moved off the Club Dashboard
+     homepage (see club_dashboard.html) so the homepage can stay a quick
+     snapshot instead of a report. -->
+
+{% block title %}{% trans "My Matches" %}{% endblock %}
+
+{% block page_help %}
+    <p>
+        {% blocktrans %}Every match your club is part of, across every competition, whether your club is hosting
+        (<strong>Home</strong>) or visiting (<strong>Away</strong>).{% endblocktrans %}
+    </p>
+    <p>
+        {% trans "For a Home match you prepare and submit its tickets and pricing plan. For an Away match, the host club handles preparation - you can only track its status here." %}
+    </p>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">{% trans "My Matches" %}</h1>
+            <p class="page-subtitle">
+                {% for club in clubs %}{{ club|localized_name }}{% if not forloop.last %}{% trans ", " %}{% endif %}{% endfor %}
+            </p>
+        </div>
+        <div class="filter-bar">
+            <a class="btn btn-secondary" href="{% url 'operations:club-dashboard' %}">
+                <i class="ti ti-arrow-{% if LANGUAGE_BIDI %}right{% else %}left{% endif %}"></i> {% trans "Back to Club Dashboard" %}
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card panel dashboard-section">
+    <div class="dashboard-section-head">
+        <h2 class="panel-title"><i class="ti ti-chart-bar"></i> {% trans "Club Summary" %}</h2>
+    </div>
+
+    <div class="stat-strip">
+        <div class="stat-strip-item">
+            <span class="stat-strip-label">{% trans "Upcoming Matches" %}</span>
+            <span class="stat-strip-value">{{ summary.upcoming }}</span>
+        </div>
+        <div class="stat-strip-item">
+            <span class="stat-strip-label">{% trans "Past Matches" %}</span>
+            <span class="stat-strip-value">{{ summary.past }}</span>
+        </div>
+        <div class="stat-strip-item">
+            <span class="stat-strip-label">{% trans "Home Matches" %}</span>
+            <span class="stat-strip-value">{{ summary.home_count }}</span>
+        </div>
+        <div class="stat-strip-item">
+            <span class="stat-strip-label">{% trans "Away Matches" %}</span>
+            <span class="stat-strip-value">{{ summary.away_count }}</span>
+        </div>
+        <div class="stat-strip-item">
+            <span class="stat-strip-label"><span class="stat-strip-dot stat-strip-dot-live"></span>{% trans "Live Now" %}</span>
+            <span class="stat-strip-value">{{ summary.live_count }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="card panel">
+    <form method="get" class="filters filter-toolbar" data-autosubmit>
+        <div class="field-group">
+            <label>{% trans "Match Type" %}</label>
+            <select name="type">
+                <option value="">{% trans "All" %}</option>
+                <option value="home" {% if selected_type == "home" %}selected{% endif %}>{% trans "Home" context "match side" %}</option>
+                <option value="away" {% if selected_type == "away" %}selected{% endif %}>{% trans "Away" context "match side" %}</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>{% trans "Competition" %}</label>
+            <select name="competition">
+                <option value="">{% trans "All" %}</option>
+                {% for competition in competitions %}
+                    <option value="{{ competition.id }}" {% if selected_competition == competition.id|stringformat:"s" %}selected{% endif %}>{{ competition|localized_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>{% trans "Match Status" %}</label>
+            <select name="status">
+                <option value="">{% trans "All" %}</option>
+                {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>{% trans "Period" %}</label>
+            <select name="period">
+                <option value="">{% trans "All" %}</option>
+                <option value="upcoming" {% if selected_period == "upcoming" %}selected{% endif %}>{% trans "Upcoming" %}</option>
+                <option value="past" {% if selected_period == "past" %}selected{% endif %}>{% trans "Past Matches" %}</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn-apply-filters"><i class="ti ti-filter"></i> {% trans "Apply Filters" %}</button>
+        </div>
+    </form>
+</div>
+
+<div class="card panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>{% trans "Competition" %}</th>
+                    <th>{% trans "Home Team" %}</th>
+                    <th>{% trans "Away Team" %}</th>
+                    <th>{% trans "Home / Away" %}</th>
+                    <th>{% trans "Stadium" %}</th>
+                    <th>{% trans "Match Date" %}</th>
+                    <th>{% trans "Match Status" %}</th>
+                    <th>{% trans "Ticket Status" %}</th>
+                    <th>{% trans "Details" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row.match.competition|localized_name }}</td>
+                    <td>{% include "operations/partials/club_chip.html" with club=row.match.home_club role="home" %}</td>
+                    <td>{% include "operations/partials/club_chip.html" with club=row.match.away_club role="away" %}</td>
+                    <td>
+                        {% if row.is_home %}
+                            <span class="mini-badge mini-badge-info">{% trans "Home" context "match side" %}</span>
+                        {% else %}
+                            <span class="mini-badge mini-badge-neutral">{% trans "Away" context "match side" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ row.match.venue|default:"—" }}</td>
+                    <td>
+                        {% trans "TBC" as tbc_label %}
+                        {{ row.match.event_date|default:tbc_label }}
+                        {% if row.match.match_start_time %} {{ row.match.match_start_time|time:"H:i" }}{% endif %}
+                    </td>
+                    <td>
+                        {% if row.is_live_now %}
+                            <span class="mini-badge mini-badge-live"><span class="live-dot"></span>{% trans "Live" %}</span>
+                        {% else %}
+                            <span class="badge badge-{{ row.match.cms_status|slugify }}">{{ row.match.get_cms_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if row.match.webook_purchase_url %}
+                            <span class="mini-badge mini-badge-success">{% trans "Tickets Live" %}</span>
+                        {% else %}
+                            <span class="mini-badge mini-badge-neutral">{% trans "Not Live Yet" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'operations:club-dashboard-match-detail' row.match.pk %}" class="mini-badge link-badge">
+                            {% trans "View" %} <i class="ti ti-arrow-right"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9">{% trans "No matches found for this filter." %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a class="pagination-link" href="?page=1">{% trans "First" %}</a>
+                <a class="pagination-link" href="?page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>
+            {% endif %}
+
+            <span class="pagination-current">
+                {% blocktrans with number=page_obj.number total=page_obj.paginator.num_pages %}Page {{ number }} of {{ total }}{% endblocktrans %}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a class="pagination-link" href="?page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>
+                <a class="pagination-link" href="?page={{ page_obj.paginator.num_pages }}">{% trans "Last" %}</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
+{% endblock %}

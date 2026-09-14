@@ -63,6 +63,7 @@ urlpatterns = [
         name="spl-pricing-plan-reject",
     ),
     path("club-dashboard/", views.ClubDashboardView.as_view(), name="club-dashboard"),
+    path("club-dashboard/schedule/", views.ClubDashboardScheduleView.as_view(), name="club-dashboard-schedule"),
     path(
         "club-dashboard/matches/<int:pk>/",
         views.ClubDashboardMatchDetailView.as_view(),

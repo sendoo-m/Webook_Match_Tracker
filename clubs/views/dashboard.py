@@ -20,14 +20,17 @@
 # ClubPricingPlan itself is defined in operations/models.py, not here - see
 # clubs/forms.py for why.
 
+from datetime import date as date_cls
+from datetime import time as time_cls
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.utils import timezone
 from django.views.generic import DetailView, TemplateView
 
-from matches.models import Club, Competition, Match
+from matches.models import Club, Competition, Match, Venue, VenueImage, VenueSeatingCategory
 from operations.permissions import (
     can_approve_pricing_plan,
     can_confirm_home_match_submission,
@@ -42,6 +45,7 @@ from operations.permissions import (
 from operations.views.helpers import build_dashboard_match_state
 
 CLUB_DASHBOARD_PAGE_SIZE = 20
+CLUB_DASHBOARD_UPCOMING_LIMIT = 6
 
 
 def _club_owned_matches_queryset(club_ids):
@@ -71,14 +75,109 @@ def _build_club_match_row(match, club_ids, now):
     }
 
 
+def _club_home_venue(club_ids):
+    """The venue this club's own home matches are played at - there is no
+    direct Club -> Venue field (a venue is only ever recorded per-Match),
+    so this is derived the same way get_manageable_venue_ids_for_user
+    (operations/permissions.py) does it: the venue(s) of the club's own
+    HOME fixtures, never an away fixture's venue. Picks the first one -
+    a club playing all its home matches at more than one physical venue
+    isn't a real scenario in this league."""
+    return (
+        Venue.objects.filter(matches__home_club_id__in=club_ids, is_active=True)
+        .distinct()
+        .first()
+    )
+
+
+def _club_total_capacity(club_ids, venue):
+    if venue is None:
+        return None
+    total = (
+        VenueSeatingCategory.objects.filter(club_id__in=club_ids, venue=venue, is_active=True)
+        .aggregate(total=Sum("seat_count"))["total"]
+    )
+    return total
+
+
+def _club_seat_map_image(venue):
+    if venue is None:
+        return None
+    return VenueImage.objects.filter(venue=venue, is_active=True).order_by("sort_order").first()
+
+
+def _next_round_upcoming_rows(base_qs, club_ids, now):
+    """Every not-yet-finished match, starting from the beginning of the
+    next round rather than a raw "event_date >= today" cut: a round can
+    span several days, and a plain date filter would show only the
+    fixtures of the CURRENT round that haven't kicked off yet, silently
+    dropping the ones from that same round already played. Matches with
+    no round number yet (TBC) are always included, since there's no way
+    to know which round they belong to."""
+    not_finished = [m for m in base_qs if not build_dashboard_match_state(m, now)["match_finished"]]
+    known_rounds = [m.round_number for m in not_finished if m.round_number is not None]
+    next_round = min(known_rounds) if known_rounds else None
+
+    if next_round is not None:
+        upcoming = [m for m in not_finished if m.round_number is None or m.round_number >= next_round]
+    else:
+        upcoming = not_finished
+
+    upcoming.sort(
+        key=lambda m: (
+            m.event_date is None,
+            m.event_date or date_cls.max,
+            m.match_start_time or time_cls.min,
+        )
+    )
+    return [_build_club_match_row(m, club_ids, now) for m in upcoming[:CLUB_DASHBOARD_UPCOMING_LIMIT]]
+
+
 class ClubDashboardView(LoginRequiredMixin, TemplateView):
-    """The club's own dashboard: summary counts + its full match list
-    (Home and Away, every competition), read-only except for the pricing-
-    plan/SPL-submission actions on its own Home matches.
-    can_view_own_club_dashboard is the single access gate; a user with no
-    owned club at all never gets past dispatch()."""
+    """The club's own homepage: its identity (logo, name), its home
+    venue's seating-map thumbnail and total capacity, and a short look
+    at its next round's fixtures. The full, filterable match history/list
+    lives on ClubDashboardScheduleView instead - this page is a snapshot,
+    not a report. can_view_own_club_dashboard is the single access gate;
+    a user with no owned club at all never gets past dispatch()."""
 
     template_name = "operations/club_dashboard.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and not can_view_own_club_dashboard(request.user):
+            raise PermissionDenied("This dashboard is only available to club accounts.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        now = timezone.localtime()
+
+        club_ids = get_user_club_ids(self.request.user)
+        clubs = list(Club.objects.filter(id__in=club_ids))
+        primary_club = clubs[0] if clubs else None
+
+        base_qs = _club_owned_matches_queryset(club_ids)
+        venue = _club_home_venue(club_ids)
+
+        context.update({
+            "clubs": clubs,
+            "club": primary_club,
+            "venue": venue,
+            "total_capacity": _club_total_capacity(club_ids, venue),
+            "seat_map_image": _club_seat_map_image(venue),
+            "upcoming_rows": _next_round_upcoming_rows(base_qs, club_ids, now),
+        })
+        return context
+
+
+class ClubDashboardScheduleView(LoginRequiredMixin, TemplateView):
+    """The club's full match list (Home and Away, every competition, every
+    period), with filters and pagination - reached from the homepage's
+    "View all matches" link. Same access gate and club scoping as the
+    homepage above; this view only exists to keep the homepage a quick
+    snapshot instead of growing back into a full report."""
+
+    template_name = "operations/club_dashboard_schedule.html"
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and not can_view_own_club_dashboard(request.user):

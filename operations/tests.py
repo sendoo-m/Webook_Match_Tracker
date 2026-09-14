@@ -6,7 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.utils import timezone
 
-from matches.models import Club, Competition, Match, UserCompetitionAccess, VenueImage, VenueSeatingCategory
+from matches.models import Club, Competition, Match, UserCompetitionAccess, Venue, VenueImage, VenueSeatingCategory
 from notifications.models import Notification
 from operations.models import ClubPricingPlan, ClubPricingPlanCategoryPrice, MatchActivityLog
 from operations.permissions import (
@@ -359,13 +359,13 @@ class ClubDashboardAccessTests(ClubDashboardPermissionsTestBase):
 
     def test_query_parameter_cannot_widen_club_scope(self):
         """There is no club_id/type parameter that selects a different
-        club - the view only ever reads get_user_club_ids(request.user).
-        Club B's unrelated match must never appear no matter what's
-        appended to the URL."""
+        club - the schedule view only ever reads
+        get_user_club_ids(request.user). Club C/D's unrelated match must
+        never appear no matter what's appended to the URL."""
         client = Client()
         client.login(username="_test_club_viewer_a", password="pw")
         response = client.get(
-            "/operations/club-dashboard/",
+            "/operations/club-dashboard/schedule/",
             {"club_id": self.club_c.pk, "club": self.club_c.pk},
         )
         self.assertEqual(response.status_code, 200)
@@ -376,12 +376,16 @@ class ClubDashboardAccessTests(ClubDashboardPermissionsTestBase):
         self.assertNotIn(self.unrelated_match.slug, content)
 
 
-class ClubDashboardMatchListTests(ClubDashboardPermissionsTestBase):
+class ClubDashboardHomepageTests(ClubDashboardPermissionsTestBase):
+    """The homepage (ClubDashboardView) is a snapshot: identity, home
+    venue, and the next round's fixtures (upcoming_rows) - not the full,
+    filterable match list, which moved to ClubDashboardScheduleView."""
+
     def test_home_match_appears_for_home_club(self):
         client = Client()
         client.login(username="_test_club_viewer_a", password="pw")
         response = client.get("/operations/club-dashboard/")
-        self.assertIn(self.match, [row["match"] for row in response.context["rows"]])
+        self.assertIn(self.match, [row["match"] for row in response.context["upcoming_rows"]])
 
     def test_away_match_appears_for_away_club(self):
         """The whole point of Phase 3: unlike get_visible_matches, the
@@ -389,14 +393,82 @@ class ClubDashboardMatchListTests(ClubDashboardPermissionsTestBase):
         client = Client()
         client.login(username="_test_club_viewer_b", password="pw")
         response = client.get("/operations/club-dashboard/")
-        self.assertIn(self.match, [row["match"] for row in response.context["rows"]])
+        self.assertIn(self.match, [row["match"] for row in response.context["upcoming_rows"]])
 
     def test_unrelated_match_never_appears(self):
         client = Client()
         client.login(username="_test_club_viewer_a", password="pw")
         response = client.get("/operations/club-dashboard/")
-        matches = [row["match"] for row in response.context["rows"]]
+        matches = [row["match"] for row in response.context["upcoming_rows"]]
         self.assertNotIn(self.unrelated_match, matches)
+
+    def test_club_identity_shown(self):
+        client = Client()
+        client.login(username="_test_club_viewer_a", password="pw")
+        response = client.get("/operations/club-dashboard/")
+        self.assertEqual(response.context["club"], self.club_a)
+
+    def test_home_venue_derived_from_home_matches(self):
+        venue = Venue.objects.create(name_ar="_ملعب تجريبي", name_en="_Test Home Venue")
+        self.match.venue = venue
+        self.match.save(update_fields=["venue"])
+        client = Client()
+        client.login(username="_test_club_viewer_a", password="pw")
+        response = client.get("/operations/club-dashboard/")
+        self.assertEqual(response.context["venue"], venue)
+
+    def test_home_venue_never_taken_from_an_away_fixture(self):
+        """club_b (the away side of self.match) must not have self.match's
+        venue attributed to it - only a club's own HOME matches count."""
+        venue = Venue.objects.create(name_ar="_ملعب تجريبي ب", name_en="_Test Home Venue B")
+        self.match.venue = venue
+        self.match.save(update_fields=["venue"])
+        client = Client()
+        client.login(username="_test_club_viewer_b", password="pw")
+        response = client.get("/operations/club-dashboard/")
+        self.assertIsNone(response.context["venue"])
+
+    def test_total_capacity_sums_active_seating_categories(self):
+        venue = Venue.objects.create(name_ar="_ملعب تجريبي ج", name_en="_Test Home Venue C")
+        self.match.venue = venue
+        self.match.save(update_fields=["venue"])
+        VenueSeatingCategory.objects.create(
+            venue=venue, club=self.club_a, code="_TEST CAT 1", seat_count=1000,
+        )
+        VenueSeatingCategory.objects.create(
+            venue=venue, club=self.club_a, code="_TEST CAT 2", seat_count=500,
+        )
+        VenueSeatingCategory.objects.create(
+            venue=venue, club=self.club_a, code="_TEST CAT INACTIVE", seat_count=999, is_active=False,
+        )
+        client = Client()
+        client.login(username="_test_club_viewer_a", password="pw")
+        response = client.get("/operations/club-dashboard/")
+        self.assertEqual(response.context["total_capacity"], 1500)
+
+    def test_upcoming_rows_exclude_a_finished_match(self):
+        self.match.round_number = 5
+        self.match.event_date = timezone.localtime().date() - timezone.timedelta(days=30)
+        self.match.match_start_time = timezone.datetime.min.time()
+        self.match.save(update_fields=["round_number", "event_date", "match_start_time"])
+        client = Client()
+        client.login(username="_test_club_viewer_a", password="pw")
+        response = client.get("/operations/club-dashboard/")
+        self.assertNotIn(self.match, [row["match"] for row in response.context["upcoming_rows"]])
+
+    def test_upcoming_rows_include_a_match_with_no_date_yet(self):
+        """A round-based cutoff, not a raw "event_date >= today" filter: a
+        match whose date/time isn't confirmed yet (TBC) has no way to be
+        judged "finished" or attributed to a specific point in time, so it
+        must still show up on the homepage rather than being silently
+        dropped by a plain date comparison."""
+        self.match.round_number = 5
+        self.match.event_date = None
+        self.match.save(update_fields=["round_number", "event_date"])
+        client = Client()
+        client.login(username="_test_club_viewer_a", password="pw")
+        response = client.get("/operations/club-dashboard/")
+        self.assertIn(self.match, [row["match"] for row in response.context["upcoming_rows"]])
 
     def test_changing_match_id_in_url_does_not_leak_other_clubs_data(self):
         client = Client()
@@ -478,19 +550,23 @@ class ClubDashboardUITests(ClubDashboardPermissionsTestBase):
         client.login(username="_test_club_e", password="pw")
         response = client.get("/operations/club-dashboard/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context["rows"]), 0)
+        self.assertEqual(len(response.context["upcoming_rows"]), 0)
+
+        response2 = client.get("/operations/club-dashboard/schedule/")
+        self.assertEqual(response2.status_code, 200)
+        self.assertEqual(len(response2.context["rows"]), 0)
 
     def test_type_filter_narrows_to_home_only(self):
         client = Client()
         client.login(username="_test_club_viewer_a", password="pw")
-        response = client.get("/operations/club-dashboard/", {"type": "home"})
+        response = client.get("/operations/club-dashboard/schedule/", {"type": "home"})
         for row in response.context["rows"]:
             self.assertTrue(row["is_home"])
 
     def test_type_filter_narrows_to_away_only(self):
         client = Client()
         client.login(username="_test_club_viewer_b", password="pw")
-        response = client.get("/operations/club-dashboard/", {"type": "away"})
+        response = client.get("/operations/club-dashboard/schedule/", {"type": "away"})
         for row in response.context["rows"]:
             self.assertFalse(row["is_home"])
 

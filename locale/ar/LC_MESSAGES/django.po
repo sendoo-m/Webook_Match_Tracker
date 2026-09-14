@@ -1699,6 +1699,41 @@ msgstr "لا توجد عناصر في قائمة التحقق بعد."
 msgid "Home"
 msgstr "الرئيسية"
 
+msgctxt "match side"
+msgid "Home"
+msgstr "مضيف"
+
+msgctxt "match side"
+msgid "Away"
+msgstr "ضيف"
+
+msgid "My Matches"
+msgstr "مبارياتي"
+
+msgid "No seating map uploaded yet"
+msgstr "لم يتم رفع مخطط المقاعد بعد"
+
+msgid "No upcoming matches."
+msgstr "لا توجد مباريات قادمة."
+
+msgid "Not set yet"
+msgstr "غير محدد بعد"
+
+msgid "Seating Map"
+msgstr "مخطط المقاعد"
+
+msgid "Seating map"
+msgstr "مخطط المقاعد"
+
+msgid "Total Capacity"
+msgstr "السعة الإجمالية"
+
+msgid "View all matches"
+msgstr "عرض كل المباريات"
+
+msgid "seats"
+msgstr "مقعد"
+
 msgid "Access"
 msgstr "الصلاحيات"
 

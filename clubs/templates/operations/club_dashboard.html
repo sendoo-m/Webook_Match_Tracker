@@ -3,105 +3,96 @@
 {% load display_helpers %}
 {% load i18n %}
 <!-- File: templates/operations/club_dashboard.html -->
-<!-- Path: config/templates/operations/club_dashboard.html -->
+<!-- The club's homepage: identity + home venue at a glance, and a look
+     ahead at the next round. The full, filterable match list lives on
+     club_dashboard_schedule.html instead - see operations:club-dashboard-schedule. -->
 
 {% block title %}{% trans "Club Dashboard" %}{% endblock %}
 
 {% block page_help %}
     <p>
-        {% blocktrans %}This is your <strong>Club Dashboard</strong> — every match your club is part of, across
-        every competition, whether your club is hosting or visiting.{% endblocktrans %}
+        {% blocktrans %}This is your <strong>Club Dashboard</strong>: your club's identity, your home venue's
+        seating map, and a look ahead at your next round's fixtures.{% endblocktrans %}
     </p>
     <p>
-        {% trans 'Matches on your own ground are marked "Responsible for execution" - you can prepare and submit their tickets and pricing plan. Matches away from your ground are "Follow-up only": the host club handles preparation, and you can only track their status here.' %}
+        {% blocktrans %}For the full match history across every competition, see
+        <strong>My Matches</strong>.{% endblocktrans %}
     </p>
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
     <h1 class="page-title">{% trans "Club Dashboard" %}</h1>
-    <p class="page-subtitle">
-        {% for club in clubs %}{{ club|localized_name }}{% if not forloop.last %}{% trans ", " %}{% endif %}{% endfor %}
-    </p>
+</div>
+
+<div class="card panel club-hero">
+    <div class="club-hero-identity">
+        {% if club.logo %}
+            <img src="{{ club.logo.url }}" alt="{{ club|localized_name }}" class="club-hero-logo">
+        {% else %}
+            <div class="club-hero-logo club-hero-logo-placeholder" aria-hidden="true">
+                <i class="ti ti-shield"></i>
+            </div>
+        {% endif %}
+
+        <div class="club-hero-info">
+            <h2 class="club-hero-name">{{ club|localized_name|default:"—" }}</h2>
+
+            {% if venue %}
+                <p class="club-hero-venue">
+                    <i class="ti ti-map-pin"></i>
+                    {{ venue|localized_name }}{% if venue.city %}, {{ venue.city }}{% endif %}
+                </p>
+            {% endif %}
+
+            <dl class="club-hero-facts">
+                <div class="club-hero-fact">
+                    <dt>{% trans "Total Capacity" %}</dt>
+                    <dd>
+                        {% if total_capacity %}
+                            {{ total_capacity }} <span class="club-hero-fact-unit">{% trans "seats" %}</span>
+                        {% else %}
+                            <span class="club-hero-fact-empty">{% trans "Not set yet" %}</span>
+                        {% endif %}
+                    </dd>
+                </div>
+                <div class="club-hero-fact">
+                    <dt>{% trans "Seat Type" %}</dt>
+                    <dd>
+                        {% if venue %}
+                            {{ venue.get_seat_type_display }}
+                        {% else %}
+                            <span class="club-hero-fact-empty">—</span>
+                        {% endif %}
+                    </dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+
+    <div class="club-hero-seatmap">
+        <span class="club-hero-seatmap-label">{% trans "Seating Map" %}</span>
+        {% if seat_map_image %}
+            <a href="{{ seat_map_image.image.url }}" target="_blank" rel="noopener" class="club-hero-seatmap-frame">
+                <img src="{{ seat_map_image.image.url }}" alt="{% trans 'Seating map' %}">
+            </a>
+        {% else %}
+            <div class="club-hero-seatmap-frame club-hero-seatmap-empty">
+                <i class="ti ti-map-2"></i>
+                <span>{% trans "No seating map uploaded yet" %}</span>
+            </div>
+        {% endif %}
+    </div>
 </div>
 
 <div class="card panel dashboard-section">
     <div class="dashboard-section-head">
-        <h2 class="panel-title"><i class="ti ti-chart-bar"></i> {% trans "Club Summary" %}</h2>
+        <h2 class="panel-title"><i class="ti ti-calendar-event"></i> {% trans "Next Round" %}</h2>
+        <a class="btn btn-secondary" href="{% url 'operations:club-dashboard-schedule' %}">
+            {% trans "View all matches" %} <i class="ti ti-arrow-{% if LANGUAGE_BIDI %}left{% else %}right{% endif %}"></i>
+        </a>
     </div>
 
-    <div class="stat-strip">
-        <div class="stat-strip-item">
-            <span class="stat-strip-label">{% trans "Upcoming Matches" %}</span>
-            <span class="stat-strip-value">{{ summary.upcoming }}</span>
-        </div>
-        <div class="stat-strip-item">
-            <span class="stat-strip-label">{% trans "Past Matches" %}</span>
-            <span class="stat-strip-value">{{ summary.past }}</span>
-        </div>
-        <div class="stat-strip-item">
-            <span class="stat-strip-label">{% trans "Home Matches" %}</span>
-            <span class="stat-strip-value">{{ summary.home_count }}</span>
-        </div>
-        <div class="stat-strip-item">
-            <span class="stat-strip-label">{% trans "Away Matches" %}</span>
-            <span class="stat-strip-value">{{ summary.away_count }}</span>
-        </div>
-        <div class="stat-strip-item">
-            <span class="stat-strip-label"><span class="stat-strip-dot stat-strip-dot-live"></span>{% trans "Live Now" %}</span>
-            <span class="stat-strip-value">{{ summary.live_count }}</span>
-        </div>
-    </div>
-</div>
-
-<div class="card panel">
-    <form method="get" class="filters filter-toolbar" data-autosubmit>
-        <div class="field-group">
-            <label>{% trans "Match Type" %}</label>
-            <select name="type">
-                <option value="">{% trans "All" %}</option>
-                <option value="home" {% if selected_type == "home" %}selected{% endif %}>{% trans "On our ground" %}</option>
-                <option value="away" {% if selected_type == "away" %}selected{% endif %}>{% trans "Away from our ground" %}</option>
-            </select>
-        </div>
-
-        <div class="field-group">
-            <label>{% trans "Competition" %}</label>
-            <select name="competition">
-                <option value="">{% trans "All" %}</option>
-                {% for competition in competitions %}
-                    <option value="{{ competition.id }}" {% if selected_competition == competition.id|stringformat:"s" %}selected{% endif %}>{{ competition|localized_name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="field-group">
-            <label>{% trans "Match Status" %}</label>
-            <select name="status">
-                <option value="">{% trans "All" %}</option>
-                {% for value, label in status_choices %}
-                    <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="field-group">
-            <label>{% trans "Period" %}</label>
-            <select name="period">
-                <option value="">{% trans "All" %}</option>
-                <option value="upcoming" {% if selected_period == "upcoming" %}selected{% endif %}>{% trans "Upcoming" %}</option>
-                <option value="past" {% if selected_period == "past" %}selected{% endif %}>{% trans "Past Matches" %}</option>
-            </select>
-        </div>
-
-        <div class="field-group">
-            <label>&nbsp;</label>
-            <button type="submit" class="btn-apply-filters"><i class="ti ti-filter"></i> {% trans "Apply Filters" %}</button>
-        </div>
-    </form>
-</div>
-
-<div class="card panel">
     <div class="table-wrap">
         <table>
             <thead>
@@ -109,25 +100,24 @@
                     <th>{% trans "Competition" %}</th>
                     <th>{% trans "Home Team" %}</th>
                     <th>{% trans "Away Team" %}</th>
-                    <th>{% trans "Club Responsibility" %}</th>
+                    <th>{% trans "Home / Away" %}</th>
                     <th>{% trans "Stadium" %}</th>
                     <th>{% trans "Match Date" %}</th>
                     <th>{% trans "Match Status" %}</th>
-                    <th>{% trans "Ticket Status" %}</th>
                     <th>{% trans "Details" %}</th>
                 </tr>
             </thead>
             <tbody>
-                {% for row in rows %}
+                {% for row in upcoming_rows %}
                 <tr>
                     <td>{{ row.match.competition|localized_name }}</td>
                     <td>{% include "operations/partials/club_chip.html" with club=row.match.home_club role="home" %}</td>
                     <td>{% include "operations/partials/club_chip.html" with club=row.match.away_club role="away" %}</td>
                     <td>
                         {% if row.is_home %}
-                            <span class="mini-badge mini-badge-info">{% trans "On our ground - responsible for execution" %}</span>
+                            <span class="mini-badge mini-badge-info">{% trans "Home" context "match side" %}</span>
                         {% else %}
-                            <span class="mini-badge mini-badge-neutral">{% trans "Away from our ground - follow-up only" %}</span>
+                            <span class="mini-badge mini-badge-neutral">{% trans "Away" context "match side" %}</span>
                         {% endif %}
                     </td>
                     <td>{{ row.match.venue|default:"—" }}</td>
@@ -144,13 +134,6 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% if row.match.webook_purchase_url %}
-                            <span class="mini-badge mini-badge-success">{% trans "Tickets Live" %}</span>
-                        {% else %}
-                            <span class="mini-badge mini-badge-neutral">{% trans "Not Live Yet" %}</span>
-                        {% endif %}
-                    </td>
-                    <td>
                         <a href="{% url 'operations:club-dashboard-match-detail' row.match.pk %}" class="mini-badge link-badge">
                             {% trans "View" %} <i class="ti ti-arrow-right"></i>
                         </a>
@@ -158,33 +141,11 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="9">{% trans "No matches found for this filter." %}</td>
+                    <td colspan="8">{% trans "No upcoming matches." %}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-
-    {% if page_obj.paginator.num_pages > 1 %}
-        <div class="pagination">
-            {% if page_obj.has_previous %}
-                <a class="pagination-link" href="?page=1">{% trans "First" %}</a>
-                <a class="pagination-link" href="?page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>
-            {% endif %}
-
-            <span class="pagination-current">
-                {% blocktrans with number=page_obj.number total=page_obj.paginator.num_pages %}Page {{ number }} of {{ total }}{% endblocktrans %}
-            </span>
-
-            {% if page_obj.has_next %}
-                <a class="pagination-link" href="?page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>
-                <a class="pagination-link" href="?page={{ page_obj.paginator.num_pages }}">{% trans "Last" %}</a>
-            {% endif %}
-        </div>
-    {% endif %}
 </div>
-{% endblock %}
-
-{% block extra_js %}
-    <script src="{% static 'operations/js/filters-auto-submit.js' %}"></script>
 {% endblock %}

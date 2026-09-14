@@ -17,7 +17,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:ital,wght@0,200..900;1,200..900&display=swap">
     <link rel="stylesheet" href="{% static 'design_tokens.css' %}">
-    <link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=64">
+    <link rel="stylesheet" href="{% static 'operations/styles.css' %}?v=65">
 
     <meta name="htmx-config" content='{"includeIndicatorStyles": true}'>
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
@@ -26,6 +26,7 @@
 
 {% url 'operations:dashboard' as dashboard_url %}
 {% url 'operations:club-dashboard' as club_dashboard_url %}
+{% url 'operations:club-dashboard-schedule' as club_dashboard_schedule_url %}
 {% if is_club_viewer %}{% url 'operations:club-dashboard' as home_url %}{% else %}{% url 'operations:dashboard' as home_url %}{% endif %}
 {% url 'operations:match-list' as match_list_url %}
 {% url 'operations:calendar' as calendar_url %}
@@ -84,6 +85,9 @@
                 {% if can_view_own_club_dashboard %}
                 <a href="{{ club_dashboard_url }}" title="{% trans 'Club Dashboard' %}" class="sidebar-link{% if request.path == club_dashboard_url %} is-active{% endif %}">
                     <i class="ti ti-shield-check"></i><span>{% trans "Club Dashboard" %}</span>
+                </a>
+                <a href="{{ club_dashboard_schedule_url }}" title="{% trans 'My Matches' %}" class="sidebar-link{% if request.path == club_dashboard_schedule_url %} is-active{% endif %}">
+                    <i class="ti ti-list-details"></i><span>{% trans "My Matches" %}</span>
                 </a>
                 {% endif %}
                 {% if not is_viewer_only and not is_club_viewer %}
