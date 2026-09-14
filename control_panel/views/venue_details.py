@@ -5,7 +5,6 @@
 # here by coordinators/admin; consumed read-only on the club-facing
 # pricing-plan page (Phase 3 of the venue-seating/pricing plan).
 
-import json
 from itertools import groupby
 
 from django.contrib.auth import get_user_model
@@ -101,7 +100,13 @@ class VenueImagePositionEditorView(LoginRequiredMixin, ControlPanelAccessMixin, 
             "club_choices": club_choices,
             "selected_club": selected_club,
             "categories": categories,
-            "categories_json": json.dumps([
+            # A plain list, not a pre-dumped JSON string - the |json_script
+            # filter in the template does its own json.dumps() on this
+            # value, so dumping it here too would double-encode it into a
+            # JSON string containing escaped JSON text instead of a real
+            # array, and JS's JSON.parse() would hand back a string with no
+            # .forEach(), silently breaking every click handler below it.
+            "categories_json": [
                 {
                     "id": category.id,
                     "code": category.code,
@@ -110,7 +115,7 @@ class VenueImagePositionEditorView(LoginRequiredMixin, ControlPanelAccessMixin, 
                     "placed": category.has_position and category.position_image_id == image.id,
                 }
                 for category in categories
-            ]),
+            ],
         })
 
 
