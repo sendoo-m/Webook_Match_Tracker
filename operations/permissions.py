@@ -18,15 +18,24 @@ from core.permissions import (  # noqa: F401 - re-exported for backward compatib
 
 
 def get_user_club_ids(user):
+    """Every club this user has home-club-level access to: clubs they
+    coordinate (Club.owner, one coordinator -> many clubs) UNION the one
+    club they're the direct Club Viewer account for (Club.club_account,
+    a separate OneToOne slot on the same Club row) - a club can have both
+    a coordinator and its own dedicated account active at the same time,
+    so this is a union, not an either/or."""
     if not getattr(user, "is_authenticated", False):
         return []
 
-    if not hasattr(user, "owned_clubs"):
-        return []
+    club_ids = set()
+    if hasattr(user, "owned_clubs"):
+        club_ids.update(user.owned_clubs.filter(is_active=True).values_list("id", flat=True))
 
-    return list(
-        user.owned_clubs.filter(is_active=True).values_list("id", flat=True)
-    )
+    own_club = getattr(user, "own_club", None)
+    if own_club is not None and own_club.is_active:
+        club_ids.add(own_club.id)
+
+    return list(club_ids)
 
 
 def get_user_competition_ids(user):

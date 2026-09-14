@@ -72,6 +72,13 @@ class Club(models.Model):
         help_text="Excluded from every user-facing club list/filter/report - for dummy fixtures used in testing, not real teams.",
     )
 
+    # The coordinator (internal staff, "Club Manager" group) responsible for
+    # this club's matches - one coordinator can be the owner of several
+    # clubs (reverse relation: user.owned_clubs), but a given club has
+    # exactly one owner at a time, which is what already prevents a club
+    # being split across two coordinators - reassigning it just overwrites
+    # this single value (accounts/forms.py's UserForm blocks that reassignment
+    # with a validation error instead of silently stealing the club).
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -79,6 +86,19 @@ class Club(models.Model):
         null=True,
         blank=True,
         help_text="الموظف المسؤول عن مباريات هذا النادي.",
+    )
+
+    # The club's OWN dedicated login (the "Club Viewer" group) - entirely
+    # independent of `owner` above, since the same club needs both its
+    # coordinator AND its own direct account to have access at the same
+    # time. OneToOne: exactly one Club Viewer account per club.
+    club_account = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="own_club",
+        null=True,
+        blank=True,
+        help_text="حساب النادي المباشر (Club Viewer) - مستقل عن المنسق.",
     )
 
     class Meta:

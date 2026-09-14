@@ -24,10 +24,17 @@ class UserForm(forms.ModelForm):
         required=True,
     )
     owned_clubs = forms.ModelMultipleChoiceField(
-        label="Owned clubs",
+        label="Coordinated clubs",
+        help_text="Clubs this account manages as an internal coordinator (Club Manager). A club already coordinated by someone else must be removed from their list first.",
         queryset=Club.objects.all().order_by("name_ar"),
         required=False,
         widget=forms.CheckboxSelectMultiple,
+    )
+    club_account = forms.ModelChoiceField(
+        label="Club account (direct club login)",
+        help_text="At most one club - this is the club's own dedicated account (Club Viewer), independent of any coordinator.",
+        queryset=Club.objects.all().order_by("name_ar"),
+        required=False,
     )
     competitions = forms.ModelMultipleChoiceField(
         label="Section access",
@@ -48,11 +55,37 @@ class UserForm(forms.ModelForm):
             if current_group:
                 self.fields["group"].initial = current_group
             self.fields["owned_clubs"].initial = Club.objects.filter(owner=self.instance)
+            self.fields["club_account"].initial = Club.objects.filter(club_account=self.instance).first()
             self.fields["competitions"].initial = Competition.objects.filter(
                 user_access__user=self.instance
             )
         else:
             self.fields["password"].required = True
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        owned_clubs = cleaned_data.get("owned_clubs")
+        if owned_clubs:
+            taken = [
+                club for club in owned_clubs
+                if club.owner_id is not None and club.owner_id != self.instance.pk
+            ]
+            if taken:
+                names = ", ".join(club.name_ar or club.name_en for club in taken)
+                self.add_error(
+                    "owned_clubs",
+                    f"Already coordinated by another account, remove from their list first: {names}.",
+                )
+
+        club_account = cleaned_data.get("club_account")
+        if club_account and club_account.club_account_id and club_account.club_account_id != self.instance.pk:
+            self.add_error(
+                "club_account",
+                f'"{club_account.name_ar or club_account.name_en}" already has a Club Viewer account.',
+            )
+
+        return cleaned_data
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -75,6 +108,14 @@ class UserForm(forms.ModelForm):
             if club.owner_id != user.id:
                 club.owner = user
                 club.save(update_fields=["owner"])
+
+        selected_club_account = self.cleaned_data.get("club_account")
+        for club in Club.objects.filter(club_account=user).exclude(pk=getattr(selected_club_account, "pk", None)):
+            club.club_account = None
+            club.save(update_fields=["club_account"])
+        if selected_club_account and selected_club_account.club_account_id != user.id:
+            selected_club_account.club_account = user
+            selected_club_account.save(update_fields=["club_account"])
 
         selected_competitions = self.cleaned_data["competitions"]
         UserCompetitionAccess.objects.filter(user=user).exclude(
