@@ -55,6 +55,12 @@ from checklists.views import (  # noqa: F401 - re-exported for backward compatib
     ChecklistItemNoteEditView,
     ChecklistItemUpdateView,
 )
+from notifications.views import (  # noqa: F401 - re-exported for backward compatibility
+    NotificationBadgeView,
+    NotificationListView,
+    NotificationMarkAllReadView,
+    NotificationMarkReadView,
+)
 from .auth_views import HtmxLoginView  # <- new import
 
 __all__ = [
@@ -93,6 +99,10 @@ __all__ = [
     "MatchSlugUpdateView",
     "MissingRequirementsPopupView",
     "MissingRequirementsReportView",
+    "NotificationBadgeView",
+    "NotificationListView",
+    "NotificationMarkAllReadView",
+    "NotificationMarkReadView",
     "OperationsDashboardView",
     "SPLApprovalsView",
     "SPLFinishedMatchesView",

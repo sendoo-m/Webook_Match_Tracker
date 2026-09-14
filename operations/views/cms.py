@@ -13,6 +13,7 @@ from matches.models import Match
 from operations.forms import WebookPurchaseLinkForm
 from operations.models import MatchActivityLog
 from operations.permissions import MatchScopedQuerysetMixin, require_match_access
+from notifications.services import notify_match_live
 
 from .helpers import (
     auto_complete_non_post_match_items,
@@ -90,6 +91,8 @@ class MatchCMSStatusUpdateView(LoginRequiredMixin, MatchScopedQuerysetMixin, Vie
         new_status_label = dict(Match.Status.choices).get(new_status, new_status)
         if old_status != new_status:
             log_match_activity(match=match, action=MatchActivityLog.Action.STATUS_CHANGED, description=f"CMS status changed: {old_status_label} → {new_status_label}", user=request.user)
+        if old_status != Match.Status.PUBLISHED and new_status == Match.Status.PUBLISHED:
+            notify_match_live(match, f"{match} has gone live.")
         match.refresh_from_db()
 
         # Publishing a match with a ticket link already set (e.g. it was

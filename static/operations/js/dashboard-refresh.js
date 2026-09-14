@@ -14,6 +14,7 @@
     }
 
     var root = document.getElementById('dashboard-content-root');
+    var badgeRoot = document.getElementById('notification-badge-root');
     var select = document.getElementById('refresh-interval-select');
     var timerId = null;
 
@@ -22,11 +23,13 @@
             clearInterval(timerId);
             timerId = null;
         }
-        if (!root) return;
+        if (!root && !badgeRoot) return;
         var seconds = getStoredSeconds();
         if (seconds <= 0) return;
         timerId = setInterval(function () {
-            if (window.htmx) window.htmx.trigger(root, 'auto-refresh-tick');
+            if (!window.htmx) return;
+            if (root) window.htmx.trigger(root, 'auto-refresh-tick');
+            if (badgeRoot) window.htmx.trigger(badgeRoot, 'auto-refresh-tick');
         }, seconds * 1000);
     }
 

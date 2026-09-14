@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'clubs',
     'reports',
     'audit',
+    'notifications',
     'operations',
     'control_panel',
     'events',

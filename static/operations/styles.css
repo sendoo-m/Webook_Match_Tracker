@@ -606,6 +606,31 @@ button:hover,
     font-weight: 700;
 }
 
+.sidebar-notification-badge {
+    padding: 1px 6px;
+    border-radius: var(--radius-pill);
+    background: var(--danger-soft);
+    color: var(--danger);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.notification-entry-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.notification-entry-unread {
+    background: var(--surface-2);
+}
+
+.notification-entry-unread p {
+    font-weight: 600;
+}
+
 .logout-form {
     margin: 0;
 }

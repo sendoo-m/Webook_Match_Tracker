@@ -97,4 +97,9 @@ urlpatterns = [
     path("feedback/submit/", views.FeedbackSubmitView.as_view(), name="feedback-submit"),
     path("whats-new/", views.ChangelogView.as_view(), name="changelog"),
 
+    path("notifications/", views.NotificationListView.as_view(), name="notification-list"),
+    path("notifications/badge/", views.NotificationBadgeView.as_view(), name="notification-badge"),
+    path("notifications/<int:pk>/read/", views.NotificationMarkReadView.as_view(), name="notification-mark-read"),
+    path("notifications/mark-all-read/", views.NotificationMarkAllReadView.as_view(), name="notification-mark-all-read"),
+
 ]

@@ -26,6 +26,9 @@ from operations.permissions import (
 )
 from operations.views.helpers import log_match_activity
 
+from notifications.models import Notification
+from notifications.services import notify_spl
+
 from ..forms import ClubPricingPlanCategoryImportForm, ClubPricingPlanUploadForm
 from ..pricing_import_export import parse_plan_category_prices_xlsx
 
@@ -106,6 +109,12 @@ class ClubPricingPlanUploadView(LoginRequiredMixin, View):
             description=f"Club pricing plan uploaded (v{plan.version}).",
             user=request.user,
         )
+        notify_spl(
+            Notification.NotificationType.PRICING_PLAN_UPLOADED,
+            f"{match.home_club} uploaded a pricing plan (v{plan.version}) for {match}.",
+            match=match,
+            plan=plan,
+        )
         messages.success(request, _("Pricing plan uploaded. This does not approve it - SPL review still applies."))
         return redirect("operations:club-dashboard-match-detail", pk=match.pk)
 
@@ -177,6 +186,12 @@ class ClubPricingPlanCategoryImportView(LoginRequiredMixin, View):
             action=MatchActivityLog.Action.STATUS_CHANGED,
             description=f"Club pricing plan uploaded via Excel import (v{plan.version}, {len(prices_by_category_id)} categories).",
             user=request.user,
+        )
+        notify_spl(
+            Notification.NotificationType.PRICING_PLAN_UPLOADED,
+            f"{match.home_club} uploaded a pricing plan (v{plan.version}) for {match}.",
+            match=match,
+            plan=plan,
         )
         messages.success(
             request,

@@ -825,6 +825,33 @@ msgstr "ما الجديد"
 msgid "Settings"
 msgstr "الإعدادات"
 
+msgid "Notifications"
+msgstr "الإشعارات"
+
+msgid "Mark all as read"
+msgstr "تحديد الكل كمقروء"
+
+msgid "Mark as read"
+msgstr "تحديد كمقروء"
+
+msgid "View match"
+msgstr "عرض المباراة"
+
+msgid "No notifications yet."
+msgstr "لا توجد إشعارات بعد."
+
+msgid "Pricing plan uploaded"
+msgstr "تم رفع خطة الأسعار"
+
+msgid "25 days to match"
+msgstr "25 يومًا على المباراة"
+
+msgid "20 days to match, not live"
+msgstr "20 يومًا على المباراة، ولم تُطرح بعد"
+
+msgid "Match went live"
+msgstr "المباراة أصبحت مباشرة"
+
 msgid "Deactivate"
 msgstr "إلغاء التفعيل"
 

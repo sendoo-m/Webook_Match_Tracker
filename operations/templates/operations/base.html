@@ -35,6 +35,7 @@
 {% url 'operations:spl-approvals' as spl_approvals_url %}
 {% url 'operations:feedback-submit' as feedback_submit_url %}
 {% url 'operations:changelog' as changelog_url %}
+{% url 'operations:notification-list' as notification_list_url %}
 {% url 'operations:workload-report' as workload_url %}
 {% url 'control_panel:home' as control_panel_url %}
 {% comment %} {% url 'events:dashboard' as events_hub_url %} {% endcomment %}
@@ -132,6 +133,19 @@
             </nav>
 
             <div class="sidebar-footer">
+                <a
+                    href="{% url 'operations:notification-list' %}"
+                    title="{% trans 'Notifications' %}"
+                    class="sidebar-whats-new{% if request.path == notification_list_url %} is-active{% endif %}"
+                    id="notification-badge-root"
+                    hx-get="{% url 'operations:notification-badge' %}"
+                    hx-trigger="load, auto-refresh-tick"
+                    hx-target="#notification-badge-slot"
+                    hx-swap="innerHTML"
+                >
+                    <i class="ti ti-bell"></i><span>{% trans "Notifications" %}</span>
+                    <span id="notification-badge-slot"></span>
+                </a>
                 {% if not is_viewer_only %}
                 <a
                     href="{{ changelog_url }}"
