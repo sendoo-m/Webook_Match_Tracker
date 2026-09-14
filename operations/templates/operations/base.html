@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Webook Event Tracker{% endblock %}</title>
+    <title>{% block title %}{% if site_settings.site_name_en %}{{ site_settings.site_name_en }}{% else %}Webook Event Tracker{% endif %}{% endblock %}</title>
     <link rel="icon" type="image/svg+xml" href="{% static 'images/webook-logo.svg' %}">
 
     <script src="{% static 'operations/js/theme-init.js' %}"></script>
@@ -55,12 +55,22 @@
             </button>
 
             <a class="sidebar-logo" href="{{ home_url }}">
-                <img src="{% static 'images/Webook_logo.png' %}" alt="Webook" class="sidebar-logo-img">
-
+                {% if site_settings.logo %}
+                    <img src="{{ site_settings.logo.url }}" alt="{% trans 'Logo' %}" class="sidebar-logo-img">
+                {% else %}
+                    <img src="{% static 'images/Webook_logo.png' %}" alt="Webook" class="sidebar-logo-img">
+                {% endif %}
             </a>
             <a class="sidebar-logo sidebar-logo-secondary" href="{{ home_url }}">
 
-                <span class="sidebar-logo-text" style="font-weight: bold;">{% trans "Event Tracker" %}</span>
+                <span class="sidebar-logo-text" style="font-weight: bold;">
+                    {% if LANGUAGE_CODE == "ar" %}
+                        {{ site_settings.site_name_ar|default:site_settings.site_name_en }}
+                    {% else %}
+                        {{ site_settings.site_name_en|default:site_settings.site_name_ar }}
+                    {% endif %}
+                    {% if not site_settings.site_name_ar and not site_settings.site_name_en %}{% trans "Event Tracker" %}{% endif %}
+                </span>
             </a>
 
             <nav class="sidebar-nav" id="sidebar-nav" aria-label="{% trans 'Main navigation' %}">

@@ -26,6 +26,7 @@ from .matches import (
     MatchTemplateView,
 )
 from .release_notes import ReleaseNoteCreateView, ReleaseNoteListView, ReleaseNoteUpdateView
+from .site_settings import SiteSettingsUpdateView
 from .venue_details import (
     VenueCategoryExportView,
     VenueCategoryImportView,
@@ -86,6 +87,7 @@ __all__ = [
     "SectionListView",
     "SectionToggleActiveView",
     "SectionUpdateView",
+    "SiteSettingsUpdateView",
     "StadiumCreateView",
     "StadiumListView",
     "StadiumToggleActiveView",

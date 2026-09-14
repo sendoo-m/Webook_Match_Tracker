@@ -13,4 +13,5 @@
     <a href="{% url 'control_panel:user-list' %}" class="subnav-link{% if 'user' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Users" %}</a>
     <a href="{% url 'control_panel:feedback-list' %}" class="subnav-link{% if 'feedback' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Feedback" %}</a>
     <a href="{% url 'control_panel:release-note-list' %}" class="subnav-link{% if 'release-note' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "What's New" %}</a>
+    <a href="{% url 'control_panel:site-settings' %}" class="subnav-link{% if 'site-settings' in request.resolver_match.url_name %} is-active{% endif %}">{% trans "Settings" %}</a>
 </nav>

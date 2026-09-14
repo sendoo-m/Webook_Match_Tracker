@@ -822,6 +822,9 @@ msgstr "الملاحظات"
 msgid "What's New"
 msgstr "ما الجديد"
 
+msgid "Settings"
+msgstr "الإعدادات"
+
 msgid "Deactivate"
 msgstr "إلغاء التفعيل"
 
@@ -1283,6 +1286,9 @@ msgstr "تم تحديث ملاحظة الإصدار."
 
 msgid "Edit Release"
 msgstr "تعديل الإصدار"
+
+msgid "Settings updated."
+msgstr "تم تحديث الإعدادات."
 
 #, fuzzy
 #| msgid "Add Release"

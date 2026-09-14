@@ -66,4 +66,6 @@ urlpatterns = [
     path("release-notes/", views.ReleaseNoteListView.as_view(), name="release-note-list"),
     path("release-notes/new/", views.ReleaseNoteCreateView.as_view(), name="release-note-create"),
     path("release-notes/<int:pk>/edit/", views.ReleaseNoteUpdateView.as_view(), name="release-note-update"),
+
+    path("settings/", views.SiteSettingsUpdateView.as_view(), name="site-settings"),
 ]

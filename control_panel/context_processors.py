@@ -5,7 +5,7 @@ from events.permissions import can_manage_events_panel, can_view_events_hub
 from operations.permissions import can_view_own_club_dashboard
 
 from .design_tokens import LIGHT_TOKENS
-from .models import ReleaseNote
+from .models import ReleaseNote, SiteSettings
 
 
 def panel_nav_flag(request):
@@ -19,6 +19,7 @@ def panel_nav_flag(request):
         "latest_release_version": latest_release.version if latest_release else None,
         "can_view_events_hub": can_view_events_hub(user),
         "can_manage_events_panel": can_manage_events_panel(user),
+        "site_settings": SiteSettings.load(),
     }
 
 

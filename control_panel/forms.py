@@ -4,10 +4,16 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from checklists.models import ChecklistCategory, ChecklistTemplateItem
-from control_panel.models import FeedbackEntry, ReleaseNote
+from control_panel.models import FeedbackEntry, ReleaseNote, SiteSettings
 from matches.models import Club, Competition, Match, Venue, VenueImage, VenueSeatingCategory
 
 RIYADH_TZ = ZoneInfo("Asia/Riyadh")
+
+
+class SiteSettingsForm(forms.ModelForm):
+    class Meta:
+        model = SiteSettings
+        fields = ["site_name_ar", "site_name_en", "logo"]
 
 
 class ClubForm(forms.ModelForm):
