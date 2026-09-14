@@ -130,6 +130,75 @@
 
                 <div class="spl-approval-block">
                     <div class="spl-approval-block-head">
+                        <span class="block-title">{% trans "Club Pricing Plan" %}</span>
+                        {% if row.current_pricing_plan %}
+                            <span class="mini-badge mini-badge-{% if row.current_pricing_plan.spl_decision == 'approved' %}success{% elif row.current_pricing_plan.spl_decision == 'rejected' %}danger{% else %}neutral{% endif %}">
+                                {{ row.current_pricing_plan.get_spl_decision_display }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    {% if row.current_pricing_plan %}
+                        <div class="help-text">
+                            {% blocktrans with version=row.current_pricing_plan.version status=row.current_pricing_plan.get_status_display %}v{{ version }} - {{ status }}{% endblocktrans %}
+                        </div>
+
+                        {% if row.current_pricing_plan.file %}
+                            <div class="spl-plan-file-link">
+                                <i class="ti ti-paperclip"></i>
+                                <a href="{% url 'operations:club-pricing-plan-download' row.current_pricing_plan.pk %}">
+                                    {{ row.current_pricing_plan.file.name|cut:"club_pricing_plans/" }}
+                                </a>
+                            </div>
+                        {% endif %}
+
+                        {% if row.current_pricing_plan.category_prices.all %}
+                            <div class="table-wrap" style="margin-top: var(--space-2);">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans "Category" %}</th>
+                                            <th>{% trans "Price" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for category_price in row.current_pricing_plan.category_prices.all %}
+                                            <tr>
+                                                <td>{{ category_price.category.code }}</td>
+                                                <td>{{ category_price.price }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endif %}
+
+                        {% if row.current_pricing_plan.spl_decision_note %}
+                            <div class="help-text">{% trans "Note" %}: {{ row.current_pricing_plan.spl_decision_note }}</div>
+                        {% endif %}
+
+                        {% if can_confirm_spl_plan and row.current_pricing_plan.spl_decision != 'approved' %}
+                            <form method="post" action="{% url 'operations:spl-pricing-plan-approve' row.current_pricing_plan.pk %}" class="logout-form spl-confirm-form">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm">
+                                    <i class="ti ti-check"></i> {% trans "Approve" %}
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'operations:spl-pricing-plan-reject' row.current_pricing_plan.pk %}" class="logout-form spl-plan-upload-form">
+                                {% csrf_token %}
+                                <input type="text" name="note" placeholder="{% trans 'Reason for rejection' %}" required>
+                                <button type="submit" class="btn btn-secondary btn-sm">
+                                    <i class="ti ti-x"></i> {% trans "Reject" %}
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <div class="help-text">{% trans "The club has not submitted a pricing plan yet." %}</div>
+                    {% endif %}
+                </div>
+
+                <div class="spl-approval-block">
+                    <div class="spl-approval-block-head">
                         <span class="block-title">{% trans "SPL Complimentary Tickets" %}</span>
                         <span class="mini-badge mini-badge-{{ row.match.spl_tickets_sent|urgency_badge_class:row.days_to_match }}">
                             {% if row.match.spl_tickets_sent %}{% trans "Sent" %}{% else %}{% trans "Not Sent" %}{% endif %}

@@ -52,6 +52,16 @@ urlpatterns = [
         views.SPLPlanApprovalUploadView.as_view(),
         name="spl-plan-approval-upload",
     ),
+    path(
+        "pricing-plan/<int:pk>/spl-approve/",
+        views.SPLPricingPlanApproveView.as_view(),
+        name="spl-pricing-plan-approve",
+    ),
+    path(
+        "pricing-plan/<int:pk>/spl-reject/",
+        views.SPLPricingPlanRejectView.as_view(),
+        name="spl-pricing-plan-reject",
+    ),
     path("club-dashboard/", views.ClubDashboardView.as_view(), name="club-dashboard"),
     path(
         "club-dashboard/matches/<int:pk>/",

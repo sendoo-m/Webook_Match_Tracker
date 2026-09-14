@@ -6,7 +6,7 @@ from django.db.models import Case, IntegerField, Prefetch, Value, When
 
 from checklists.models import MatchChecklistItem
 from matches.utils import combine_match_datetime
-from operations.models import MatchActivityLog
+from operations.models import ClubPricingPlan, MatchActivityLog
 
 POST_MATCH_CATEGORY_NAME = "Post Match"
 LIVE_MATCH_DURATION_HOURS = 2
@@ -430,6 +430,17 @@ def build_spl_report_row(match, now):
     # agrees with what's shown everywhere else.
     match_state = build_dashboard_match_state(match, now)
 
+    # Surfaces the club's own pricing-plan submission (version, category
+    # prices/file, SPL decision) everywhere this row shape is already used
+    # - SPL Report, SPL Approvals, Finished Matches, and match_spl_info_box
+    # via MatchDetailView/cms.py/spl/views/info.py - without wiring it into
+    # each of those call sites separately. See ClubPricingPlan's own
+    # docstring for why it's kept a fully separate model from Match's
+    # ticketing_plan_approved boolean.
+    current_pricing_plan = (
+        ClubPricingPlan.objects.filter(match=match).select_related("club").order_by("-version").first()
+    )
+
     return {
         "match": match,
         "kv_ready": kv_ready,
@@ -442,6 +453,7 @@ def build_spl_report_row(match, now):
         "match_finished": match_state["match_finished"],
         "is_today": match_state["is_today"],
         "days_to_match": match_state["days_to_match"],
+        "current_pricing_plan": current_pricing_plan,
     }
 
 

@@ -167,7 +167,22 @@
                         <span class="mini-badge mini-badge-info">{{ current_pricing_plan.get_status_display }}</span>
                     </div>
                 </div>
+                <div class="summary-tile">
+                    <div class="help-text">{% trans "SPL Decision" %}</div>
+                    <div class="summary-tile-value">
+                        <span class="mini-badge mini-badge-{% if current_pricing_plan.spl_decision == 'approved' %}success{% elif current_pricing_plan.spl_decision == 'rejected' %}danger{% else %}neutral{% endif %}">
+                            {{ current_pricing_plan.get_spl_decision_display }}
+                        </span>
+                    </div>
+                </div>
             </div>
+
+            {% if current_pricing_plan.spl_decision == 'rejected' and current_pricing_plan.spl_decision_note %}
+                <div class="card panel alert-card alert-danger" style="margin-top: var(--space-3);">
+                    <div class="alert-title"><i class="ti ti-alert-triangle"></i> {% trans "SPL requested changes" %}</div>
+                    <p class="help-text">{{ current_pricing_plan.spl_decision_note }}</p>
+                </div>
+            {% endif %}
 
             {% if current_pricing_plan.category_prices.all %}
                 <div class="table-wrap" style="margin-top: var(--space-3);">

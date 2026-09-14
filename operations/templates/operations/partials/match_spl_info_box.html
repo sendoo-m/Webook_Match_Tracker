@@ -6,6 +6,11 @@
             <span class="mini-badge mini-badge-{% if match.ticketing_plan_approved %}success{% else %}neutral{% endif %}">
                 {% trans "Ticketing Plan" %}: {% if match.ticketing_plan_approved %}{% trans "Approved" %}{% else %}{% trans "Not Approved" %}{% endif %}
             </span>
+            {% if current_pricing_plan %}
+                <span class="mini-badge mini-badge-{% if current_pricing_plan.spl_decision == 'approved' %}success{% elif current_pricing_plan.spl_decision == 'rejected' %}danger{% else %}neutral{% endif %}">
+                    {% trans "Club Pricing Plan" %}: {{ current_pricing_plan.get_spl_decision_display }}
+                </span>
+            {% endif %}
             <span class="mini-badge mini-badge-{% if match.spl_tickets_sent %}success{% else %}neutral{% endif %}">
                 {% trans "SPL Tickets" %}: {% if match.spl_tickets_sent %}{% trans "Sent" %}{% else %}{% trans "Not Sent" %}{% endif %}
             </span>

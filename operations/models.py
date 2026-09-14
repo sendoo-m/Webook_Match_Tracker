@@ -132,6 +132,32 @@ class ClubPricingPlan(models.Model):
         related_name="confirmed_pricing_plans",
     )
 
+    class SPLDecision(models.TextChoices):
+        PENDING = "pending", "Pending"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+
+    # SPL's own decision on THIS plan version - orthogonal to the club-side
+    # status above and to Match.ticketing_plan_approved. Approving here also
+    # sets ticketing_plan_approved=True on the match (kept in sync so every
+    # existing boolean-consuming page - SPL Report, Finished Matches,
+    # Missing Requirements, match_spl_info_box - keeps working unchanged);
+    # rejecting sets it back to False, which is what re-opens
+    # can_upload_home_match_pricing_plan for a corrected re-submission.
+    spl_decision = models.CharField(max_length=10, choices=SPLDecision.choices, default=SPLDecision.PENDING)
+    spl_decision_at = models.DateTimeField(null=True, blank=True)
+    spl_decision_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="decided_pricing_plans",
+    )
+    spl_decision_note = models.TextField(
+        blank=True,
+        help_text="Required when rejecting - explains what needs to change.",
+    )
+
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
