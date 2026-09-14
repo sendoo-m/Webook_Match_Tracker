@@ -1,0 +1,54 @@
+{# control_panel/_venue_control_categories.html #}
+{% load display_helpers %}
+{% load i18n %}
+<div class="page-header-row" style="margin-bottom: var(--space-4);">
+    <p class="page-subtitle" style="margin:0;">{% trans "The seating category codes (e.g. CAT 1, CAT 1 N) clubs price against on the pricing-plan page." %}</p>
+    <a class="btn btn-primary" href="{% url 'control_panel:venue-category-create' %}"><i class="ti ti-plus"></i>&nbsp; {% trans "Add Category" %}</a>
+</div>
+
+{% for group in grouped_categories %}
+    <details class="card panel collapsible-section" open style="margin-bottom: var(--space-4);">
+        <summary class="panel-title">
+            <i class="ti ti-shield"></i>&nbsp; {{ group.club|localized_name }}
+            <span class="mini-badge mini-badge-info">{{ group.categories|length }}</span>
+            <i class="ti ti-chevron-down collapsible-caret"></i>
+        </summary>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>{% trans "Venue" %}</th>
+                        <th>{% trans "Code" %}</th>
+                        <th>{% trans "Seat Count" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in group.categories %}
+                        <tr>
+                            <td>{{ category.venue|localized_name }}</td>
+                            <td>{{ category.code }}</td>
+                            <td>{{ category.seat_count|default:"—" }}</td>
+                            <td>
+                                <span class="badge {% if category.is_active %}badge-published{% else %}badge-draft{% endif %}">
+                                    {% if category.is_active %}{% trans "Active" %}{% else %}{% trans "Inactive" %}{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:venue-category-update' category.pk %}">{% trans "Edit" %}</a>
+                                    {% include "control_panel/_toggle_active_button.html" with obj=category toggle_url_name="control_panel:venue-category-toggle-active" %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </details>
+{% empty %}
+    <div class="card panel">
+        <p class="help-text">{% trans "No venue seating categories found." %}</p>
+    </div>
+{% endfor %}

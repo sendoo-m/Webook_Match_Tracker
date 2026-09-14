@@ -1351,6 +1351,15 @@ msgstr "ارفع صورة خريطة ملعبك هنا، ثم استخدم \"م�
 msgid "Seating-map photos for your own club's home ground(s)."
 msgstr "صور خرائط المقاعد لملعب (أو ملاعب) ناديك."
 
+msgid "Control Venue"
+msgstr "التحكم بالملعب"
+
+msgid ""
+"Your matches, venue images, and pricing categories - all scoped to your own "
+"club(s),\n"
+"        in one place instead of three separate pages."
+msgstr "مبارياتك وصور ملاعبك وفئات أسعارك - كلها مقتصرة على ناديك (أو أنديتك)، في مكان واحد بدل ثلاث صفحات منفصلة."
+
 msgid "Venue image added."
 msgstr "تمت إضافة صورة الملعب."
 

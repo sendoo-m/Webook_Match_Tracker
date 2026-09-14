@@ -1,0 +1,49 @@
+{# control_panel/_venue_control_images.html #}
+{% load display_helpers %}
+{% load i18n %}
+<div class="page-header-row" style="margin-bottom: var(--space-4);">
+    <p class="page-subtitle" style="margin:0;">{% trans "Seating-map images shown to clubs on the pricing-plan page." %}</p>
+    <a class="btn btn-primary" href="{% url 'control_panel:venue-image-create' %}"><i class="ti ti-plus"></i>&nbsp; {% trans "Add Venue Image" %}</a>
+</div>
+<div class="card panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>{% trans "Venue" %}</th>
+                    <th>{% trans "Image" %}</th>
+                    <th>{% trans "Caption" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venue_image in venue_images %}
+                    <tr>
+                        <td>{{ venue_image.venue|localized_name }}</td>
+                        <td>
+                            {% if venue_image.image %}
+                                <img src="{{ venue_image.image.url }}" alt="{{ venue_image.caption }}" class="club-logo-thumb">
+                            {% endif %}
+                        </td>
+                        <td>{{ venue_image.caption|default:"—" }}</td>
+                        <td>
+                            <span class="badge {% if venue_image.is_active %}badge-published{% else %}badge-draft{% endif %}">
+                                {% if venue_image.is_active %}{% trans "Active" %}{% else %}{% trans "Inactive" %}{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:venue-image-update' venue_image.pk %}">{% trans "Edit" %}</a>
+                                <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:venue-image-positions' venue_image.pk %}">{% trans "Block Positions" %}</a>
+                                {% include "control_panel/_toggle_active_button.html" with obj=venue_image toggle_url_name="control_panel:venue-image-toggle-active" %}
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5">{% trans "No venue images found." %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

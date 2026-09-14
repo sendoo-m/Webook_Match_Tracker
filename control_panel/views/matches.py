@@ -130,6 +130,11 @@ class MatchAdminUpdateView(PanelUpdateView):
             queryset = queryset.filter(Q(home_club_id__in=club_ids) | Q(away_club_id__in=club_ids))
         return queryset
 
+    def get_success_url(self):
+        if not can_manage_control_panel(self.request.user):
+            return reverse("control_panel:venue-control") + "?tab=matches"
+        return str(self.success_url)
+
 
 class MatchExportView(LoginRequiredMixin, ControlPanelAccessMixin, View):
     def get(self, request, *args, **kwargs):

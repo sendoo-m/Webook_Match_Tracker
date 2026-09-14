@@ -38,9 +38,7 @@
 {% url 'operations:notification-list' as notification_list_url %}
 {% url 'operations:workload-report' as workload_url %}
 {% url 'control_panel:home' as control_panel_url %}
-{% url 'control_panel:match-list' as match_control_panel_url %}
-{% url 'control_panel:venue-image-list' as venue_image_control_panel_url %}
-{% url 'control_panel:venue-category-list' as venue_category_control_panel_url %}
+{% url 'control_panel:venue-control' as venue_control_url %}
 {% comment %} {% url 'events:dashboard' as events_hub_url %} {% endcomment %}
 {% comment %} {% url 'events:panel-home' as events_panel_url %} {% endcomment %}
 
@@ -120,14 +118,8 @@
                     <i class="ti ti-settings"></i><span>{% trans "Control panel" %}</span>
                 </a>
                 {% elif is_scoped_club_manager %}
-                <a href="{{ match_control_panel_url }}" title="{% trans 'Events' %}" class="sidebar-link{% if request.path == match_control_panel_url %} is-active{% endif %}">
-                    <i class="ti ti-calendar-event"></i><span>{% trans "Events" %}</span>
-                </a>
-                <a href="{{ venue_image_control_panel_url }}" title="{% trans 'Venue Images' %}" class="sidebar-link{% if request.path == venue_image_control_panel_url %} is-active{% endif %}">
-                    <i class="ti ti-photo"></i><span>{% trans "Venue Images" %}</span>
-                </a>
-                <a href="{{ venue_category_control_panel_url }}" title="{% trans 'Venue Categories' %}" class="sidebar-link{% if request.path == venue_category_control_panel_url %} is-active{% endif %}">
-                    <i class="ti ti-list-details"></i><span>{% trans "Venue Categories" %}</span>
+                <a href="{{ venue_control_url }}" title="{% trans 'Control Venue' %}" class="sidebar-link{% if request.path == venue_control_url %} is-active{% endif %}">
+                    <i class="ti ti-settings"></i><span>{% trans "Control Venue" %}</span>
                 </a>
                 {% endif %}
                 {% comment %} {% if can_view_events_hub %}

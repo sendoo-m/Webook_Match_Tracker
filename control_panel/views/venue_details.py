@@ -78,6 +78,11 @@ class VenueImageCreateView(PanelCreateView):
         kwargs["venue_queryset"] = Venue.objects.filter(id__in=venue_ids)
         return kwargs
 
+    def get_success_url(self):
+        if not can_manage_control_panel(self.request.user):
+            return reverse("control_panel:venue-control") + "?tab=images"
+        return str(self.success_url)
+
 
 class VenueImageUpdateView(PanelUpdateView):
     model = VenueImage
@@ -101,6 +106,11 @@ class VenueImageUpdateView(PanelUpdateView):
         kwargs["venue_queryset"] = Venue.objects.filter(id__in=venue_ids)
         return kwargs
 
+    def get_success_url(self):
+        if not can_manage_control_panel(self.request.user):
+            return reverse("control_panel:venue-control") + "?tab=images"
+        return str(self.success_url)
+
 
 class VenueImageToggleActiveView(PanelToggleActiveView):
     model = VenueImage
@@ -112,6 +122,11 @@ class VenueImageToggleActiveView(PanelToggleActiveView):
     def get_object(self, pk):
         venue_ids = get_manageable_venue_ids_for_user(self.request.user)
         return get_object_or_404(self.model, pk=pk, venue_id__in=venue_ids)
+
+    def get_success_url_name(self):
+        if not can_manage_control_panel(self.request.user):
+            return reverse("control_panel:venue-control") + "?tab=images"
+        return self.success_url_name
 
 
 class VenueImagePositionEditorView(LoginRequiredMixin, ScopedControlPanelAccessMixin, View):
@@ -148,12 +163,18 @@ class VenueImagePositionEditorView(LoginRequiredMixin, ScopedControlPanelAccessM
                 .order_by("sort_order", "code")
             )
 
+        if can_manage_control_panel(request.user):
+            back_url = reverse("control_panel:venue-image-list")
+        else:
+            back_url = reverse("control_panel:venue-control") + "?tab=images"
+
         return render(request, self.template_name, {
             "page_title": _("Block Positions"),
             "image": image,
             "club_choices": club_choices,
             "selected_club": selected_club,
             "categories": categories,
+            "back_url": back_url,
             # A plain list, not a pre-dumped JSON string - the |json_script
             # filter in the template does its own json.dumps() on this
             # value, so dumping it here too would double-encode it into a
@@ -303,6 +324,11 @@ class VenueSeatingCategoryCreateView(PanelCreateView):
             kwargs["club_queryset"] = Club.objects.filter(id__in=get_owned_club_ids(self.request.user))
         return kwargs
 
+    def get_success_url(self):
+        if not can_manage_control_panel(self.request.user):
+            return reverse("control_panel:venue-control") + "?tab=categories"
+        return str(self.success_url)
+
 
 class VenueSeatingCategoryUpdateView(PanelUpdateView):
     model = VenueSeatingCategory
@@ -330,6 +356,11 @@ class VenueSeatingCategoryUpdateView(PanelUpdateView):
             kwargs["club_queryset"] = Club.objects.filter(id__in=get_owned_club_ids(self.request.user))
         return kwargs
 
+    def get_success_url(self):
+        if not can_manage_control_panel(self.request.user):
+            return reverse("control_panel:venue-control") + "?tab=categories"
+        return str(self.success_url)
+
 
 class VenueSeatingCategoryToggleActiveView(PanelToggleActiveView):
     model = VenueSeatingCategory
@@ -343,6 +374,11 @@ class VenueSeatingCategoryToggleActiveView(PanelToggleActiveView):
         if not can_manage_control_panel(self.request.user) and obj.club_id not in get_owned_club_ids(self.request.user):
             raise Http404("This category doesn't belong to one of your clubs.")
         return obj
+
+    def get_success_url_name(self):
+        if not can_manage_control_panel(self.request.user):
+            return reverse("control_panel:venue-control") + "?tab=categories"
+        return self.success_url_name
 
 
 class VenueCategoryTemplateView(LoginRequiredMixin, ControlPanelAccessMixin, View):

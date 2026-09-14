@@ -1,0 +1,41 @@
+{# control_panel/venue_control.html #}
+{% extends "operations/base.html" %}
+{% load static %}
+{% load display_helpers %}
+{% load i18n %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block page_help %}
+    <p>{% blocktrans %}Your matches, venue images, and pricing categories - all scoped to your own club(s),
+        in one place instead of three separate pages.{% endblocktrans %}</p>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">{{ page_title }}</h1>
+    <p class="page-subtitle">
+        {% for club in club_choices %}{{ club|localized_name }}{% if not forloop.last %}{% trans ", " %}{% endif %}{% endfor %}
+    </p>
+</div>
+
+<nav class="subnav" id="venue-control-tabs">
+    <button type="button" class="subnav-link is-active" data-tab-button="matches">{% trans "Events" %}</button>
+    <button type="button" class="subnav-link" data-tab-button="images">{% trans "Venue Images" %}</button>
+    <button type="button" class="subnav-link" data-tab-button="categories">{% trans "Venue Categories" %}</button>
+</nav>
+
+<div data-tab-panel="matches">
+    {% include "control_panel/_venue_control_matches.html" %}
+</div>
+<div data-tab-panel="images" hidden>
+    {% include "control_panel/_venue_control_images.html" %}
+</div>
+<div data-tab-panel="categories" hidden>
+    {% include "control_panel/_venue_control_categories.html" %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'operations/js/venue-control-tabs.js' %}"></script>
+{% endblock %}

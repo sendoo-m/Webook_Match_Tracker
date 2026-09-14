@@ -57,6 +57,13 @@ class PanelToggleActiveView(LoginRequiredMixin, ControlPanelAccessMixin, View):
     def get_object(self, pk):
         return get_object_or_404(self.model, pk=pk)
 
+    def get_success_url_name(self):
+        """A plain string/URL by default (self.success_url_name) - override
+        this instead when a subclass needs the redirect target to depend on
+        who's acting (e.g. a Club Manager coordinator returning to the
+        "Control Venue" hub instead of the full-admin list page)."""
+        return self.success_url_name
+
     def post(self, request, pk, *args, **kwargs):
         obj = self.get_object(pk)
         currently_active = getattr(obj, self.active_field)
@@ -69,4 +76,4 @@ class PanelToggleActiveView(LoginRequiredMixin, ControlPanelAccessMixin, View):
                 "state": _("deactivated") if currently_active else _("activated"),
             },
         )
-        return redirect(self.success_url_name)
+        return redirect(self.get_success_url_name())

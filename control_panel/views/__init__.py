@@ -34,6 +34,7 @@ from .matches import (
 )
 from .release_notes import ReleaseNoteCreateView, ReleaseNoteListView, ReleaseNoteUpdateView
 from .site_settings import SiteSettingsUpdateView
+from .venue_control import VenueControlHomeView
 from .venue_details import (
     VenueCategoryExportView,
     VenueCategoryImportView,
@@ -115,6 +116,7 @@ __all__ = [
     "UserListView",
     "UserToggleActiveView",
     "UserUpdateView",
+    "VenueControlHomeView",
     "VenueCategoryExportView",
     "VenueCategoryImportView",
     "VenueCategoryTemplateView",

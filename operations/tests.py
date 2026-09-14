@@ -1591,3 +1591,88 @@ class ScopedControlPanelAccessTests(IsolatedMediaMixin, ClubDashboardPermissions
         self.assertContains(response, "_OTHER CAT 2")
         self.assertContains(response, "Import / Export")
 
+    # --- Control Venue hub (tabbed, coordinator-only) ---
+
+    def test_coordinator_can_open_the_hub(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/control-panel/venue-control/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "_TEST CAT")
+        self.assertContains(response, "_Test Venue A")
+        self.assertContains(response, 'data-tab-button="matches"')
+        self.assertContains(response, 'data-tab-panel="images"')
+        self.assertContains(response, 'data-tab-panel="categories"')
+
+    def test_hub_shows_only_the_coordinators_own_data(self):
+        other_category = VenueSeatingCategory.objects.create(
+            venue=self.venue, club=self.club_c, code="_HUB OTHER CAT",
+        )
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get("/control-panel/venue-control/")
+        self.assertContains(response, "_TEST CAT")
+        self.assertNotContains(response, "_HUB OTHER CAT")
+
+    def test_full_admin_cannot_open_the_hub(self):
+        """Full admins keep using the existing separate pages/subnav - the
+        hub is a narrower, coordinator-only view."""
+        client = Client()
+        client.login(username="_test_ops_manager", password="pw")
+        response = client.get("/control-panel/venue-control/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_club_viewer_only_cannot_open_the_hub(self):
+        client = Client()
+        client.login(username="_test_club_viewer_only", password="pw")
+        response = client.get("/control-panel/venue-control/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_venue_image_toggle_redirects_back_to_the_images_tab(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.post(f"/control-panel/venue-images/{self.venue_image.pk}/toggle-active/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/control-panel/venue-control/?tab=images")
+
+    def test_category_toggle_redirects_back_to_the_categories_tab(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.post(f"/control-panel/venue-categories/{self.category.pk}/toggle-active/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/control-panel/venue-control/?tab=categories")
+
+    def test_match_update_redirects_back_to_the_matches_tab(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.post(f"/control-panel/matches/{self.match.pk}/edit/", {
+            "competition": self.competition.pk,
+            "home_club": self.club_a.pk,
+            "away_club": self.club_b.pk,
+            "slug": self.match.slug,
+            "title_ar": "تعديل",
+            "title_en": "Edited",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/control-panel/venue-control/?tab=matches")
+
+    def test_full_admin_toggle_still_redirects_to_the_standalone_list(self):
+        client = Client()
+        client.login(username="_test_ops_manager", password="pw")
+        response = client.post(f"/control-panel/venue-images/{self.venue_image.pk}/toggle-active/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/control-panel/venue-images/")
+
+    def test_position_editor_back_link_points_to_the_hub_for_a_coordinator(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get(f"/control-panel/venue-images/{self.venue_image.pk}/positions/")
+        self.assertContains(response, "/control-panel/venue-control/?tab=images")
+
+    def test_position_editor_back_link_points_to_the_list_for_an_admin(self):
+        client = Client()
+        client.login(username="_test_ops_manager", password="pw")
+        response = client.get(f"/control-panel/venue-images/{self.venue_image.pk}/positions/", {"club": self.club_a.pk})
+        self.assertContains(response, "/control-panel/venue-images/")
+        self.assertNotContains(response, "/control-panel/venue-control/")
+

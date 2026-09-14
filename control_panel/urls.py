@@ -7,6 +7,8 @@ app_name = "control_panel"
 urlpatterns = [
     path("", views.PanelHomeView.as_view(), name="home"),
 
+    path("venue-control/", views.VenueControlHomeView.as_view(), name="venue-control"),
+
     path("matches/", views.MatchAdminListView.as_view(), name="match-list"),
     path("matches/new/", views.MatchAdminCreateView.as_view(), name="match-create"),
     path("matches/<int:pk>/edit/", views.MatchAdminUpdateView.as_view(), name="match-update"),

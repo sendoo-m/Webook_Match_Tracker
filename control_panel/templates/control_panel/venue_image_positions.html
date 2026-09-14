@@ -21,7 +21,7 @@
             <p class="page-subtitle">{{ image.venue|localized_name }}</p>
         </div>
         <div class="filter-bar">
-            <a class="btn btn-secondary" href="{% url 'control_panel:venue-image-list' %}">{% trans "Back to Venue Images" %}</a>
+            <a class="btn btn-secondary" href="{{ back_url }}">{% trans "Back to Venue Images" %}</a>
         </div>
     </div>
 </div>

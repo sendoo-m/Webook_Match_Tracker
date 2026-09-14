@@ -1,0 +1,39 @@
+{# control_panel/_venue_control_matches.html #}
+{% load i18n %}
+{% load display_helpers %}
+<div class="card panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>{% trans "Match" %}</th>
+                    <th>{% trans "Competition" %}</th>
+                    <th>{% trans "Round" %}</th>
+                    <th>{% trans "Date" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for match in matches %}
+                    <tr>
+                        <td>{{ match.title_en }}</td>
+                        <td>{{ match.competition|localized_name }}</td>
+                        <td>{{ match.round_number|default:"—" }}</td>
+                        <td>{{ match.event_date|default:"TBC" }} {{ match.match_start_time }}</td>
+                        <td>
+                            <span class="badge badge-{{ match.cms_status|slugify }}">
+                                {{ match.get_cms_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <a class="btn btn-secondary btn-sm" href="{% url 'control_panel:match-update' match.pk %}">{% trans "Edit" %}</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6">{% trans "No matches found." %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
