@@ -28,6 +28,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, TemplateView
 
 from matches.models import Club, Competition, Match, Venue, VenueImage, VenueSeatingCategory
@@ -46,6 +47,26 @@ from operations.views.helpers import build_dashboard_match_state
 
 CLUB_DASHBOARD_PAGE_SIZE = 20
 CLUB_DASHBOARD_UPCOMING_LIMIT = 6
+
+# The club-facing "Match Status" shown on the dashboard's tables is
+# deliberately simpler than the internal CMS pipeline (Draft/Ready for
+# CMS/Sent to CMS/Published): a coordinator/club viewer only ever needs to
+# know whether a match is still being prepared, is live, or already
+# happened - see _display_status and club_dashboard_schedule.html's/
+# club_dashboard.html's Match Status column.
+CLUB_DASHBOARD_STATUS_CHOICES = [
+    ("in_progress", _("In Progress")),
+    ("live", _("Live")),
+    ("finished", _("Finished")),
+]
+
+
+def _display_status(row):
+    if row["match_finished"]:
+        return "finished"
+    if row["is_live_now"]:
+        return "live"
+    return "in_progress"
 
 
 def _club_owned_matches_queryset(club_ids):
@@ -100,10 +121,29 @@ def _club_total_capacity(club_ids, venue):
     return total
 
 
-def _club_seat_map_image(venue):
+def _club_seat_map_image(club_ids, venue):
+    """VenueImage isn't scoped to a club (a venue's physical layout is
+    shared by every club that plays there) - when two clubs share a venue
+    and each uploaded their OWN overview photo of it (e.g. Al Kholood and
+    Al Hazm both at Al Hazm Stadium), a plain venue-only lookup would show
+    either club's image at random. This club's own seating categories'
+    position_image is the only real signal for "which image is actually
+    this club's" - same fix as clubs/views/pricing_plan.py's
+    _get_venue_images_for_categories, applied here for the homepage
+    thumbnail."""
     if venue is None:
         return None
-    return VenueImage.objects.filter(venue=venue, is_active=True).order_by("sort_order").first()
+    image_id = (
+        VenueSeatingCategory.objects.filter(
+            club_id__in=club_ids, venue=venue, is_active=True, position_image__isnull=False,
+        )
+        .order_by("sort_order")
+        .values_list("position_image_id", flat=True)
+        .first()
+    )
+    if image_id is None:
+        return None
+    return VenueImage.objects.filter(pk=image_id, is_active=True).first()
 
 
 def _next_round_upcoming_rows(base_qs, club_ids, now):
@@ -164,7 +204,7 @@ class ClubDashboardView(LoginRequiredMixin, TemplateView):
             "club": primary_club,
             "venue": venue,
             "total_capacity": _club_total_capacity(club_ids, venue),
-            "seat_map_image": _club_seat_map_image(venue),
+            "seat_map_image": _club_seat_map_image(club_ids, venue),
             "upcoming_rows": _next_round_upcoming_rows(base_qs, club_ids, now),
         })
         return context
@@ -218,10 +258,6 @@ class ClubDashboardScheduleView(LoginRequiredMixin, TemplateView):
         if selected_competition:
             matches = matches.filter(competition_id=selected_competition)
 
-        selected_status = self.request.GET.get("status", "")
-        if selected_status:
-            matches = matches.filter(cms_status=selected_status)
-
         selected_period = self.request.GET.get("period", "")
         if selected_period == "past":
             matches = matches.filter(event_date__lt=today).order_by("-event_date", "-match_start_time", "-id")
@@ -232,9 +268,22 @@ class ClubDashboardScheduleView(LoginRequiredMixin, TemplateView):
         else:
             matches = matches.order_by("event_date", "match_start_time", "id")
 
-        paginator = Paginator(matches, CLUB_DASHBOARD_PAGE_SIZE)
+        # Status is filtered on the same simplified 3-state read the table
+        # itself shows (Finished/Live/In Progress - see
+        # club_dashboard_schedule.html), not the raw internal CMS pipeline
+        # status (Draft/Ready for CMS/Sent to CMS/Published) - a coordinator
+        # picking a club-facing status shouldn't need to know that pipeline
+        # at all. Computed in Python since it depends on
+        # build_dashboard_match_state, not a plain column - fine at this
+        # scale (one club's own season, never the whole league).
+        rows_all = [_build_club_match_row(m, club_ids, now) for m in matches]
+        selected_status = self.request.GET.get("status", "")
+        if selected_status:
+            rows_all = [row for row in rows_all if _display_status(row) == selected_status]
+
+        paginator = Paginator(rows_all, CLUB_DASHBOARD_PAGE_SIZE)
         page_obj = paginator.get_page(self.request.GET.get("page", 1))
-        rows = [_build_club_match_row(m, club_ids, now) for m in page_obj.object_list]
+        rows = page_obj.object_list
 
         competition_ids = base_qs.values_list("competition_id", flat=True).distinct()
 
@@ -243,8 +292,7 @@ class ClubDashboardScheduleView(LoginRequiredMixin, TemplateView):
             "summary": summary,
             "rows": rows,
             "page_obj": page_obj,
-            "match_status": Match.Status,
-            "status_choices": Match.Status.choices,
+            "status_choices": CLUB_DASHBOARD_STATUS_CHOICES,
             "competitions": Competition.objects.filter(id__in=competition_ids).order_by("sort_order", "name_ar"),
             "selected_type": selected_type,
             "selected_competition": selected_competition,

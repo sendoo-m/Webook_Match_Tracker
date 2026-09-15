@@ -127,10 +127,12 @@
                         {% if row.match.match_start_time %} {{ row.match.match_start_time|time:"H:i" }}{% endif %}
                     </td>
                     <td>
-                        {% if row.is_live_now %}
+                        {% if row.match_finished %}
+                            <span class="mini-badge mini-badge-neutral">{% trans "Finished" %}</span>
+                        {% elif row.is_live_now %}
                             <span class="mini-badge mini-badge-live"><span class="live-dot"></span>{% trans "Live" %}</span>
                         {% else %}
-                            <span class="badge badge-{{ row.match.cms_status|slugify }}">{{ row.match.get_cms_status_display }}</span>
+                            <span class="badge badge-in_progress">{% trans "In Progress" %}</span>
                         {% endif %}
                     </td>
                     <td>

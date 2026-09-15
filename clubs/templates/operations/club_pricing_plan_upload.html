@@ -63,16 +63,14 @@
     </div>
 {% endif %}
 
-{% if match.venue.images.all %}
+{% if venue_images %}
     <div class="card panel">
         <h2 class="panel-title">{% trans "Venue Seating Map" %}</h2>
-        {% for venue_image in match.venue.images.all %}
-            {% if venue_image.is_active %}
-                <figure style="margin: 0 0 var(--space-3);">
-                    <img src="{{ venue_image.image.url }}" alt="{{ venue_image.caption|default:match.venue.name_ar }}" style="max-width:100%;">
-                    {% if venue_image.caption %}<figcaption class="help-text">{{ venue_image.caption }}</figcaption>{% endif %}
-                </figure>
-            {% endif %}
+        {% for venue_image in venue_images %}
+            <figure style="margin: 0 0 var(--space-3);">
+                <img src="{{ venue_image.image.url }}" alt="{{ venue_image.caption|default:match.venue.name_ar }}" style="max-width:100%;">
+                {% if venue_image.caption %}<figcaption class="help-text">{{ venue_image.caption }}</figcaption>{% endif %}
+            </figure>
         {% endfor %}
         <p class="help-text">
             {% blocktrans with seat_type=match.venue.get_seat_type_display %}Seating: {{ seat_type }}{% endblocktrans %}
@@ -112,7 +110,10 @@
             </div>
 
             <div class="field-group" style="margin-top: var(--space-4);">
-                <label for="{{ form.file.id_for_label }}">{% trans "Attach a file (optional)" %}</label>
+                <label for="{{ form.file.id_for_label }}">{% trans "Attach a supporting document (optional)" %}</label>
+                <p class="help-text" style="margin: 0 0 var(--space-2);">
+                    {% trans "Not required if you're pricing by category above - only needed if you also want to attach the full plan as a PDF/Word/Excel document for reference." %}
+                </p>
                 {{ form.file }}
                 {% if form.file.errors %}
                     <p class="help-text" style="color: var(--danger);">{{ form.file.errors|join:", " }}</p>
@@ -129,6 +130,11 @@
         <h3 class="panel-title">{% trans "Or Upload an Excel File" %}</h3>
         <p class="help-text">
             {% blocktrans %}Columns: "code" (or "Ticket Name") and "price". Only categories listed above are accepted.{% endblocktrans %}
+        </p>
+        <p style="margin: 0 0 var(--space-3);">
+            <a href="{% url 'operations:club-pricing-plan-category-template' match.pk %}" class="btn btn-secondary">
+                <i class="ti ti-download"></i> {% trans "Download price template" %}
+            </a>
         </p>
         <form method="post" enctype="multipart/form-data" action="{% url 'operations:club-pricing-plan-category-import' match.pk %}">
             {% csrf_token %}

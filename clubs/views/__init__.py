@@ -1,6 +1,7 @@
 from .dashboard import ClubDashboardMatchDetailView, ClubDashboardScheduleView, ClubDashboardView
 from .pricing_plan import (
     ClubPricingPlanCategoryImportView,
+    ClubPricingPlanCategoryTemplateView,
     ClubPricingPlanConfirmSubmissionView,
     ClubPricingPlanDownloadView,
     ClubPricingPlanSubmitView,
@@ -12,6 +13,7 @@ __all__ = [
     "ClubDashboardScheduleView",
     "ClubDashboardView",
     "ClubPricingPlanCategoryImportView",
+    "ClubPricingPlanCategoryTemplateView",
     "ClubPricingPlanConfirmSubmissionView",
     "ClubPricingPlanDownloadView",
     "ClubPricingPlanSubmitView",

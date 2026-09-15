@@ -5,6 +5,8 @@
 # picked from the file itself. Same openpyxl-based header-alias pattern
 # as matches/venue_category_import_export.py.
 
+import io
+
 import openpyxl
 
 from matches.import_export import ImportResult
@@ -24,6 +26,25 @@ def _to_decimal(value):
         return round(float(value), 2)
     except (ValueError, TypeError):
         return None
+
+
+def build_plan_category_price_template_xlsx(categories):
+    """A ready-to-fill spreadsheet for the "Or Upload an Excel File" import
+    below: one row per this match's own active seating categories, code
+    pre-filled, price left blank for the club to type in and re-upload
+    as-is - avoids the club having to type category codes by hand or get
+    one wrong."""
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Prices"
+    ws.append(["code", "price"])
+
+    for category in categories:
+        ws.append([category.code, ""])
+
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    return buffer.getvalue()
 
 
 def parse_plan_category_prices_xlsx(file_obj, venue, club):

@@ -688,6 +688,15 @@ msgstr ""
 msgid "Import Excel"
 msgstr "استيراد إكسل"
 
+msgid "Attach a supporting document (optional)"
+msgstr "إرفاق مستند داعم (اختياري)"
+
+msgid "Not required if you're pricing by category above - only needed if you also want to attach the full plan as a PDF/Word/Excel document for reference."
+msgstr "غير مطلوب إذا كنت تُدخل الأسعار حسب الفئة أعلاه - يُستخدم فقط إذا أردت أيضًا إرفاق الخطة كاملة كمستند PDF/Word/Excel للرجوع إليه."
+
+msgid "Download price template"
+msgstr "تنزيل قالب الأسعار"
+
 msgid ""
 "No seating categories are set up yet for this venue/club - a coordinator "
 "needs to add them in the Control Panel first. You can still attach a file "
@@ -3488,6 +3497,9 @@ msgstr "سبب الرفض"
 
 msgid "Reject"
 msgstr "رفض"
+
+msgid "Reject pricing plans"
+msgstr "رفض خطط التسعير"
 
 msgid "The club has not submitted a pricing plan yet."
 msgstr "لم يقم النادي بإرسال خطة تسعير بعد."

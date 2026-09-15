@@ -10,13 +10,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Max
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views import View
 
-from matches.models import Match, VenueSeatingCategory
+from matches.models import Match, VenueImage, VenueSeatingCategory
 from operations.models import ClubPricingPlan, ClubPricingPlanCategoryPrice, MatchActivityLog
 from operations.permissions import (
     can_confirm_home_match_submission,
@@ -30,7 +30,7 @@ from notifications.models import Notification
 from notifications.services import notify_spl
 
 from ..forms import ClubPricingPlanCategoryImportForm, ClubPricingPlanUploadForm
-from ..pricing_import_export import parse_plan_category_prices_xlsx
+from ..pricing_import_export import build_plan_category_price_template_xlsx, parse_plan_category_prices_xlsx
 
 
 def _get_categories_for_match(match):
@@ -39,6 +39,23 @@ def _get_categories_for_match(match):
     return VenueSeatingCategory.objects.filter(
         venue_id=match.venue_id, club_id=match.home_club_id, is_active=True
     ).order_by("sort_order", "code")
+
+
+def _get_venue_images_for_categories(categories):
+    """VenueImage itself isn't scoped to a club (a venue's physical layout
+    is shared by every club that plays there) - but when two clubs share
+    a venue and each uploaded their OWN overview photo of it (e.g. Al
+    Kholood and Al Hazm both at Al Hazm Stadium), this club's own
+    categories' position_image is the only real signal for "which of the
+    venue's images is actually this club's". Filtering by it here means
+    the upload page only ever shows the image(s) this club's own
+    categories are positioned on, never another club's - at the cost of
+    showing nothing yet if this club's categories haven't been
+    positioned in the Control Panel."""
+    image_ids = categories.exclude(position_image__isnull=True).values_list(
+        "position_image_id", flat=True
+    ).distinct()
+    return VenueImage.objects.filter(id__in=image_ids, is_active=True).order_by("sort_order")
 
 
 class ClubPricingPlanUploadView(LoginRequiredMixin, View):
@@ -128,8 +145,31 @@ class ClubPricingPlanUploadView(LoginRequiredMixin, View):
                 "import_form": import_form,
                 "current_plan": current_plan,
                 "categories": categories,
+                "venue_images": _get_venue_images_for_categories(categories),
             },
         )
+
+
+class ClubPricingPlanCategoryTemplateView(LoginRequiredMixin, View):
+    """Downloads a ready-to-fill spreadsheet for this match's own venue/
+    club seating categories (code pre-filled, price left blank) - so a
+    club can just fill in the price column and re-upload it via the
+    "Or Upload an Excel File" import below, instead of typing category
+    codes by hand. Same access gate as the upload page itself."""
+
+    def get(self, request, pk, *args, **kwargs):
+        match = get_object_or_404(Match.objects.select_related("home_club"), pk=pk)
+        if not can_upload_home_match_pricing_plan(request.user, match):
+            raise PermissionDenied("You don't have permission to upload a pricing plan for this match.")
+
+        categories = _get_categories_for_match(match)
+        content = build_plan_category_price_template_xlsx(categories)
+        response = HttpResponse(
+            content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="pricing_template_match_{match.pk}.xlsx"'
+        return response
 
 
 class ClubPricingPlanCategoryImportView(LoginRequiredMixin, View):

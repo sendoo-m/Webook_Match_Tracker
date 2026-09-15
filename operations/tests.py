@@ -570,6 +570,30 @@ class ClubDashboardUITests(ClubDashboardPermissionsTestBase):
         for row in response.context["rows"]:
             self.assertFalse(row["is_home"])
 
+    def test_status_choices_are_the_simplified_three_not_the_raw_cms_pipeline(self):
+        """The club-facing Match Status filter only ever offers In
+        Progress/Live/Finished - never the internal CMS pipeline stages
+        (Draft/Ready for CMS/Sent to CMS/Published), which a club/
+        coordinator on this page has no reason to know about."""
+        client = Client()
+        client.login(username="_test_club_viewer_a", password="pw")
+        response = client.get("/operations/club-dashboard/schedule/")
+        values = [value for value, _label in response.context["status_choices"]]
+        self.assertEqual(values, ["in_progress", "live", "finished"])
+
+    def test_status_filter_finished_only_shows_finished_matches(self):
+        self.match.event_date = timezone.localtime().date() - timezone.timedelta(days=30)
+        self.match.match_start_time = timezone.datetime.min.time()
+        self.match.save(update_fields=["event_date", "match_start_time"])
+        client = Client()
+        client.login(username="_test_club_viewer_a", password="pw")
+        response = client.get("/operations/club-dashboard/schedule/", {"status": "finished"})
+        matches = [row["match"] for row in response.context["rows"]]
+        self.assertIn(self.match, matches)
+
+        response2 = client.get("/operations/club-dashboard/schedule/", {"status": "in_progress"})
+        self.assertNotIn(self.match, [row["match"] for row in response2.context["rows"]])
+
     def test_page_uses_rtl_capable_base_shell(self):
         """Renders through operations/base.html, same shell (and its
         LANGUAGE_BIDI-driven dir=rtl/ltr) as every other page - no
@@ -900,6 +924,71 @@ class ClubPricingPlanUploadHomeClubTests(IsolatedMediaMixin, ClubDashboardPermis
         client = Client()
         client.login(username="_test_club_a", password="pw")
         response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_shared_venue_only_shows_this_clubs_own_positioned_image(self):
+        """Regression test: two clubs at the same physical venue (e.g. Al
+        Kholood and Al Hazm both at Al Hazm Stadium), each with their own
+        overview photo - the upload page must only ever show the image
+        THIS club's own categories are positioned on, never the other
+        club's image just because they share a Venue row."""
+        from matches.models import Venue, VenueImage
+
+        self.match.venue = Venue.objects.create(name_ar="_ملعب مشترك", name_en="_Shared Venue")
+        self.match.save(update_fields=["venue"])
+
+        own_image = VenueImage.objects.create(venue=self.match.venue, caption="_own image", image=_tiny_png())
+        other_clubs_image = VenueImage.objects.create(
+            venue=self.match.venue, caption="_other club image", image=_tiny_png(),
+        )
+
+        VenueSeatingCategory.objects.create(
+            venue=self.match.venue, club=self.club_a, code="_TEST OWN CAT",
+            position_image=own_image, position_x=10, position_y=10,
+        )
+        # club_c has no relation to this match at all - stands in for the
+        # other club sharing the venue.
+        VenueSeatingCategory.objects.create(
+            venue=self.match.venue, club=self.club_c, code="_TEST OTHER CAT",
+            position_image=other_clubs_image, position_x=20, position_y=20,
+        )
+
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/")
+        venue_images = list(response.context["venue_images"])
+        self.assertEqual(venue_images, [own_image])
+
+    def test_no_venue_image_shown_before_this_clubs_categories_are_positioned(self):
+        """Safer than showing every image on a shared venue at random:
+        nothing is shown until this club's own categories have a saved
+        position, even if other images already exist for the venue."""
+        from matches.models import Venue, VenueImage
+
+        self.match.venue = Venue.objects.create(name_ar="_ملعب مشترك ٢", name_en="_Shared Venue 2")
+        self.match.save(update_fields=["venue"])
+        VenueImage.objects.create(venue=self.match.venue, caption="_unrelated image")
+        VenueSeatingCategory.objects.create(venue=self.match.venue, club=self.club_a, code="_TEST UNPOSITIONED CAT")
+
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/")
+        self.assertEqual(list(response.context["venue_images"]), [])
+
+    def test_home_club_can_download_the_price_template(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/template/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response["Content-Type"],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+
+    def test_away_club_cannot_download_the_price_template(self):
+        client = Client()
+        client.login(username="_test_club_b", password="pw")
+        response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/template/")
         self.assertEqual(response.status_code, 302)
 
 

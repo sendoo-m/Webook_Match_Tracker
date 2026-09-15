@@ -80,6 +80,11 @@ urlpatterns = [
         name="club-pricing-plan-category-import",
     ),
     path(
+        "club-dashboard/matches/<int:pk>/pricing-plan/template/",
+        views.ClubPricingPlanCategoryTemplateView.as_view(),
+        name="club-pricing-plan-category-template",
+    ),
+    path(
         "club-dashboard/pricing-plan/<int:pk>/download/",
         views.ClubPricingPlanDownloadView.as_view(),
         name="club-pricing-plan-download",
