@@ -34,6 +34,7 @@ from spl.views import (  # noqa: F401 - re-exported for backward compatibility
     SPLTicketsConfirmView,
 )
 from clubs.views import (  # noqa: F401 - re-exported for backward compatibility
+    ClubDashboardMatchActivityView,
     ClubDashboardMatchDetailView,
     ClubDashboardScheduleView,
     ClubDashboardView,
@@ -71,6 +72,7 @@ __all__ = [
     "MatchCalendarView",
     "ChecklistItemNoteEditView",
     "ChecklistItemUpdateView",
+    "ClubDashboardMatchActivityView",
     "ClubDashboardMatchDetailView",
     "ClubDashboardScheduleView",
     "ClubDashboardView",

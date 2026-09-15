@@ -340,10 +340,42 @@ class ClubDashboardMatchDetailView(LoginRequiredMixin, DetailView):
             "can_confirm_submission": can_confirm_home_match_submission(self.request.user, match),
             "can_approve_pricing_plan": can_approve_pricing_plan(self.request.user, match),
             "can_publish_match": can_publish_match_from_club_dashboard(self.request.user, match),
-            "recent_activity": match.activity_logs.select_related("user").all()[:8],
+            "recent_activity": match.activity_logs.select_related("user").all()[:3],
             # Only ever shown/used when is_home is True (see the template) -
             # the away club never sees the home club's plan, filename, or a
             # download link for it.
             "current_pricing_plan": match.club_pricing_plans.order_by("-version").first(),
+        })
+        return context
+
+
+class ClubDashboardMatchActivityView(LoginRequiredMixin, DetailView):
+    """The full activity log for one of the club's own matches - the "view
+    all" page the match detail's Recent Activity panel links out to, since
+    that panel only shows the latest 3 entries. Same access gate as the
+    match detail page itself."""
+
+    model = Match
+    template_name = "operations/club_dashboard_match_activity.html"
+    context_object_name = "match"
+
+    def get_queryset(self):
+        return Match.objects.select_related("home_club", "away_club")
+
+    def get_object(self, queryset=None):
+        match = super().get_object(queryset)
+        if not can_view_club_match(self.request.user, match):
+            raise PermissionDenied("You don't have permission to view this match.")
+        return match
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        match = self.object
+        logs = match.activity_logs.select_related("user").all()
+        paginator = Paginator(logs, CLUB_DASHBOARD_PAGE_SIZE)
+        page_obj = paginator.get_page(self.request.GET.get("page", 1))
+        context.update({
+            "page_obj": page_obj,
+            "activity_logs": page_obj.object_list,
         })
         return context

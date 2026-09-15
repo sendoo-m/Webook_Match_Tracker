@@ -548,6 +548,70 @@ class ClubDashboardActionTests(ClubDashboardPermissionsTestBase):
         response = client.get("/operations/reports/spl/approvals/")
         self.assertEqual(response.status_code, 302)
 
+    def test_match_status_shows_the_simplified_three_states_not_ticket_sale_status(self):
+        """Product decision: "Match Status" and "Ticket Sale Status" said
+        the same thing to a club - consolidated into one simplified
+        Match Status (In Progress/Live/Finished), matching the wording
+        already used on the club's other tables."""
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/")
+        self.assertNotContains(response, "Ticket Sale Status")
+        self.assertContains(response, "Match Status")
+
+    def test_audience_split_shown_on_match_detail(self):
+        plan = ClubPricingPlan.objects.create(
+            match=self.match, club=self.club_a, version=1, home_percentage=70,
+        )
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/")
+        self.assertContains(response, "70% Home / 30% Away")
+
+    def test_recent_activity_limited_to_three_with_a_view_all_link(self):
+        for i in range(5):
+            MatchActivityLog.objects.create(
+                match=self.match, action=MatchActivityLog.Action.STATUS_CHANGED, description=f"Event {i}",
+            )
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/")
+        self.assertEqual(len(response.context["recent_activity"]), 3)
+        self.assertContains(response, f"/operations/club-dashboard/matches/{self.match.pk}/activity/")
+
+
+class ClubDashboardMatchActivityTests(ClubDashboardPermissionsTestBase):
+    def setUp(self):
+        for i in range(25):
+            MatchActivityLog.objects.create(
+                match=self.match, action=MatchActivityLog.Action.STATUS_CHANGED, description=f"Event {i}",
+            )
+
+    def test_home_club_can_view_full_activity(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/activity/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["activity_logs"]), 20)
+
+    def test_away_club_can_also_view_it(self):
+        client = Client()
+        client.login(username="_test_club_b", password="pw")
+        response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/activity/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_unrelated_club_is_denied(self):
+        client = Client()
+        client.login(username="_test_club_c", password="pw")
+        response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/activity/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_second_page_shows_the_rest(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/activity/", {"page": 2})
+        self.assertEqual(len(response.context["activity_logs"]), 5)
+
 
 class ClubDashboardUITests(ClubDashboardPermissionsTestBase):
     def test_empty_state_renders_for_club_with_no_matches(self):
@@ -836,6 +900,20 @@ class ClubPricingPlanUploadHomeClubTests(IsolatedMediaMixin, ClubDashboardPermis
         response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/")
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "operations/club_pricing_plan_upload.html")
+
+    def test_percentage_asked_once_as_two_home_away_boxes_not_a_file_field(self):
+        """Regression test: the manual-entry form's optional file-attach
+        field was removed (redundant with category pricing/Excel import),
+        and the Home/Away split is asked once as two labeled boxes
+        (Home %/Away %) rather than a single ambiguous percentage field,
+        never duplicated across the two submission forms on this page."""
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/")
+        self.assertNotContains(response, "Attach a supporting document")
+        self.assertContains(response, "Home %")
+        self.assertContains(response, "Away %")
+        self.assertEqual(response.content.decode().count('id="id_home_percentage"'), 1)
 
     def test_home_club_can_upload_a_plan(self):
         client = Client()

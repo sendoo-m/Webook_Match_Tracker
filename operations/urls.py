@@ -70,6 +70,11 @@ urlpatterns = [
         name="club-dashboard-match-detail",
     ),
     path(
+        "club-dashboard/matches/<int:pk>/activity/",
+        views.ClubDashboardMatchActivityView.as_view(),
+        name="club-dashboard-match-activity",
+    ),
+    path(
         "club-dashboard/matches/<int:pk>/pricing-plan/upload/",
         views.ClubPricingPlanUploadView.as_view(),
         name="club-pricing-plan-upload",

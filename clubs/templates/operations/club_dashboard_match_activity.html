@@ -1,0 +1,54 @@
+{% extends "operations/base.html" %}
+{% load display_helpers %}
+{% load i18n %}
+<!-- File: templates/operations/club_dashboard_match_activity.html -->
+<!-- The full activity log for one match - linked from the match detail
+     page's Recent Activity panel (which only shows the latest 3). -->
+
+{% block title %}{% trans "Activity" %} · {{ match.home_club|localized_name }} {% trans "vs" %} {{ match.away_club|localized_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">{% trans "Activity" %}</h1>
+    <p class="page-subtitle">
+        <a href="{% url 'operations:club-dashboard-match-detail' match.pk %}">
+            <i class="ti ti-arrow-right"></i> {% trans "Back to match details" %}
+        </a>
+    </p>
+</div>
+
+<div class="card panel">
+    {% if activity_logs %}
+        <div class="timeline-list">
+            {% for log in activity_logs %}
+                <div class="timeline-item">
+                    <div class="timeline-item-row">
+                        <span class="timeline-item-desc">{{ log.description }}</span>
+                        <span class="timeline-item-time help-text">{{ log.created_at }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="help-text">{% trans "No activity yet." %}</p>
+    {% endif %}
+
+    {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a class="pagination-link" href="?page=1">{% trans "First" %}</a>
+                <a class="pagination-link" href="?page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>
+            {% endif %}
+
+            <span class="pagination-current">
+                {% blocktrans with number=page_obj.number total=page_obj.paginator.num_pages %}Page {{ number }} of {{ total }}{% endblocktrans %}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a class="pagination-link" href="?page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>
+                <a class="pagination-link" href="?page={{ page_obj.paginator.num_pages }}">{% trans "Last" %}</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

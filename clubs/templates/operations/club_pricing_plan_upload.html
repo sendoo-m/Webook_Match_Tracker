@@ -88,8 +88,35 @@
 <div class="card panel">
     <h2 class="panel-title">{% trans "Enter Prices by Category" %}</h2>
     {% if categories %}
-        <form method="post" enctype="multipart/form-data">
+        {# Asked once, shared by manual entry and Excel import below - a
+           hidden mirror (synced by pricing-plan-home-percentage-sync.js)
+           carries the same value into the Excel import form. #}
+        <div class="field-group" style="margin-bottom: var(--space-5);">
+            <label>{% trans "Audience split" %}</label>
+            <p class="help-text" style="margin: 0 0 var(--space-2);">
+                {% trans "Your own Home/Away ticket split for this match - required, and shown to SPL alongside your seat map. Applies whichever way you save your prices below." %}
+            </p>
+            <div style="display:flex; gap: var(--space-4); max-width: 340px; flex-wrap: wrap;">
+                <div class="field-group" style="flex:1; min-width:140px;">
+                    <label for="{{ form.home_percentage.id_for_label }}">{% trans "Home %" %}</label>
+                    {{ form.home_percentage }}
+                </div>
+                <div class="field-group" style="flex:1; min-width:140px;">
+                    <label for="id_away_percentage_display">{% trans "Away %" %}</label>
+                    <input type="number" id="id_away_percentage_display" min="0" max="100" data-away-percentage-display>
+                </div>
+            </div>
+            {% if form.home_percentage.errors %}
+                <p class="help-text" style="color: var(--danger);">{{ form.home_percentage.errors|join:", " }}</p>
+            {% endif %}
+            {% if import_form.home_percentage.errors %}
+                <p class="help-text" style="color: var(--danger);">{{ import_form.home_percentage.errors|join:", " }}</p>
+            {% endif %}
+        </div>
+
+        <form method="post" enctype="multipart/form-data" id="pricing-plan-manual-form">
             {% csrf_token %}
+            <input type="hidden" name="home_percentage" data-home-percentage-mirror value="{{ form.home_percentage.value|default:'' }}">
             <div class="table-wrap">
                 <table>
                     <thead>
@@ -116,28 +143,6 @@
                 </table>
             </div>
 
-            <div class="field-group" style="margin-top: var(--space-4);">
-                <label for="{{ form.home_percentage.id_for_label }}">{% trans "Home audience %" %}</label>
-                <p class="help-text" style="margin: 0 0 var(--space-2);">
-                    {% trans "Your own Home/Away ticket split for this match, e.g. 70 means 70% Home / 30% Away - required, and shown to SPL alongside your seat map." %}
-                </p>
-                {{ form.home_percentage }}
-                {% if form.home_percentage.errors %}
-                    <p class="help-text" style="color: var(--danger);">{{ form.home_percentage.errors|join:", " }}</p>
-                {% endif %}
-            </div>
-
-            <div class="field-group" style="margin-top: var(--space-4);">
-                <label for="{{ form.file.id_for_label }}">{% trans "Attach a supporting document (optional)" %}</label>
-                <p class="help-text" style="margin: 0 0 var(--space-2);">
-                    {% trans "Not required if you're pricing by category above - only needed if you also want to attach the full plan as a PDF/Word/Excel document for reference." %}
-                </p>
-                {{ form.file }}
-                {% if form.file.errors %}
-                    <p class="help-text" style="color: var(--danger);">{{ form.file.errors|join:", " }}</p>
-                {% endif %}
-            </div>
-
             <button type="submit" class="btn btn-primary" style="margin-top: var(--space-4);">
                 <i class="ti ti-device-floppy"></i> {% trans "Save Pricing Plan" %}
             </button>
@@ -154,19 +159,13 @@
                 <i class="ti ti-download"></i> {% trans "Download price template" %}
             </a>
         </p>
-        <form method="post" enctype="multipart/form-data" action="{% url 'operations:club-pricing-plan-category-import' match.pk %}">
+        <form method="post" enctype="multipart/form-data" action="{% url 'operations:club-pricing-plan-category-import' match.pk %}" id="pricing-plan-import-form">
             {% csrf_token %}
+            <input type="hidden" name="home_percentage" data-home-percentage-mirror value="{{ form.home_percentage.value|default:'' }}">
             <div class="field-group">
                 {{ import_form.import_file }}
                 {% if import_form.import_file.errors %}
                     <p class="help-text" style="color: var(--danger);">{{ import_form.import_file.errors|join:", " }}</p>
-                {% endif %}
-            </div>
-            <div class="field-group" style="margin-top: var(--space-3);">
-                <label for="{{ import_form.home_percentage.id_for_label }}">{% trans "Home audience %" %}</label>
-                {{ import_form.home_percentage }}
-                {% if import_form.home_percentage.errors %}
-                    <p class="help-text" style="color: var(--danger);">{{ import_form.home_percentage.errors|join:", " }}</p>
                 {% endif %}
             </div>
             <button type="submit" class="btn btn-secondary" style="margin-top: var(--space-3);">
@@ -180,11 +179,20 @@
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="field-group">
-                <label for="{{ form.home_percentage.id_for_label }}">{% trans "Home audience %" %}</label>
+                <label>{% trans "Audience split" %}</label>
                 <p class="help-text" style="margin: 0 0 var(--space-2);">
-                    {% trans "Your own Home/Away ticket split for this match, e.g. 70 means 70% Home / 30% Away - required, and shown to SPL alongside your seat map." %}
+                    {% trans "Your own Home/Away ticket split for this match - required, and shown to SPL alongside your seat map." %}
                 </p>
-                {{ form.home_percentage }}
+                <div style="display:flex; gap: var(--space-4); max-width: 340px; flex-wrap: wrap;">
+                    <div class="field-group" style="flex:1; min-width:140px;">
+                        <label for="{{ form.home_percentage.id_for_label }}">{% trans "Home %" %}</label>
+                        {{ form.home_percentage }}
+                    </div>
+                    <div class="field-group" style="flex:1; min-width:140px;">
+                        <label for="id_away_percentage_display">{% trans "Away %" %}</label>
+                        <input type="number" id="id_away_percentage_display" min="0" max="100" data-away-percentage-display>
+                    </div>
+                </div>
                 {% if form.home_percentage.errors %}
                     <p class="help-text" style="color: var(--danger);">{{ form.home_percentage.errors|join:", " }}</p>
                 {% endif %}
@@ -202,4 +210,8 @@
         </form>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'operations/js/pricing-plan-home-percentage-sync.js' %}"></script>
 {% endblock %}

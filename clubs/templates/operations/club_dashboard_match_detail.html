@@ -65,21 +65,12 @@
             <div class="summary-tile">
                 <div class="help-text">{% trans "Match Status" %}</div>
                 <div class="summary-tile-value">
-                    {% if state.is_live_now %}
+                    {% if state.match_finished %}
+                        <span class="mini-badge mini-badge-neutral">{% trans "Finished" %}</span>
+                    {% elif state.is_live_now %}
                         <span class="mini-badge mini-badge-live"><span class="live-dot"></span>{% trans "Live" %}</span>
                     {% else %}
-                        <span class="badge badge-{{ match.cms_status|slugify }}">{{ match.get_cms_status_display }}</span>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="summary-tile">
-                <div class="help-text">{% trans "Ticket Sale Status" %}</div>
-                <div class="summary-tile-value">
-                    {% if match.webook_purchase_url %}
-                        <span class="mini-badge mini-badge-success">{% trans "Tickets Live" %}</span>
-                    {% else %}
-                        <span class="mini-badge mini-badge-neutral">{% trans "Not Live Yet" %}</span>
+                        <span class="badge badge-in_progress">{% trans "In Progress" %}</span>
                     {% endif %}
                 </div>
             </div>
@@ -114,7 +105,12 @@
     </div>
 
     <div class="card panel">
-        <h2 class="panel-title">{% trans "Recent Activity" %}</h2>
+        <div class="dashboard-section-head" style="margin-bottom: 0;">
+            <h2 class="panel-title">{% trans "Recent Activity" %}</h2>
+            <a href="{% url 'operations:club-dashboard-match-activity' match.pk %}" class="help-text">
+                {% trans "View all" %} <i class="ti ti-arrow-right"></i>
+            </a>
+        </div>
         {% if recent_activity %}
             <div class="timeline-list">
                 {% for log in recent_activity %}
@@ -140,7 +136,7 @@
 
     {% if is_home %}
         {% if current_pricing_plan %}
-            <div class="summary-grid summary-grid-2" style="margin-top: var(--space-4);">
+            <div class="summary-grid" style="margin-top: var(--space-4);">
                 <div class="summary-tile">
                     <div class="help-text">{% trans "Current File" %}</div>
                     <div class="summary-tile-value">
@@ -173,6 +169,18 @@
                         <span class="mini-badge mini-badge-{% if current_pricing_plan.spl_decision == 'approved' %}success{% elif current_pricing_plan.spl_decision == 'rejected' %}danger{% else %}neutral{% endif %}">
                             {{ current_pricing_plan.get_spl_decision_display }}
                         </span>
+                    </div>
+                </div>
+                <div class="summary-tile">
+                    <div class="help-text">{% trans "Audience split" %}</div>
+                    <div class="summary-tile-value">
+                        {% if current_pricing_plan.home_percentage is not None %}
+                            <span class="mini-badge mini-badge-warning">
+                                {% blocktrans with home=current_pricing_plan.home_percentage away=current_pricing_plan.away_percentage %}{{ home }}% Home / {{ away }}% Away{% endblocktrans %}
+                            </span>
+                        {% else %}
+                            <span class="mini-badge mini-badge-neutral">{% trans "Not set" %}</span>
+                        {% endif %}
                     </div>
                 </div>
             </div>

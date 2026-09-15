@@ -688,6 +688,37 @@ msgstr ""
 msgid "Import Excel"
 msgstr "استيراد إكسل"
 
+msgid "Audience split"
+msgstr "نسبة توزيع الجمهور"
+
+#, python-format
+msgid "Home %%"
+msgstr "مضيف %%"
+
+#, python-format
+msgid "Away %%"
+msgstr "ضيف %%"
+
+#, python-format
+msgid ""
+"Your own Home/Away ticket split for this match - required, and shown to "
+"SPL alongside your seat map."
+msgstr ""
+"نسبة توزيع تذاكرك بين الحضور (مضيف/ضيف) لهذه المباراة - مطلوبة، وتظهر لـ "
+"SPL بجانب مخطط المقاعد."
+
+#, python-format
+msgid ""
+"Your own Home/Away ticket split for this match - required, and shown to "
+"SPL alongside your seat map. Applies whichever way you save your prices "
+"below."
+msgstr ""
+"نسبة توزيع تذاكرك بين الحضور (مضيف/ضيف) لهذه المباراة - مطلوبة، وتظهر لـ "
+"SPL بجانب مخطط المقاعد. تنطبق أيًا كانت الطريقة التي تحفظ بها أسعارك أدناه."
+
+msgid "View all"
+msgstr "عرض الكل"
+
 #, python-format
 msgid "Home audience %%"
 msgstr "نسبة الجمهور الحاضر %%"
