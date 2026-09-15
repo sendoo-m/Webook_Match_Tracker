@@ -23,11 +23,23 @@ class ClubPricingPlanUploadForm(forms.ModelForm):
     VenueSeatingCategory for the match's (venue, club) is added
     dynamically in __init__, named "price_<category id>" - there is no
     formset in this codebase to reuse, and a fixed, small, per-request
-    category list doesn't need one."""
+    category list doesn't need one.
+
+    home_percentage is required here even though the model field itself
+    is nullable (existing plans submitted before this field existed have
+    no value) - every NEW plan must state its own Home/Away split, since
+    it varies club by club and SPL needs it alongside the seat map."""
+
+    home_percentage = forms.IntegerField(
+        label="Home audience %",
+        min_value=0,
+        max_value=100,
+        help_text="e.g. 70 means 70% Home / 30% Away - Away is calculated automatically.",
+    )
 
     class Meta:
         model = ClubPricingPlan
-        fields = ["file"]
+        fields = ["file", "home_percentage"]
 
     def __init__(self, *args, categories=(), **kwargs):
         super().__init__(*args, **kwargs)
@@ -66,6 +78,12 @@ class ClubPricingPlanUploadForm(forms.ModelForm):
 
 class ClubPricingPlanCategoryImportForm(forms.Form):
     import_file = forms.FileField(label="Excel file")
+    home_percentage = forms.IntegerField(
+        label="Home audience %",
+        min_value=0,
+        max_value=100,
+        help_text="e.g. 70 means 70% Home / 30% Away - Away is calculated automatically.",
+    )
 
     def clean_import_file(self):
         import_file = self.cleaned_data["import_file"]

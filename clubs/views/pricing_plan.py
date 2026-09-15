@@ -215,6 +215,7 @@ class ClubPricingPlanCategoryImportView(LoginRequiredMixin, View):
                 version=next_version,
                 status=ClubPricingPlan.Status.UPLOADED,
                 uploaded_by=request.user,
+                home_percentage=form.cleaned_data["home_percentage"],
             )
             ClubPricingPlanCategoryPrice.objects.bulk_create(
                 ClubPricingPlanCategoryPrice(plan=plan, category_id=category_id, price=price)

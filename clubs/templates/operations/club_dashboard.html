@@ -97,7 +97,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>{% trans "Competition" %}</th>
+                    <th>{% trans "Round" %}</th>
                     <th>{% trans "Home Team" %}</th>
                     <th>{% trans "Away Team" %}</th>
                     <th>{% trans "Home / Away" %}</th>
@@ -110,7 +110,7 @@
             <tbody>
                 {% for row in upcoming_rows %}
                 <tr>
-                    <td>{{ row.match.competition|localized_name }}</td>
+                    <td>{{ row.match.round_number|default:"—" }}</td>
                     <td>{% include "operations/partials/club_chip.html" with club=row.match.home_club role="home" %}</td>
                     <td>{% include "operations/partials/club_chip.html" with club=row.match.away_club role="away" %}</td>
                     <td>

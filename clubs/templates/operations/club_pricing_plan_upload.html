@@ -40,6 +40,13 @@
         {% else %}
             <p class="help-text">{% trans "No file attached" %} (v{{ current_plan.version }} — {{ current_plan.uploaded_at }})</p>
         {% endif %}
+        {% if current_plan.home_percentage is not None %}
+            <p>
+                <span class="mini-badge mini-badge-info">
+                    {% blocktrans with home=current_plan.home_percentage away=current_plan.away_percentage %}{{ home }}% Home / {{ away }}% Away{% endblocktrans %}
+                </span>
+            </p>
+        {% endif %}
         {% if current_plan.category_prices.all %}
             <div class="table-wrap" style="margin-top: var(--space-3);">
                 <table>
@@ -110,6 +117,17 @@
             </div>
 
             <div class="field-group" style="margin-top: var(--space-4);">
+                <label for="{{ form.home_percentage.id_for_label }}">{% trans "Home audience %" %}</label>
+                <p class="help-text" style="margin: 0 0 var(--space-2);">
+                    {% trans "Your own Home/Away ticket split for this match, e.g. 70 means 70% Home / 30% Away - required, and shown to SPL alongside your seat map." %}
+                </p>
+                {{ form.home_percentage }}
+                {% if form.home_percentage.errors %}
+                    <p class="help-text" style="color: var(--danger);">{{ form.home_percentage.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+
+            <div class="field-group" style="margin-top: var(--space-4);">
                 <label for="{{ form.file.id_for_label }}">{% trans "Attach a supporting document (optional)" %}</label>
                 <p class="help-text" style="margin: 0 0 var(--space-2);">
                     {% trans "Not required if you're pricing by category above - only needed if you also want to attach the full plan as a PDF/Word/Excel document for reference." %}
@@ -144,6 +162,13 @@
                     <p class="help-text" style="color: var(--danger);">{{ import_form.import_file.errors|join:", " }}</p>
                 {% endif %}
             </div>
+            <div class="field-group" style="margin-top: var(--space-3);">
+                <label for="{{ import_form.home_percentage.id_for_label }}">{% trans "Home audience %" %}</label>
+                {{ import_form.home_percentage }}
+                {% if import_form.home_percentage.errors %}
+                    <p class="help-text" style="color: var(--danger);">{{ import_form.home_percentage.errors|join:", " }}</p>
+                {% endif %}
+            </div>
             <button type="submit" class="btn btn-secondary" style="margin-top: var(--space-3);">
                 <i class="ti ti-file-spreadsheet"></i> {% trans "Import Excel" %}
             </button>
@@ -154,6 +179,16 @@
         </p>
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
+            <div class="field-group">
+                <label for="{{ form.home_percentage.id_for_label }}">{% trans "Home audience %" %}</label>
+                <p class="help-text" style="margin: 0 0 var(--space-2);">
+                    {% trans "Your own Home/Away ticket split for this match, e.g. 70 means 70% Home / 30% Away - required, and shown to SPL alongside your seat map." %}
+                </p>
+                {{ form.home_percentage }}
+                {% if form.home_percentage.errors %}
+                    <p class="help-text" style="color: var(--danger);">{{ form.home_percentage.errors|join:", " }}</p>
+                {% endif %}
+            </div>
             <div class="field-group">
                 <label for="{{ form.file.id_for_label }}">{% trans "Pricing Plan File" %}</label>
                 {{ form.file }}

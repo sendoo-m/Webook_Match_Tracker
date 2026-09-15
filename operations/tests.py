@@ -387,6 +387,15 @@ class ClubDashboardHomepageTests(ClubDashboardPermissionsTestBase):
         response = client.get("/operations/club-dashboard/")
         self.assertIn(self.match, [row["match"] for row in response.context["upcoming_rows"]])
 
+    def test_table_shows_round_not_competition(self):
+        self.match.round_number = 7
+        self.match.save(update_fields=["round_number"])
+        client = Client()
+        client.login(username="_test_club_viewer_a", password="pw")
+        response = client.get("/operations/club-dashboard/")
+        self.assertContains(response, "<th>Round</th>")
+        self.assertNotContains(response, "<th>Competition</th>")
+
     def test_away_match_appears_for_away_club(self):
         """The whole point of Phase 3: unlike get_visible_matches, the
         club dashboard shows the club its Away fixtures too."""
@@ -555,6 +564,15 @@ class ClubDashboardUITests(ClubDashboardPermissionsTestBase):
         response2 = client.get("/operations/club-dashboard/schedule/")
         self.assertEqual(response2.status_code, 200)
         self.assertEqual(len(response2.context["rows"]), 0)
+
+    def test_schedule_table_shows_round_not_competition(self):
+        """The Competition FILTER stays (still useful) - only the table's
+        own column changes from Competition to Round."""
+        client = Client()
+        client.login(username="_test_club_viewer_a", password="pw")
+        response = client.get("/operations/club-dashboard/schedule/")
+        self.assertContains(response, "<th>Round</th>")
+        self.assertNotContains(response, "<th>Competition</th>")
 
     def test_type_filter_narrows_to_home_only(self):
         client = Client()
@@ -824,7 +842,7 @@ class ClubPricingPlanUploadHomeClubTests(IsolatedMediaMixin, ClubDashboardPermis
         client.login(username="_test_club_a", password="pw")
         response = client.post(
             f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/",
-            {"file": _pdf_file()},
+            {"file": _pdf_file(), "home_percentage": 70},
         )
         self.assertRedirects(
             response, f"/operations/club-dashboard/matches/{self.match.pk}/", fetch_redirect_response=False
@@ -838,7 +856,7 @@ class ClubPricingPlanUploadHomeClubTests(IsolatedMediaMixin, ClubDashboardPermis
         client.login(username="_test_club_a", password="pw")
         client.post(
             f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/",
-            {"file": _pdf_file(), "uploaded_by": self.user_b.pk},
+            {"file": _pdf_file(), "home_percentage": 70, "uploaded_by": self.user_b.pk},
         )
         plan = ClubPricingPlan.objects.get(match=self.match)
         self.assertEqual(plan.uploaded_by, self.user_a)
@@ -850,7 +868,7 @@ class ClubPricingPlanUploadHomeClubTests(IsolatedMediaMixin, ClubDashboardPermis
         client.login(username="_test_club_a", password="pw")
         client.post(
             f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/",
-            {"file": _pdf_file(), "club": self.club_c.pk, "club_id": self.club_c.pk},
+            {"file": _pdf_file(), "home_percentage": 70, "club": self.club_c.pk, "club_id": self.club_c.pk},
         )
         plan = ClubPricingPlan.objects.get(match=self.match)
         self.assertEqual(plan.club, self.club_a)
@@ -859,10 +877,10 @@ class ClubPricingPlanUploadHomeClubTests(IsolatedMediaMixin, ClubDashboardPermis
         client = Client()
         client.login(username="_test_club_a", password="pw")
         client.post(
-            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/", {"file": _pdf_file()},
+            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/", {"file": _pdf_file(), "home_percentage": 70},
         )
         client.post(
-            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/", {"file": _pdf_file()},
+            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/", {"file": _pdf_file(), "home_percentage": 70},
         )
         self.assertEqual(ClubPricingPlan.objects.filter(match=self.match).count(), 2)
         latest = ClubPricingPlan.objects.filter(match=self.match).order_by("-version").first()
@@ -872,7 +890,7 @@ class ClubPricingPlanUploadHomeClubTests(IsolatedMediaMixin, ClubDashboardPermis
         client = Client()
         client.login(username="_test_club_a", password="pw")
         client.post(
-            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/", {"file": _pdf_file()},
+            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/", {"file": _pdf_file(), "home_percentage": 70},
         )
         self.assertTrue(
             self.match.activity_logs.filter(description__icontains="pricing plan uploaded").exists()
@@ -883,7 +901,7 @@ class ClubPricingPlanUploadHomeClubTests(IsolatedMediaMixin, ClubDashboardPermis
         client.login(username="_test_club_a", password="pw")
         response = client.post(
             f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/",
-            {"file": _pdf_file()},
+            {"file": _pdf_file(), "home_percentage": 70},
             follow=True,
         )
         messages = list(response.context["messages"])
@@ -893,7 +911,7 @@ class ClubPricingPlanUploadHomeClubTests(IsolatedMediaMixin, ClubDashboardPermis
         client = Client()
         client.login(username="_test_club_a", password="pw")
         client.post(
-            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/", {"file": _pdf_file()},
+            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/", {"file": _pdf_file(), "home_percentage": 70},
         )
         self.match.refresh_from_db()
         self.assertFalse(self.match.ticketing_plan_approved)
@@ -905,7 +923,7 @@ class ClubPricingPlanUploadHomeClubTests(IsolatedMediaMixin, ClubDashboardPermis
         client.login(username="_test_club_a", password="pw")
         bad_file = SimpleUploadedFile("plan.exe", b"not a real plan", content_type="application/octet-stream")
         client.post(
-            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/", {"file": bad_file},
+            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/", {"file": bad_file, "home_percentage": 70},
         )
         self.assertFalse(ClubPricingPlan.objects.filter(match=self.match).exists())
 
@@ -914,7 +932,7 @@ class ClubPricingPlanUploadHomeClubTests(IsolatedMediaMixin, ClubDashboardPermis
         client.login(username="_test_club_a", password="pw")
         oversized = _pdf_file(size=11 * 1024 * 1024)
         client.post(
-            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/", {"file": oversized},
+            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/", {"file": oversized, "home_percentage": 70},
         )
         self.assertFalse(ClubPricingPlan.objects.filter(match=self.match).exists())
 
@@ -925,6 +943,63 @@ class ClubPricingPlanUploadHomeClubTests(IsolatedMediaMixin, ClubDashboardPermis
         client.login(username="_test_club_a", password="pw")
         response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/")
         self.assertEqual(response.status_code, 302)
+
+    def test_home_percentage_is_required_to_save_a_plan(self):
+        """The club's own Home/Away split - required for every new plan
+        since it varies club by club and SPL needs it with the seat map."""
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.post(
+            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/", {"file": _pdf_file()},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(ClubPricingPlan.objects.filter(match=self.match).exists())
+
+    def test_home_percentage_must_be_within_0_and_100(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.post(
+            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/",
+            {"file": _pdf_file(), "home_percentage": 150},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(ClubPricingPlan.objects.filter(match=self.match).exists())
+
+    def test_home_percentage_is_saved_and_away_is_derived(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        client.post(
+            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/",
+            {"file": _pdf_file(), "home_percentage": 70},
+        )
+        plan = ClubPricingPlan.objects.get(match=self.match)
+        self.assertEqual(plan.home_percentage, 70)
+        self.assertEqual(plan.away_percentage, 30)
+
+    def test_home_percentage_required_for_excel_import_too(self):
+        import io
+
+        import openpyxl
+
+        category = VenueSeatingCategory.objects.create(
+            venue=self.match.venue, club=self.club_a, code="_TEST XLSX CAT",
+        ) if self.match.venue_id else None
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.append(["code", "price"])
+        if category:
+            ws.append([category.code, 100])
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        client.post(
+            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/import/",
+            {"import_file": SimpleUploadedFile("prices.xlsx", buffer.read())},
+        )
+        self.assertFalse(ClubPricingPlan.objects.filter(match=self.match).exists())
 
     def test_shared_venue_only_shows_this_clubs_own_positioned_image(self):
         """Regression test: two clubs at the same physical venue (e.g. Al
@@ -1016,7 +1091,7 @@ class ClubPricingPlanAwayClubTests(IsolatedMediaMixin, ClubDashboardPermissionsT
         client = Client()
         client.login(username="_test_club_b", password="pw")
         response = client.post(
-            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/", {"file": _pdf_file()},
+            f"/operations/club-dashboard/matches/{self.match.pk}/pricing-plan/upload/", {"file": _pdf_file(), "home_percentage": 70},
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(ClubPricingPlan.objects.filter(match=self.match).count(), 1)
@@ -1026,7 +1101,7 @@ class ClubPricingPlanAwayClubTests(IsolatedMediaMixin, ClubDashboardPermissionsT
         client.login(username="_test_club_b", password="pw")
         response = client.post(
             f"/operations/club-dashboard/matches/{self.unrelated_match.pk}/pricing-plan/upload/",
-            {"file": _pdf_file()},
+            {"file": _pdf_file(), "home_percentage": 70},
         )
         self.assertEqual(response.status_code, 302)
         self.assertFalse(ClubPricingPlan.objects.filter(match=self.unrelated_match).exists())
@@ -1583,6 +1658,16 @@ class SPLApprovalsPageDecisionUITests(ClubDashboardPermissionsTestBase):
     def test_club_user_cannot_load_the_page(self):
         response = self._get_page(username="_test_club_a")
         self.assertEqual(response.status_code, 302)
+
+    def test_home_away_split_shown_next_to_the_seat_map(self):
+        self.plan.home_percentage = 70
+        self.plan.save(update_fields=["home_percentage"])
+        response = self._get_page()
+        self.assertContains(response, "70% Home / 30% Away")
+
+    def test_missing_split_shows_a_placeholder_not_a_blank(self):
+        response = self._get_page()
+        self.assertContains(response, "Home/Away split not set")
 
 
 def _tiny_png():

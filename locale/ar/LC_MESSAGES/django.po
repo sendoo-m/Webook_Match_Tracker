@@ -688,6 +688,25 @@ msgstr ""
 msgid "Import Excel"
 msgstr "استيراد إكسل"
 
+#, python-format
+msgid "Home audience %%"
+msgstr "نسبة الجمهور الحاضر %%"
+
+#, python-format
+msgid ""
+"Your own Home/Away ticket split for this match, e.g. 70 means 70%% Home / "
+"30%% Away - required, and shown to SPL alongside your seat map."
+msgstr ""
+"نسبة توزيع تذاكرك بين الحضور (مضيف/ضيف) لهذه المباراة - مثلاً 70 تعني 70%% "
+"مضيف / 30%% ضيف - مطلوبة، وتظهر لـ SPL بجانب مخطط المقاعد."
+
+#, python-format
+msgid "%(home)s%% Home / %(away)s%% Away"
+msgstr "%(home)s%% مضيف / %(away)s%% ضيف"
+
+msgid "Home/Away split not set"
+msgstr "نسبة المضيف/الضيف غير محددة"
+
 msgid "Attach a supporting document (optional)"
 msgstr "إرفاق مستند داعم (اختياري)"
 

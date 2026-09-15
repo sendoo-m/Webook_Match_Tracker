@@ -136,6 +136,13 @@
                                     {% blocktrans with version=plan.version status=plan.get_status_display %}v{{ version }} - {{ status }}{% endblocktrans %}
                                 </div>
                                 <div class="pricing-review-stat-row">
+                                    {% if plan.home_percentage is not None %}
+                                        <span class="mini-badge mini-badge-warning">
+                                            {% blocktrans with home=plan.home_percentage away=plan.away_percentage %}{{ home }}% Home / {{ away }}% Away{% endblocktrans %}
+                                        </span>
+                                    {% else %}
+                                        <span class="mini-badge mini-badge-neutral">{% trans "Home/Away split not set" %}</span>
+                                    {% endif %}
                                     <span class="mini-badge mini-badge-info">{% blocktrans count counter=row.plan_category_count %}{{ counter }} category{% plural %}{{ counter }} categories{% endblocktrans %}</span>
                                     {% if row.plan_min_price is not None %}
                                         <span class="mini-badge mini-badge-neutral">

@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from matches.models import Club, Match, validate_plan_approval_file
@@ -167,6 +168,20 @@ class ClubPricingPlan(models.Model):
     # regardless of any such later edit.
     seat_map_snapshot = models.ImageField(upload_to="club_pricing_plan_snapshots/", null=True, blank=True)
 
+    # The club's own home/away audience split for this match (e.g. 70 means
+    # 70% Home / 30% Away) - every club divides its allocation differently,
+    # so this is entered by the club itself with each plan, not a fixed
+    # site-wide assumption. Nullable for plans submitted before this field
+    # existed; new submissions require it at the form level (see
+    # clubs/forms.py) since SPL needs it alongside the seat map/pricing to
+    # review the plan (see spl_approvals.html).
+    home_percentage = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="The club's own Home/Away ticket split for this plan, e.g. 70 means 70% Home / 30% Away.",
+    )
+
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -179,6 +194,12 @@ class ClubPricingPlan(models.Model):
 
     def __str__(self):
         return f"{self.match} - v{self.version} ({self.club})"
+
+    @property
+    def away_percentage(self):
+        if self.home_percentage is None:
+            return None
+        return 100 - self.home_percentage
 
     def seat_map_groups(self):
         """Splits this plan's category prices into {"image": VenueImage,
