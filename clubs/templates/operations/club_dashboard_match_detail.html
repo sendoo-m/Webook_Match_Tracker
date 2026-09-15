@@ -11,7 +11,7 @@
 <div class="page-header">
     <h1 class="page-title">{{ match.home_club|localized_name }} {% trans "vs" %} {{ match.away_club|localized_name }}</h1>
     <p class="page-subtitle">
-        <a href="{% url 'operations:club-dashboard' %}"><i class="ti ti-arrow-right"></i> {% trans "Back to Club Dashboard" %}</a>
+        <a href="{{ back_url }}"><i class="ti ti-arrow-right"></i> {% trans "Back to Club Dashboard" %}</a>
     </p>
 </div>
 
@@ -31,7 +31,12 @@
 <div class="meta-grid">
     <div class="card panel">
         <div class="help-text">{% trans "Competition" %}</div>
-        <div class="summary-tile-value">{{ match.competition|localized_name }}</div>
+        <div class="summary-tile-value competition-name-row">
+            {% if match.competition.logo %}
+                <img src="{{ match.competition.logo.url }}" alt="{{ match.competition|localized_name }}" class="competition-logo">
+            {% endif %}
+            <span>{{ match.competition|localized_name }}</span>
+        </div>
     </div>
     <div class="card panel">
         <div class="help-text">{% trans "Stadium" %}</div>
@@ -42,7 +47,7 @@
         <div class="summary-tile-value">
             {% trans "TBC" as tbc_label %}
             {{ match.event_date|default:tbc_label }}
-            {% if match.match_start_time %} {{ match.match_start_time|time:"H:i" }}{% endif %}
+            {% if match.match_start_time %} {{ match.match_start_time|time:"h:i A" }}{% endif %}
         </div>
     </div>
     <div class="card panel">

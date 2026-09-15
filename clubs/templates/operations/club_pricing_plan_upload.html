@@ -60,7 +60,7 @@
                         {% for category_price in current_plan.category_prices.all %}
                             <tr>
                                 <td>{{ category_price.category.code }}</td>
-                                <td>{{ category_price.price }}</td>
+                                <td>{{ category_price.price|riyal }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

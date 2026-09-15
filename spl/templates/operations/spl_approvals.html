@@ -82,21 +82,54 @@
             </div>
 
             <div class="spl-approval-meta">
-                <span><i class="ti ti-trophy"></i> {{ row.match.competition|localized_name }}</span>
+                <span class="competition-name-row">
+                    {% if row.match.competition.logo %}
+                        <img src="{{ row.match.competition.logo.url }}" alt="{{ row.match.competition|localized_name }}" class="competition-logo">
+                    {% else %}
+                        <i class="ti ti-trophy"></i>
+                    {% endif %}
+                    {{ row.match.competition|localized_name }}
+                </span>
                 {% if row.match.venue %}<span><i class="ti ti-map-pin"></i> {{ row.match.venue|localized_name }}</span>{% endif %}
                 {% if row.match.match_start_time %}<span><i class="ti ti-clock"></i> {{ row.match.match_start_time }}</span>{% endif %}
                 {% if plan %}<span><i class="ti ti-clock-edit"></i> {% blocktrans with when=plan.updated_at %}updated {{ when }}{% endblocktrans %}</span>{% endif %}
             </div>
 
+            {# --- Scan-first status strip: the 3 things this page tracks per
+            match, always visible without expanding anything (Miller's Law -
+            3 chunks, not the 6+ facts the full review below shows). --- #}
+            <div class="spl-approval-status-strip">
+                {% if plan %}
+                    <span class="mini-badge mini-badge-{% if plan.spl_decision == 'approved' %}success{% elif plan.spl_decision == 'rejected' %}danger{% else %}neutral{% endif %}">
+                        <i class="ti ti-file-invoice"></i> {{ plan.get_spl_decision_display }}
+                    </span>
+                {% else %}
+                    <span class="mini-badge mini-badge-neutral"><i class="ti ti-file-invoice"></i> {% trans "No Plan Yet" %}</span>
+                {% endif %}
+                <span class="mini-badge mini-badge-{{ row.match.ticketing_plan_approved|urgency_badge_class:row.days_to_match }}">
+                    <i class="ti ti-clipboard-check"></i> {% if row.match.ticketing_plan_approved %}{% trans "Ticketing Approved" %}{% else %}{% trans "Ticketing Not Approved" %}{% endif %}
+                </span>
+                <span class="mini-badge mini-badge-{{ row.match.spl_tickets_sent|urgency_badge_class:row.days_to_match }}">
+                    <i class="ti ti-ticket"></i> {% if row.match.spl_tickets_sent %}{% trans "Tickets Sent" %}{% else %}{% trans "Tickets Not Sent" %}{% endif %}
+                </span>
+            </div>
+
+            {# --- Everything below is the full review: seat map, decision
+            actions, file uploads. Collapsed by default once every item above
+            is resolved (Goal-Gradient: nothing left to do here, so it stays
+            out of the way); left open whenever this match still needs a
+            decision or an upload, so the primary action is never hidden
+            behind an extra click. --- #}
+            <details class="spl-approval-details" {% if not plan or plan.spl_decision == 'pending' or not row.match.ticketing_plan_approved or not row.match.spl_tickets_sent %}open{% endif %}>
+            <summary class="spl-approval-summary">
+                <span>{% trans "Review & Actions" %}</span>
+                <i class="ti ti-chevron-down spl-approval-caret"></i>
+            </summary>
+
             {# --- Pricing plan review: seat map + decision, side by side on desktop, stacked on mobile. --- #}
             <div class="spl-approval-block spl-pricing-review">
                 <div class="spl-approval-block-head">
                     <span class="block-title">{% trans "Club Pricing Plan" %}</span>
-                    {% if plan %}
-                        <span class="mini-badge mini-badge-{% if plan.spl_decision == 'approved' %}success{% elif plan.spl_decision == 'rejected' %}danger{% else %}neutral{% endif %}">
-                            {{ plan.get_spl_decision_display }}
-                        </span>
-                    {% endif %}
                 </div>
 
                 {% if plan %}
@@ -147,9 +180,9 @@
                                     {% if row.plan_min_price is not None %}
                                         <span class="mini-badge mini-badge-neutral">
                                             {% if row.plan_min_price == row.plan_max_price %}
-                                                {{ row.plan_min_price }}
+                                                {{ row.plan_min_price|riyal }}
                                             {% else %}
-                                                {% blocktrans with low=row.plan_min_price high=row.plan_max_price %}{{ low }}–{{ high }}{% endblocktrans %}
+                                                {% blocktrans with low=row.plan_min_price|riyal high=row.plan_max_price|riyal %}{{ low }}–{{ high }}{% endblocktrans %}
                                             {% endif %}
                                         </span>
                                     {% endif %}
@@ -337,6 +370,7 @@
                     {% endif %}
                 </div>
             </div>
+            </details>
         </div>
         {% endwith %}
     {% empty %}

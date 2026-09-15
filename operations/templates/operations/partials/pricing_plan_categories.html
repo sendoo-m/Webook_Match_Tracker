@@ -7,13 +7,14 @@ Included from both club_dashboard_match_detail.html (club-facing) and
 spl_approvals.html (SPL-facing) so both sides see the identical layout.
 {% endcomment %}
 {% load i18n %}
+{% load display_helpers %}
 {% with groups=plan.seat_map_groups %}
     {% for group in groups.images %}
         <div class="pricing-plan-seat-map">
             <img src="{{ group.image.image.url }}" alt="{{ group.image.caption }}" class="pricing-plan-seat-map-image">
             {% for category_price in group.prices %}
-                <span class="pricing-plan-price-badge" style="left:{{ category_price.category.position_x }}%; top:{{ category_price.category.position_y }}%;">
-                    {{ category_price.category.code }}: {{ category_price.price }}
+                <span class="pricing-plan-price-badge" style="left:{{ category_price.placement.position_x }}%; top:{{ category_price.placement.position_y }}%;">
+                    {{ category_price.category.code }}: {{ category_price.price|riyal }}
                 </span>
             {% endfor %}
         </div>
@@ -32,7 +33,7 @@ spl_approvals.html (SPL-facing) so both sides see the identical layout.
                     {% for category_price in groups.unplaced %}
                         <tr>
                             <td>{{ category_price.category.code }}</td>
-                            <td>{{ category_price.price }}</td>
+                            <td>{{ category_price.price|riyal }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

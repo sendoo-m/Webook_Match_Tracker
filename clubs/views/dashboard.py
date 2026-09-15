@@ -31,7 +31,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, TemplateView
 
-from matches.models import Club, Competition, Match, Venue, VenueImage, VenueSeatingCategory
+from matches.models import Club, Competition, MapPlacement, Match, Venue, VenueImage, VenueSeatingCategory
 from operations.permissions import (
     can_approve_pricing_plan,
     can_confirm_home_match_submission,
@@ -127,15 +127,15 @@ def _club_seat_map_image(club_ids, venue):
     and each uploaded their OWN overview photo of it (e.g. Al Kholood and
     Al Hazm both at Al Hazm Stadium), a plain venue-only lookup would show
     either club's image at random. This club's own seating categories'
-    position_image is the only real signal for "which image is actually
+    MapPlacement is the only real signal for "which image is actually
     this club's" - same fix as clubs/views/pricing_plan.py's
     _get_venue_images_for_categories, applied here for the homepage
     thumbnail."""
     if venue is None:
         return None
     image_id = (
-        VenueSeatingCategory.objects.filter(
-            club_id__in=club_ids, venue=venue, is_active=True, position_image__isnull=False,
+        MapPlacement.objects.filter(
+            club_id__in=club_ids, venue=venue, is_active=True,
         )
         .order_by("sort_order")
         .values_list("position_image_id", flat=True)
@@ -325,6 +325,21 @@ class ClubDashboardMatchDetailView(LoginRequiredMixin, DetailView):
             raise PermissionDenied("You don't have permission to view this match.")
         return match
 
+    def _safe_back_url(self):
+        """The schedule page's "View" link appends its own current filters
+        as ?back=... so returning from a match keeps the Home/Away/status
+        filter the club had selected - validated as a local, safe redirect
+        target before use (never trust a raw GET param as a redirect)."""
+        from django.urls import reverse
+        from django.utils.http import url_has_allowed_host_and_scheme
+
+        back = self.request.GET.get("back")
+        if back and url_has_allowed_host_and_scheme(
+            back, allowed_hosts={self.request.get_host()}, require_https=self.request.is_secure()
+        ):
+            return back
+        return reverse("operations:club-dashboard")
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         match = self.object
@@ -332,6 +347,7 @@ class ClubDashboardMatchDetailView(LoginRequiredMixin, DetailView):
         club_ids = get_user_club_ids(self.request.user)
 
         context.update({
+            "back_url": self._safe_back_url(),
             "state": build_dashboard_match_state(match, now),
             "is_home": match.home_club_id in club_ids,
             "can_manage_home_match": can_manage_home_match(self.request.user, match),

@@ -43,19 +43,19 @@
 
     <div class="stat-strip">
         <div class="stat-strip-item">
-            <span class="stat-strip-label">{% trans "Upcoming Matches" %}</span>
+            <span class="stat-strip-label"><i class="ti ti-calendar-event stat-strip-icon"></i> {% trans "Upcoming Matches" %}</span>
             <span class="stat-strip-value">{{ summary.upcoming }}</span>
         </div>
         <div class="stat-strip-item">
-            <span class="stat-strip-label">{% trans "Past Matches" %}</span>
+            <span class="stat-strip-label"><i class="ti ti-history stat-strip-icon"></i> {% trans "Past Matches" %}</span>
             <span class="stat-strip-value">{{ summary.past }}</span>
         </div>
         <div class="stat-strip-item">
-            <span class="stat-strip-label">{% trans "Home Matches" %}</span>
+            <span class="stat-strip-label"><i class="ti ti-home stat-strip-icon"></i> {% trans "Home Matches" %}</span>
             <span class="stat-strip-value">{{ summary.home_count }}</span>
         </div>
         <div class="stat-strip-item">
-            <span class="stat-strip-label">{% trans "Away Matches" %}</span>
+            <span class="stat-strip-label"><i class="ti ti-plane-departure stat-strip-icon"></i> {% trans "Away Matches" %}</span>
             <span class="stat-strip-value">{{ summary.away_count }}</span>
         </div>
         <div class="stat-strip-item">
@@ -70,10 +70,13 @@
         <div class="field-group">
             <label>{% trans "Match Type" %}</label>
             <select name="type">
-                <option value="">{% trans "All" %}</option>
-                <option value="home" {% if selected_type == "home" %}selected{% endif %}>{% trans "Home" context "match side" %}</option>
-                <option value="away" {% if selected_type == "away" %}selected{% endif %}>{% trans "Away" context "match side" %}</option>
+                <option value="">{% trans "All Matches" %}</option>
+                <option value="home" {% if selected_type == "home" %}selected{% endif %}>{% trans "On Our Ground (Home)" %}</option>
+                <option value="away" {% if selected_type == "away" %}selected{% endif %}>{% trans "Away From Our Ground" %}</option>
             </select>
+            <p class="help-text" style="margin: var(--space-2) 0 0;">
+                {% trans "Home: your club prepares and submits it. Away: follow-up only." %}
+            </p>
         </div>
 
         <div class="field-group">
@@ -145,7 +148,7 @@
                     <td>
                         {% trans "TBC" as tbc_label %}
                         {{ row.match.event_date|default:tbc_label }}
-                        {% if row.match.match_start_time %} {{ row.match.match_start_time|time:"H:i" }}{% endif %}
+                        {% if row.match.match_start_time %} {{ row.match.match_start_time|time:"h:i A" }}{% endif %}
                     </td>
                     <td>
                         {% if row.match_finished %}
@@ -164,7 +167,7 @@
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{% url 'operations:club-dashboard-match-detail' row.match.pk %}" class="mini-badge link-badge">
+                        <a href="{% url 'operations:club-dashboard-match-detail' row.match.pk %}?back={{ request.get_full_path|urlencode }}" class="mini-badge link-badge">
                             {% trans "View" %} <i class="ti ti-arrow-right"></i>
                         </a>
                     </td>

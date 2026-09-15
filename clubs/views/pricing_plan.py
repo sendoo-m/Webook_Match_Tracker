@@ -16,7 +16,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views import View
 
-from matches.models import Match, VenueImage, VenueSeatingCategory
+from matches.models import MapPlacement, Match, VenueImage, VenueSeatingCategory
 from operations.models import ClubPricingPlan, ClubPricingPlanCategoryPrice, MatchActivityLog
 from operations.permissions import (
     can_confirm_home_match_submission,
@@ -46,15 +46,15 @@ def _get_venue_images_for_categories(categories):
     is shared by every club that plays there) - but when two clubs share
     a venue and each uploaded their OWN overview photo of it (e.g. Al
     Kholood and Al Hazm both at Al Hazm Stadium), this club's own
-    categories' position_image is the only real signal for "which of the
+    categories' MapPlacement is the only real signal for "which of the
     venue's images is actually this club's". Filtering by it here means
     the upload page only ever shows the image(s) this club's own
     categories are positioned on, never another club's - at the cost of
     showing nothing yet if this club's categories haven't been
     positioned in the Control Panel."""
-    image_ids = categories.exclude(position_image__isnull=True).values_list(
-        "position_image_id", flat=True
-    ).distinct()
+    image_ids = MapPlacement.objects.filter(
+        category__in=categories, is_active=True
+    ).values_list("position_image_id", flat=True).distinct()
     return VenueImage.objects.filter(id__in=image_ids, is_active=True).order_by("sort_order")
 
 

@@ -1,4 +1,4 @@
-/* Click-to-place editor for VenueSeatingCategory.position_x/position_y -
+/* Click-to-place editor for a category's MapPlacement.position_x/position_y -
    one point per block, saved immediately on click (no batch "Save" button,
    so a placement is never lost if the coordinator navigates away). Talks to
    control_panel:venue-category-position-save, one POST per placement/clear. */

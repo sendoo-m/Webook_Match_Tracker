@@ -66,12 +66,12 @@
                     <label class="position-editor-category-row" data-category-id="{{ category.id }}">
                         <span>{{ category.code }}</span>
                         <span
-                            class="mini-badge {% if category.has_position and category.position_image_id == image.id %}mini-badge-success{% else %}mini-badge-info{% endif %}"
+                            class="mini-badge {% if category.editor_placed %}mini-badge-success{% else %}mini-badge-info{% endif %}"
                             data-role="status"
                             data-placed-label="{% trans 'Placed' %}"
                             data-unplaced-label="{% trans 'Not placed' %}"
                         >
-                            {% if category.has_position and category.position_image_id == image.id %}{% trans "Placed" %}{% else %}{% trans "Not placed" %}{% endif %}
+                            {% if category.editor_placed %}{% trans "Placed" %}{% else %}{% trans "Not placed" %}{% endif %}
                         </span>
                     </label>
                 {% endfor %}

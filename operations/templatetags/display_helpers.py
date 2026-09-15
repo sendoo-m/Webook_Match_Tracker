@@ -1,9 +1,35 @@
+from decimal import Decimal, InvalidOperation
+
 from django import template
 from django.utils.translation import get_language
 
 from operations.permissions import is_super_admin
 
 register = template.Library()
+
+
+@register.filter
+def riyal(value):
+    """{{ price|riyal }} - the one place a price gets its currency unit and
+    formatting: thousands separator, a trailing ".00" trimmed but a real
+    fraction (e.g. 150.50) kept - see the 2026-09 system review's request
+    for one unified price format instead of a bare number repeated
+    verbatim across every template. Display only - never touches the
+    stored DecimalField value itself."""
+    if value is None or value == "":
+        return "—"
+    try:
+        amount = Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError):
+        return value
+
+    if amount == amount.to_integral_value():
+        formatted = "{:,}".format(int(amount))
+    else:
+        formatted = "{:,.2f}".format(amount)
+
+    unit = "ريال" if get_language() == "ar" else "SAR"
+    return f"{formatted} {unit}"
 
 
 @register.filter

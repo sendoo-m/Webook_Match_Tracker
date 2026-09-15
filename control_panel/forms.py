@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from checklists.models import ChecklistCategory, ChecklistTemplateItem
 from control_panel.models import FeedbackEntry, ReleaseNote, SiteSettings
-from matches.models import Club, Competition, Match, Venue, VenueImage, VenueSeatingCategory
+from matches.models import AudienceTier, Club, Competition, Match, Venue, VenueImage, VenueSeatingCategory
 
 RIYADH_TZ = ZoneInfo("Asia/Riyadh")
 
@@ -50,7 +50,8 @@ class VenueSeatingCategoryForm(forms.ModelForm):
 
     class Meta:
         model = VenueSeatingCategory
-        fields = ["venue", "club", "code", "seat_count", "sort_order", "is_active"]
+        fields = ["venue", "club", "code", "seat_count", "color", "audience_tier", "sort_order", "is_active"]
+        widgets = {"color": forms.TextInput(attrs={"type": "color"})}
 
     def __init__(self, *args, venue_queryset=None, club_queryset=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -58,6 +59,7 @@ class VenueSeatingCategoryForm(forms.ModelForm):
             self.fields["venue"].queryset = venue_queryset
         if club_queryset is not None:
             self.fields["club"].queryset = club_queryset
+        self.fields["audience_tier"].queryset = AudienceTier.objects.filter(is_active=True)
 
 
 class VenueCategoryImportForm(forms.Form):
@@ -99,7 +101,7 @@ class VenueCategoryImportForm(forms.Form):
 class CompetitionForm(forms.ModelForm):
     class Meta:
         model = Competition
-        fields = ["name_ar", "name_en", "sort_order", "is_active"]
+        fields = ["name_ar", "name_en", "logo", "sort_order", "is_active"]
 
 
 class MatchForm(forms.ModelForm):

@@ -207,16 +207,28 @@ class ClubPricingPlan(models.Model):
         positioned on - normally just one) plus a leftover "unplaced" list
         for any category price whose block has no on-image position yet, so
         the seat-map display degrades to a plain price table instead of
-        silently dropping those categories."""
-        prices = self.category_prices.select_related("category", "category__position_image").all()
+        silently dropping those categories.
+
+        Each category_price returned in "prices" has a `.placement`
+        attribute set (the MapPlacement it's drawn at) - a plain in-memory
+        attribute, not a DB field, so callers (this seat-map template, the
+        PNG snapshot generator) read the placement's x/y instead of a
+        position that used to live directly on the category. Uses
+        category.primary_placement - the one placement the Control
+        Panel's position editor manages today - so a category with more
+        than one placement (added via Admin) still shows/exports its
+        primary one here rather than every occurrence."""
+        prices = self.category_prices.select_related("category").prefetch_related("category__placements").all()
         images_by_id = {}
         unplaced = []
         for category_price in prices:
             category = category_price.category
-            if category.has_position:
-                image_id = category.position_image_id
+            placement = category.primary_placement
+            if placement is not None:
+                category_price.placement = placement
+                image_id = placement.position_image_id
                 if image_id not in images_by_id:
-                    images_by_id[image_id] = {"image": category.position_image, "prices": []}
+                    images_by_id[image_id] = {"image": placement.position_image, "prices": []}
                 images_by_id[image_id]["prices"].append(category_price)
             else:
                 unplaced.append(category_price)
@@ -255,9 +267,10 @@ class ClubPricingPlan(models.Model):
 
         for category_price in group["prices"]:
             category = category_price.category
+            placement = category_price.placement
             label = f"{category.code}: {category_price.price}"
-            x = category.position_x / 100 * base_image.width
-            y = category.position_y / 100 * base_image.height
+            x = placement.position_x / 100 * base_image.width
+            y = placement.position_y / 100 * base_image.height
 
             bbox = draw.textbbox((0, 0), label, font=font)
             text_width = bbox[2] - bbox[0]

@@ -18,7 +18,7 @@ from django.views.generic import FormView
 
 from control_panel.forms import VenueCategoryImportForm, VenueImageForm, VenueSeatingCategoryForm
 from control_panel.permissions import ControlPanelAccessMixin, ScopedControlPanelAccessMixin
-from matches.models import Club, Venue, VenueImage, VenueSeatingCategory
+from matches.models import Club, MapPlacement, Venue, VenueImage, VenueSeatingCategory
 from matches.venue_category_import_export import (
     build_venue_category_import_template_xlsx,
     export_venue_categories_xlsx,
@@ -129,6 +129,23 @@ class VenueImageToggleActiveView(PanelToggleActiveView):
         return self.success_url_name
 
 
+def _category_position_json(category, image):
+    """Builds the position editor's per-category JSON, reading the
+    category's primary_placement (its one editor-managed MapPlacement) -
+    a category placed on a different image than the one being edited
+    shows as unplaced here, matching the old position_image_id check."""
+    placement = category.primary_placement
+    placed = placement is not None and placement.position_image_id == image.id
+    category.editor_placed = placed
+    return {
+        "id": category.id,
+        "code": category.code,
+        "x": placement.position_x if placed else None,
+        "y": placement.position_y if placed else None,
+        "placed": placed,
+    }
+
+
 class VenueImagePositionEditorView(LoginRequiredMixin, ScopedControlPanelAccessMixin, View):
     """Lets a coordinator/admin click on a venue's seating-map image to
     place one point per seating category (block) - the price badge shown
@@ -182,13 +199,7 @@ class VenueImagePositionEditorView(LoginRequiredMixin, ScopedControlPanelAccessM
             # array, and JS's JSON.parse() would hand back a string with no
             # .forEach(), silently breaking every click handler below it.
             "categories_json": [
-                {
-                    "id": category.id,
-                    "code": category.code,
-                    "x": category.position_x,
-                    "y": category.position_y,
-                    "placed": category.has_position and category.position_image_id == image.id,
-                }
+                _category_position_json(category, image)
                 for category in categories
             ],
         })
@@ -212,20 +223,27 @@ class VenueCategoryPositionSaveView(LoginRequiredMixin, ScopedControlPanelAccess
         x = request.POST.get("x")
         y = request.POST.get("y")
         if x is None or y is None:
-            category.position_image = None
-            category.position_x = None
-            category.position_y = None
-        else:
-            try:
-                x = max(0.0, min(100.0, float(x)))
-                y = max(0.0, min(100.0, float(y)))
-            except ValueError:
-                return JsonResponse({"ok": False, "error": "Invalid coordinates."}, status=400)
-            category.position_image = image
-            category.position_x = x
-            category.position_y = y
+            category.placements.all().delete()
+            return JsonResponse({"ok": True})
 
-        category.save(update_fields=["position_image", "position_x", "position_y"])
+        try:
+            x = max(0.0, min(100.0, float(x)))
+            y = max(0.0, min(100.0, float(y)))
+        except ValueError:
+            return JsonResponse({"ok": False, "error": "Invalid coordinates."}, status=400)
+
+        # This editor manages exactly one placement per category (its
+        # primary_placement) - a second, third, etc. placement for the
+        # same category can only be added via Django Admin today (see
+        # matches/models.py's MapPlacement docstring for why that's a
+        # deliberately later sub-phase, not built here).
+        placement = category.primary_placement
+        if placement is None:
+            placement = MapPlacement(venue=image.venue, club=category.club, category=category)
+        placement.position_image = image
+        placement.position_x = x
+        placement.position_y = y
+        placement.save()
         return JsonResponse({"ok": True})
 
 

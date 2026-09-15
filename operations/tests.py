@@ -1,5 +1,7 @@
 import shutil
 import tempfile
+from datetime import time
+from decimal import Decimal
 
 from django.contrib.auth.models import Group, User
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -568,6 +570,32 @@ class ClubDashboardActionTests(ClubDashboardPermissionsTestBase):
         response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/")
         self.assertContains(response, "70% Home / 30% Away")
 
+    def test_match_start_time_shown_in_12_hour_format(self):
+        """System review request: club-facing pages show times as
+        "04:30 PM", not the internal 24-hour "16:30"."""
+        self.match.match_start_time = time(16, 30)
+        self.match.save(update_fields=["match_start_time"])
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/")
+        self.assertContains(response, "04:30 PM")
+        self.assertNotContains(response, "16:30")
+
+    def test_competition_logo_shown_next_to_its_name_when_set(self):
+        self.competition.logo = _tiny_png()
+        self.competition.save(update_fields=["logo"])
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/")
+        self.assertContains(response, "competition-logo")
+
+    def test_no_broken_image_when_competition_has_no_logo(self):
+        client = Client()
+        client.login(username="_test_club_a", password="pw")
+        response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/")
+        self.assertNotContains(response, "competition-logo")
+        self.assertContains(response, str(self.competition))
+
     def test_recent_activity_limited_to_three_with_a_view_all_link(self):
         for i in range(5):
             MatchActivityLog.objects.create(
@@ -651,6 +679,56 @@ class ClubDashboardUITests(ClubDashboardPermissionsTestBase):
         response = client.get("/operations/club-dashboard/schedule/", {"type": "away"})
         for row in response.context["rows"]:
             self.assertFalse(row["is_home"])
+
+    def test_type_filter_never_leaks_another_clubs_matches(self):
+        """Regression guard for the system-review note: whatever the filter
+        UI looks like, the underlying queryset must stay scoped to this
+        club's own matches - an unrelated club's fixture must never appear
+        no matter which value ?type= is set to."""
+        client = Client()
+        client.login(username="_test_club_viewer_a", password="pw")
+        for type_value in ("", "home", "away"):
+            response = client.get("/operations/club-dashboard/schedule/", {"type": type_value})
+            matches = [row["match"] for row in response.context["rows"]]
+            self.assertNotIn(self.unrelated_match, matches)
+
+    def test_type_filter_labels_are_clear_arabic_friendly_wording(self):
+        """System review request: distinct, unambiguous Home/Away option
+        text plus an inline explanation of what each side means - not the
+        bare, easily-confused "Home"/"Away" words alone."""
+        client = Client()
+        client.login(username="_test_club_viewer_a", password="pw")
+        response = client.get("/operations/club-dashboard/schedule/")
+        self.assertContains(response, "All Matches")
+        self.assertContains(response, "On Our Ground (Home)")
+        self.assertContains(response, "Away From Our Ground")
+
+    def test_view_link_carries_current_filter_as_back_param(self):
+        client = Client()
+        client.login(username="_test_club_viewer_a", password="pw")
+        response = client.get("/operations/club-dashboard/schedule/", {"type": "home"})
+        self.assertContains(response, "back=/operations/club-dashboard/schedule/%3Ftype%3Dhome")
+
+    def test_match_detail_back_link_returns_to_the_filtered_list(self):
+        """The whole point of the ?back= param: returning from a match
+        detail page lands back on the schedule page with the same filter
+        selected, not a plain reset to the homepage."""
+        client = Client()
+        client.login(username="_test_club_viewer_a", password="pw")
+        back_target = "/operations/club-dashboard/schedule/?type=home"
+        response = client.get(f"/operations/club-dashboard/matches/{self.match.pk}/", {"back": back_target})
+        self.assertEqual(response.context["back_url"], back_target)
+        self.assertContains(response, 'href="/operations/club-dashboard/schedule/?type=home"')
+
+    def test_match_detail_rejects_an_unsafe_back_param(self):
+        """A ?back= pointing off-site must never be trusted as a redirect
+        target - falls back to the ordinary Club Dashboard home instead."""
+        client = Client()
+        client.login(username="_test_club_viewer_a", password="pw")
+        response = client.get(
+            f"/operations/club-dashboard/matches/{self.match.pk}/", {"back": "https://evil.example/"}
+        )
+        self.assertEqual(response.context["back_url"], "/operations/club-dashboard/")
 
     def test_status_choices_are_the_simplified_three_not_the_raw_cms_pipeline(self):
         """The club-facing Match Status filter only ever offers In
@@ -821,6 +899,165 @@ class ClubViewerAccessRestrictionTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertNotEqual(response.url, "/operations/club-dashboard/")
+
+
+class RiyalFilterTests(TestCase):
+    """The {{ price|riyal }} template filter added for the 2026-09 system
+    review's unified currency-format request - display formatting only,
+    never touches the stored DecimalField value."""
+
+    def test_whole_number_drops_trailing_zeros(self):
+        from operations.templatetags.display_helpers import riyal
+
+        self.assertEqual(riyal(Decimal("150.00")), "150 SAR")
+
+    def test_real_fraction_is_kept(self):
+        from operations.templatetags.display_helpers import riyal
+
+        self.assertEqual(riyal(Decimal("150.50")), "150.50 SAR")
+
+    def test_thousands_separator(self):
+        from operations.templatetags.display_helpers import riyal
+
+        self.assertEqual(riyal(Decimal("12500")), "12,500 SAR")
+
+    def test_none_renders_as_an_em_dash_not_a_currency_unit_alone(self):
+        from operations.templatetags.display_helpers import riyal
+
+        self.assertEqual(riyal(None), "—")
+
+    def test_arabic_language_shows_the_arabic_unit_word(self):
+        from django.utils import translation
+
+        from operations.templatetags.display_helpers import riyal
+
+        with translation.override("ar"):
+            self.assertEqual(riyal(Decimal("100")), "100 ريال")
+
+
+class RefreshControlTests(ClubDashboardPermissionsTestBase):
+    """The countdown/last-updated lines added next to the existing
+    auto-refresh interval picker - both must exist in the markup (hidden
+    by default; dashboard-refresh.js reveals them via JS) and reuse the
+    same select/options rather than a second, competing control."""
+
+    def test_countdown_and_last_updated_elements_present(self):
+        client = Client()
+        client.login(username="_test_ops_manager", password="pw")
+        response = client.get("/operations/")
+        self.assertContains(response, 'id="refresh-countdown"')
+        self.assertContains(response, 'id="refresh-last-updated"')
+        # Hidden by default - dashboard-refresh.js reveals them via JS once
+        # it knows the stored interval, not the server.
+        body = response.content.decode()
+        countdown_tag = body[body.index('id="refresh-countdown"') - 200 : body.index('id="refresh-countdown"') + 250]
+        self.assertIn("hidden", countdown_tag)
+
+    def test_only_one_refresh_interval_select_on_the_page(self):
+        client = Client()
+        client.login(username="_test_ops_manager", password="pw")
+        response = client.get("/operations/")
+        self.assertEqual(response.content.decode().count('id="refresh-interval-select"'), 1)
+
+
+class MatchCalendarTests(ClubDashboardPermissionsTestBase):
+    """The single shared Match Calendar (operations:calendar) - covers the
+    2026-09 system review's requests: a locale-aware month/today label
+    (not the OS-locale strftime it used to be), a raised day-cell limit
+    with no bare "+N more" hidden behind vague wording, and a text
+    Home/Away badge for a club-scoped viewer (never shown to an Ops/SPL
+    viewer, who has no "own club" to be home/away relative to)."""
+
+    def _get(self, username, **params):
+        client = Client()
+        client.login(username=username, password="pw")
+        return client.get("/operations/calendar/", params)
+
+    def test_month_label_is_locale_aware_not_the_server_locale(self):
+        """Regression test: the old strftime('%B %Y') always showed English
+        month names regardless of site language, since strftime uses the
+        OS/C locale, not Django's own translated month names. LocaleMiddleware
+        reads the language from the django_language cookie, not from a
+        translation.override() wrapped around the request - set it directly."""
+        client = Client()
+        client.login(username="_test_ops_manager", password="pw")
+        client.cookies["django_language"] = "ar"
+        response = client.get("/operations/calendar/", {"year": 2026, "month": 9})
+        self.assertNotIn("September", response.content.decode())
+
+    def test_today_label_present_in_context(self):
+        response = self._get("_test_ops_manager")
+        self.assertIn("today_label", response.context)
+        self.assertTrue(response.context["today_label"])
+
+    def test_coordinator_sees_home_away_badge_on_their_own_match(self):
+        self.match.event_date = timezone.localtime().date()
+        self.match.save(update_fields=["event_date"])
+        response = self._get("_test_club_a", year=self.match.event_date.year, month=self.match.event_date.month)
+        weeks = response.context["weeks"]
+        cards = [card for week in weeks for day in week for card in day["matches"] if day["date"] == self.match.event_date]
+        self.assertTrue(cards)
+        self.assertTrue(cards[0]["is_home"])
+
+    def test_away_side_coordinator_does_not_see_the_match_at_all(self):
+        """This calendar deliberately keeps the OLD get_visible_matches
+        scoping unchanged (per the system review's explicit instruction) -
+        a coordinator only ever sees matches their own club HOSTS here,
+        never one they're just visiting. So club_b (the away side of
+        self.match) sees no card for it at all, not an is_home=False one -
+        confirms Home/Away display was added without touching this
+        existing visibility rule."""
+        self.match.event_date = timezone.localtime().date()
+        self.match.save(update_fields=["event_date"])
+        response = self._get("_test_club_b", year=self.match.event_date.year, month=self.match.event_date.month)
+        weeks = response.context["weeks"]
+        cards = [card for week in weeks for day in week for card in day["matches"] if day["date"] == self.match.event_date]
+        self.assertEqual(cards, [])
+
+    def test_ops_manager_gets_no_home_away_badge(self):
+        """An Ops/SPL viewer has no "own club" - is_home must be None so
+        the template renders no side badge for them at all."""
+        self.match.event_date = timezone.localtime().date()
+        self.match.save(update_fields=["event_date"])
+        response = self._get("_test_ops_manager", year=self.match.event_date.year, month=self.match.event_date.month)
+        weeks = response.context["weeks"]
+        cards = [card for week in weeks for day in week for card in day["matches"] if day["date"] == self.match.event_date]
+        self.assertTrue(cards)
+        self.assertIsNone(cards[0]["is_home"])
+
+    def test_day_cell_shows_up_to_five_matches_directly(self):
+        target_date = timezone.localtime().date()
+        for i in range(7):
+            Match.objects.create(
+                competition=self.competition,
+                home_club=self.club_a,
+                away_club=self.club_b,
+                slug=f"_test-calendar-extra-{i}",
+                title_ar=f"مباراة {i}",
+                title_en=f"Extra Match {i}",
+                event_date=target_date,
+            )
+        response = self._get("_test_ops_manager", year=target_date.year, month=target_date.month)
+        weeks = response.context["weeks"]
+        day = next(d for week in weeks for d in week if d["date"] == target_date)
+        self.assertEqual(len(day["matches"]), 5)
+        self.assertEqual(day["extra_count"], 2)
+
+    def test_more_matches_button_names_matches_not_a_bare_more_link(self):
+        target_date = timezone.localtime().date()
+        for i in range(7):
+            Match.objects.create(
+                competition=self.competition,
+                home_club=self.club_a,
+                away_club=self.club_b,
+                slug=f"_test-calendar-wording-{i}",
+                title_ar=f"مباراة {i}",
+                title_en=f"Extra Match {i}",
+                event_date=target_date,
+            )
+        response = self._get("_test_ops_manager", year=target_date.year, month=target_date.month)
+        self.assertContains(response, "more matches")
+        self.assertContains(response, "View all of this day's matches")
 
 
 # --- Phase 4: Club Pricing Plan tests -------------------------------------
@@ -1085,7 +1322,7 @@ class ClubPricingPlanUploadHomeClubTests(IsolatedMediaMixin, ClubDashboardPermis
         overview photo - the upload page must only ever show the image
         THIS club's own categories are positioned on, never the other
         club's image just because they share a Venue row."""
-        from matches.models import Venue, VenueImage
+        from matches.models import MapPlacement, Venue, VenueImage
 
         self.match.venue = Venue.objects.create(name_ar="_ملعب مشترك", name_en="_Shared Venue")
         self.match.save(update_fields=["venue"])
@@ -1095,15 +1332,21 @@ class ClubPricingPlanUploadHomeClubTests(IsolatedMediaMixin, ClubDashboardPermis
             venue=self.match.venue, caption="_other club image", image=_tiny_png(),
         )
 
-        VenueSeatingCategory.objects.create(
+        own_category = VenueSeatingCategory.objects.create(
             venue=self.match.venue, club=self.club_a, code="_TEST OWN CAT",
-            position_image=own_image, position_x=10, position_y=10,
+        )
+        MapPlacement.objects.create(
+            venue=self.match.venue, club=self.club_a, position_image=own_image,
+            category=own_category, position_x=10, position_y=10,
         )
         # club_c has no relation to this match at all - stands in for the
         # other club sharing the venue.
-        VenueSeatingCategory.objects.create(
+        other_category = VenueSeatingCategory.objects.create(
             venue=self.match.venue, club=self.club_c, code="_TEST OTHER CAT",
-            position_image=other_clubs_image, position_x=20, position_y=20,
+        )
+        MapPlacement.objects.create(
+            venue=self.match.venue, club=self.club_c, position_image=other_clubs_image,
+            category=other_category, position_x=20, position_y=20,
         )
 
         client = Client()
@@ -1768,7 +2011,7 @@ class SPLPricingPlanSnapshotTests(IsolatedMediaMixin, ClubDashboardPermissionsTe
     def setUpTestData(cls):
         super().setUpTestData()
         from operations.views.helpers import get_roshan_league_competition
-        from matches.models import Venue, VenueImage
+        from matches.models import MapPlacement, Venue, VenueImage
 
         roshan = get_roshan_league_competition()
         cls.venue = Venue.objects.create(name_ar="ملعب تجريبي", name_en="_Test Venue")
@@ -1779,7 +2022,10 @@ class SPLPricingPlanSnapshotTests(IsolatedMediaMixin, ClubDashboardPermissionsTe
         cls.venue_image = VenueImage.objects.create(venue=cls.venue, image=_tiny_png())
         cls.category = VenueSeatingCategory.objects.create(
             venue=cls.venue, club=cls.club_a, code="_TEST CAT",
-            position_image=cls.venue_image, position_x=40.0, position_y=60.0,
+        )
+        cls.placement = MapPlacement.objects.create(
+            venue=cls.venue, club=cls.club_a, position_image=cls.venue_image,
+            category=cls.category, position_x=40.0, position_y=60.0,
         )
         cls.plan = ClubPricingPlan.objects.create(
             match=cls.match, club=cls.club_a, version=1,
@@ -1814,17 +2060,14 @@ class SPLPricingPlanSnapshotTests(IsolatedMediaMixin, ClubDashboardPermissionsTe
         self._approve()
         self.plan.refresh_from_db()
         snapshot_name_before = self.plan.seat_map_snapshot.name
-        self.category.position_x = 5.0
-        self.category.position_y = 5.0
-        self.category.save()
+        self.placement.position_x = 5.0
+        self.placement.position_y = 5.0
+        self.placement.save()
         self.plan.refresh_from_db()
         self.assertEqual(self.plan.seat_map_snapshot.name, snapshot_name_before)
 
     def test_generate_seat_map_snapshot_is_a_noop_without_any_position(self):
-        self.category.position_image = None
-        self.category.position_x = None
-        self.category.position_y = None
-        self.category.save()
+        self.placement.delete()
         self._approve()
         self.plan.refresh_from_db()
         self.assertFalse(bool(self.plan.seat_map_snapshot))
@@ -1953,8 +2196,7 @@ class ScopedControlPanelAccessTests(IsolatedMediaMixin, ClubDashboardPermissions
             {"x": "33.0", "y": "44.0"},
         )
         self.assertEqual(response.status_code, 200)
-        self.category.refresh_from_db()
-        self.assertEqual(self.category.position_x, 33.0)
+        self.assertEqual(self.category.primary_placement.position_x, 33.0)
 
     def test_unrelated_coordinator_cannot_save_a_position_for_this_category(self):
         client = Client()
@@ -1964,8 +2206,7 @@ class ScopedControlPanelAccessTests(IsolatedMediaMixin, ClubDashboardPermissions
             {"x": "33.0", "y": "44.0"},
         )
         self.assertEqual(response.status_code, 404)
-        self.category.refresh_from_db()
-        self.assertIsNone(self.category.position_x)
+        self.assertIsNone(self.category.primary_placement)
 
     def test_coordinator_can_upload_a_new_venue_image_for_their_own_venue(self):
         client = Client()

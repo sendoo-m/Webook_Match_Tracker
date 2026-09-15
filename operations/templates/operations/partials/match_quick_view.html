@@ -18,11 +18,19 @@
     </div>
 
     <div class="match-quick-view-meta">
+        <span class="competition-name-row">
+            {% if match.competition.logo %}
+                <img src="{{ match.competition.logo.url }}" alt="{{ match.competition|localized_name }}" class="competition-logo">
+            {% else %}
+                <i class="ti ti-trophy"></i>
+            {% endif %}
+            {{ match.competition|localized_name }}
+        </span>
         <span><i class="ti ti-list-numbers"></i> {% blocktrans with number=match.round_number|default:"—" %}Round {{ number }}{% endblocktrans %}</span>
         {% trans "TBC" as tbc_label %}
         <span><i class="ti ti-calendar-event"></i> {{ match.event_date|default:tbc_label }}</span>
         {% if match.match_start_time %}
-            <span><i class="ti ti-clock"></i> {{ match.match_start_time|time:"H:i" }}</span>
+            <span><i class="ti ti-clock"></i> {{ match.match_start_time|time:"h:i A" }}</span>
         {% endif %}
         {% if match.venue %}
             <span><i class="ti ti-map-pin"></i> {{ match.venue }}</span>

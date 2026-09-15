@@ -187,6 +187,19 @@
                         <option value="300">{% trans "Every 5 minutes" %}</option>
                         <option value="600">{% trans "Every 10 minutes" %}</option>
                     </select>
+                    <p
+                        class="refresh-countdown"
+                        id="refresh-countdown"
+                        data-label="{% trans 'Next refresh in' %}"
+                        aria-live="polite"
+                        hidden
+                    ></p>
+                    <p
+                        class="refresh-last-updated"
+                        id="refresh-last-updated"
+                        data-label="{% trans 'Last updated' %}"
+                        hidden
+                    ></p>
                 </div>
 
                 <form method="post" action="{% url 'set_language' %}" class="logout-form">

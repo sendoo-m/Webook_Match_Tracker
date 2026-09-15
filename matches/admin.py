@@ -14,7 +14,7 @@ from .import_export import (
     export_matches_xlsx,
     import_matches_file,
 )
-from .models import Club, Venue, VenueImage, VenueSeatingCategory, Match, Competition
+from .models import AudienceTier, Club, MapPlacement, Venue, VenueGate, VenueImage, VenueSeatingCategory, Match, Competition
 
 # Where the "Update Roshan League Schedule" button also saves a copy of the
 # imported rows as an .xlsx, per the calendar-import feature's requirements.
@@ -59,22 +59,65 @@ class VenueImageAdmin(admin.ModelAdmin):
     autocomplete_fields = ("venue",)
 
 
+@admin.register(AudienceTier)
+class AudienceTierAdmin(admin.ModelAdmin):
+    """The popularity/audience classifications (e.g. "Premium", "Standard")
+    a category can be tagged with - names and count are entirely up to
+    SPL/coordinators, never assumed by this codebase; see AudienceTier's
+    own docstring for why."""
+
+    list_display = ("name_ar", "name_en", "color", "sort_order", "is_active")
+    search_fields = ("name_ar", "name_en")
+    list_filter = ("is_active",)
+    ordering = ("sort_order", "name_ar")
+
+
 @admin.register(VenueSeatingCategory)
 class VenueSeatingCategoryAdmin(admin.ModelAdmin):
-    """The seating category codes (e.g. "CAT 1") a club prices against on
-    the pricing-plan page, plus where its price badge is placed on a
-    seating-map image (position_image/position_x/position_y) - the same
-    data the Control Panel's "Venue Categories" position editor manages."""
+    """The seating category/ticket-type codes (e.g. "CAT 1") a club prices
+    against on the pricing-plan page - where each one is actually drawn on
+    a seating-map image now lives on MapPlacement instead (a category can
+    have more than one placement), see MapPlacementAdmin below."""
 
-    list_display = ("venue", "club", "code", "seat_count", "has_position", "is_active")
+    list_display = ("venue", "club", "code", "seat_count", "color", "audience_tier", "has_position", "is_active")
     search_fields = ("venue__name_ar", "venue__name_en", "club__name_ar", "club__name_en", "code")
-    list_filter = ("is_active", "venue", "club")
+    list_filter = ("is_active", "venue", "club", "audience_tier")
     ordering = ("venue__name_ar", "club__name_ar", "sort_order", "code")
-    autocomplete_fields = ("venue", "club", "position_image")
+    autocomplete_fields = ("venue", "club", "audience_tier")
 
     @admin.display(boolean=True, description="Positioned on map")
     def has_position(self, obj):
         return obj.has_position
+
+
+@admin.register(VenueGate)
+class VenueGateAdmin(admin.ModelAdmin):
+    """Physical entry gates at a venue - optionally scoped to one club's
+    fans (e.g. an away-supporters-only entrance) at a shared venue."""
+
+    list_display = ("venue", "name", "club", "color", "sort_order", "is_active")
+    search_fields = ("venue__name_ar", "venue__name_en", "name", "club__name_ar", "club__name_en")
+    list_filter = ("is_active", "venue")
+    ordering = ("venue__name_ar", "sort_order", "name")
+    autocomplete_fields = ("venue", "club")
+
+
+@admin.register(MapPlacement)
+class MapPlacementAdmin(admin.ModelAdmin):
+    """Where a category (or a bare zone/gate marker) is actually drawn on
+    one specific seating-map image - see VenueSeatingCategory/MapPlacement
+    docstrings for why this is separate from the category itself. A
+    category can have more than one row here (e.g. split across a North
+    and a South block)."""
+
+    list_display = ("position_image", "club", "category", "gate", "zone_type", "sort_order", "is_active")
+    search_fields = (
+        "position_image__venue__name_ar", "position_image__venue__name_en",
+        "club__name_ar", "club__name_en", "category__code", "gate__name",
+    )
+    list_filter = ("is_active", "zone_type", "venue")
+    ordering = ("venue__name_ar", "club__name_ar", "sort_order")
+    autocomplete_fields = ("venue", "club", "position_image", "category", "gate")
 
 
 class MatchChecklistItemInline(admin.TabularInline):

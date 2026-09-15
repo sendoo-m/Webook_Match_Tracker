@@ -42,7 +42,7 @@
                 </div>
                 <div class="round-preview-meta">
                     {% if card.match.match_start_time %}
-                        <span><i class="ti ti-clock"></i> {{ card.match.match_start_time|time:"H:i" }}</span>
+                        <span><i class="ti ti-clock"></i> {{ card.match.match_start_time|time:"h:i A" }}</span>
                     {% endif %}
                     {% if card.match.venue %}
                         <span><i class="ti ti-map-pin"></i> {{ card.match.venue }}</span>

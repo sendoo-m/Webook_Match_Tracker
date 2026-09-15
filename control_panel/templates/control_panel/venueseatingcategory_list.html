@@ -89,6 +89,7 @@
                         <th>{% trans "Venue" %}</th>
                         <th>{% trans "Code" %}</th>
                         <th>{% trans "Seat Count" %}</th>
+                        <th>{% trans "Tier" %}</th>
                         <th>{% trans "Status" %}</th>
                         <th></th>
                     </tr>
@@ -97,8 +98,18 @@
                     {% for category in group.categories %}
                         <tr>
                             <td>{{ category.venue|localized_name }}</td>
-                            <td>{{ category.code }}</td>
+                            <td>
+                                {% if category.color %}<span class="category-color-swatch" style="background:{{ category.color }};"></span>{% endif %}
+                                {{ category.code }}
+                            </td>
                             <td>{{ category.seat_count|default:"—" }}</td>
+                            <td>
+                                {% if category.audience_tier %}
+                                    <span class="mini-badge mini-badge-neutral">{{ category.audience_tier|localized_name }}</span>
+                                {% else %}
+                                    <span class="help-text">—</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 <span class="badge {% if category.is_active %}badge-published{% else %}badge-draft{% endif %}">
                                     {% if category.is_active %}{% trans "Active" %}{% else %}{% trans "Inactive" %}{% endif %}

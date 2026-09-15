@@ -41,6 +41,12 @@ def validate_plan_approval_file(value):
 class Competition(models.Model):
     name_ar = models.CharField(max_length=150, unique=True)
     name_en = models.CharField(max_length=150, unique=True)
+    logo = models.ImageField(
+        upload_to="competition_logos/",
+        null=True,
+        blank=True,
+        help_text="Shown next to the competition's name (Club Dashboard, match detail, SPL reports) - optional, falls back to name-only when unset.",
+    )
     is_active = models.BooleanField(default=True)
     sort_order = models.PositiveIntegerField(default=0)
 
@@ -207,40 +213,115 @@ class VenueImage(models.Model):
         self.image = ContentFile(buffer.read(), name=self.image.name)
 
 
+class VenueGate(models.Model):
+    """A physical entry gate at a venue - shown on the seating-map image
+    alongside category placements (2026-09 system review request). Venue-
+    scoped like VenueImage (a gate is part of the building), with an
+    OPTIONAL club - null means a general/shared gate, set means a gate
+    specific to one club's fans (e.g. an away-supporters-only entrance) at
+    a shared venue. Kept as its own model (not a MapPlacement zone_type)
+    since a gate has its own identity independent of any seating category
+    and can be referenced BY a placement (see MapPlacement.gate)."""
+
+    venue = models.ForeignKey(Venue, related_name="gates", on_delete=models.CASCADE)
+    club = models.ForeignKey(
+        Club,
+        related_name="gates",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Leave blank for a general/shared gate - set only for a gate specific to one club's fans.",
+    )
+    name = models.CharField(max_length=100, help_text='e.g. "Gate 3", "North Gate".')
+    color = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="Hex color (e.g. #2563eb) for this gate's marker/legend swatch.",
+    )
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["venue__name_ar", "sort_order", "name"]
+        verbose_name = "Venue Gate"
+        verbose_name_plural = "Venue Gates"
+
+    def __str__(self):
+        return f"{self.venue} - {self.name}"
+
+
+class AudienceTier(models.Model):
+    """A club/SPL-defined popularity or audience classification for a
+    seating category (e.g. "Premium", "Standard") - a global, reusable
+    list managed in Django Admin, deliberately NOT a hardcoded set of
+    names in code: which tiers exist and what they're called is a
+    business decision for SPL/coordinators to make and rename anytime,
+    never something this codebase should assume. Kept as its own model
+    (not a field on VenueSeatingCategory) for the same reason as
+    Competition/VenueGate - a short, reusable, independently-manageable
+    list. Deliberately separate from a category's PRICE (see
+    ClubPricingPlanCategoryPrice) - a category's popularity tier is a
+    stable property of the category itself, while its price varies per
+    pricing-plan version; conflating the two would make it impossible to
+    reprice a "Premium" category without also losing its tier, or vice
+    versa."""
+
+    name_ar = models.CharField(max_length=60)
+    name_en = models.CharField(max_length=60)
+    color = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="Hex color (e.g. #f59e0b) for this tier's badge - shown alongside its name, never color-only.",
+    )
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["sort_order", "name_ar"]
+        verbose_name = "Audience Tier"
+        verbose_name_plural = "Audience Tiers"
+
+    def __str__(self):
+        return self.name_ar if get_language() == "ar" else self.name_en
+
+
 class VenueSeatingCategory(models.Model):
-    """One seating category/block reference row for a specific club at a
+    """One seating category/ticket-type DEFINITION for a specific club at a
     specific venue (e.g. "CAT 1", "CAT 1 N", "Bronze - S") - scoped to
     (venue, club), not venue alone: two clubs sharing the same physical
     venue (e.g. Al Kholood and Al Hazem both at Al Hazm Stadium) can have
     different category lists for the same stadium. Clubs price against
     these codes on the pricing-plan page; coordinators/admin manage the
     list itself in the Control Panel. Seat numbering style is a property
-    of the venue as a whole (see Venue.seat_type), not of each category."""
+    of the venue as a whole (see Venue.seat_type), not of each category.
+
+    Deliberately holds NO position/map information (see MapPlacement,
+    added 2026-09) - a category is a single definition that can appear on
+    the map more than once (e.g. split across a North and a South block),
+    so "where is CAT 1 drawn" is a separate, one-to-many concept from
+    "what is CAT 1". Before this split, position_image/position_x/
+    position_y lived directly on this model, which made a second
+    placement of the same category impossible."""
 
     venue = models.ForeignKey(Venue, related_name="seating_categories", on_delete=models.CASCADE)
     club = models.ForeignKey(Club, related_name="venue_seating_categories", on_delete=models.CASCADE)
     code = models.CharField(max_length=30, help_text='e.g. "CAT 1", "CAT 1 N", "Bronze - S".')
     seat_count = models.PositiveIntegerField(null=True, blank=True)
-    sort_order = models.PositiveIntegerField(default=0)
-    is_active = models.BooleanField(default=True)
-
-    # Where this block's price badge is placed on a seating-map image, set
-    # via the Control Panel's block-position editor (one point per block,
-    # not a drawn region - the map image itself already shows each block's
-    # shape/boundary). x/y are percentages (0-100) of the image's own
-    # width/height, not pixels, so the same position renders correctly
-    # regardless of how large the image is shown. Scoped per (venue, club)
-    # like the category itself, since two clubs at the same venue can use
-    # different images or place the same code differently.
-    position_image = models.ForeignKey(
-        "VenueImage",
-        related_name="category_positions",
+    color = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="Hex color (e.g. #16a34a) for this category's map badge/legend swatch - shown alongside its code, never color-only.",
+    )
+    audience_tier = models.ForeignKey(
+        AudienceTier,
+        related_name="categories",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
+        help_text="This category's popularity/audience classification (e.g. Premium, Standard) - independent of its price, which is set per pricing-plan version instead.",
     )
-    position_x = models.FloatField(null=True, blank=True)
-    position_y = models.FloatField(null=True, blank=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["venue__name_ar", "club__name_ar", "sort_order", "code"]
@@ -256,8 +337,91 @@ class VenueSeatingCategory(models.Model):
         return f"{self.venue} - {self.club} - {self.code}"
 
     @property
+    def primary_placement(self):
+        """The one MapPlacement the Control Panel's position editor
+        manages today (create/move/clear) - a category can have more than
+        one placement (e.g. via Django Admin, or future UI), but the
+        existing single-marker editor only ever shows/edits this one, to
+        keep that flow working unchanged. Use .placements.all() directly
+        for the full set."""
+        return self.placements.filter(is_active=True).order_by("sort_order", "pk").first()
+
+    @property
     def has_position(self):
-        return self.position_image_id is not None and self.position_x is not None and self.position_y is not None
+        """Kept for template/call-site compatibility with the pre-split
+        model - True if this category has at least one active placement."""
+        return self.primary_placement is not None
+
+
+class MapPlacement(models.Model):
+    """One occurrence of a category (or a bare zone/gate marker) on one
+    specific venue seating-map image - see VenueSeatingCategory's
+    docstring for why this is split out from the category itself. Added
+    2026-09 per the system review's request to support: the same category
+    appearing in more than one block, Home/Away/fan-association zones,
+    and gate markers, none of which fit a model that assumed exactly one
+    position per category.
+
+    category is nullable because a placement can be a pure zone/gate
+    marker with nothing to sell (e.g. a "Home Fan Association" area
+    outline, or a gate icon) - not every marker on the map represents a
+    priced seating category."""
+
+    class ZoneType(models.TextChoices):
+        HOME = "home", "Home"
+        AWAY = "away", "Away"
+        FAN_HOME = "fan_home", "Home Fan Association"
+        FAN_AWAY = "fan_away", "Away Fan Association"
+        SHARED = "shared", "Shared / General"
+        GATE = "gate", "Gate"
+
+    venue = models.ForeignKey(Venue, related_name="map_placements", on_delete=models.CASCADE)
+    club = models.ForeignKey(Club, related_name="map_placements", on_delete=models.CASCADE)
+    position_image = models.ForeignKey(
+        VenueImage,
+        related_name="placements",
+        on_delete=models.CASCADE,
+    )
+    category = models.ForeignKey(
+        VenueSeatingCategory,
+        related_name="placements",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    gate = models.ForeignKey(
+        VenueGate,
+        related_name="placements",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Set when this marker represents a gate rather than (or in addition to) a seating category.",
+    )
+    zone_type = models.CharField(max_length=10, choices=ZoneType.choices, default=ZoneType.SHARED)
+    label = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text='Optional override text for this specific placement, e.g. "CAT 1 - North" for a second occurrence of CAT 1.',
+    )
+    # Percentages (0-100) of the image's own width/height, not pixels - see
+    # the pre-split model's identical comment for why (renders correctly
+    # regardless of how large the image is shown).
+    position_x = models.FloatField()
+    position_y = models.FloatField()
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["venue__name_ar", "club__name_ar", "sort_order", "pk"]
+        verbose_name = "Map Placement"
+        verbose_name_plural = "Map Placements"
+
+    def __str__(self):
+        if self.category_id:
+            return f"{self.position_image} - {self.category}"
+        if self.gate_id:
+            return f"{self.position_image} - {self.gate}"
+        return f"{self.position_image} - {self.get_zone_type_display()}"
 
 
 class Match(models.Model):

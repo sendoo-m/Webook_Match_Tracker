@@ -7,16 +7,21 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.formats import date_format
 from django.utils.translation import gettext as _
 from django.views import View
 from django.views.generic import TemplateView
 
 from matches.models import Match
-from operations.permissions import MatchScopedQuerysetMixin
+from operations.permissions import MatchScopedQuerysetMixin, get_user_club_ids
 
 from .helpers import build_dashboard_match_state, get_coordinators_for_matches, get_dashboard_prefetch, get_selectable_clubs
 
-DAY_MATCH_LIMIT = 3
+# Raised from 3 to 5 per the 2026-09 system review: a day cell should show
+# its matches directly rather than hiding most of them behind a "+N more"
+# link - see calendar.html's day-cell loop and the "extra" button below it
+# for what still happens past this cap (opens the full day list instead).
+DAY_MATCH_LIMIT = 5
 
 
 class MatchCalendarView(LoginRequiredMixin, MatchScopedQuerysetMixin, TemplateView):
@@ -61,6 +66,12 @@ class MatchCalendarView(LoginRequiredMixin, MatchScopedQuerysetMixin, TemplateVi
         for match in matches:
             matches_by_day.setdefault(match.event_date, []).append(match)
 
+        # Only set for a club-scoped viewer (a coordinator or a club's own
+        # account) - an Ops/SPL viewer has no "own club" to call Home/Away
+        # relative to, so is_home stays None for them and the template
+        # renders no side badge at all (see calendar.html).
+        club_ids = get_user_club_ids(self.request.user)
+
         weeks = []
         for week in month_dates:
             week_days = []
@@ -74,6 +85,7 @@ class MatchCalendarView(LoginRequiredMixin, MatchScopedQuerysetMixin, TemplateVi
                         "is_live_now": state["is_live_now"],
                         "is_finished": state["match_finished"],
                         "is_today": state["is_today"],
+                        "is_home": (m.home_club_id in club_ids) if club_ids else None,
                     })
                 week_days.append({
                     "date": day,
@@ -95,7 +107,11 @@ class MatchCalendarView(LoginRequiredMixin, MatchScopedQuerysetMixin, TemplateVi
         context.update({
             "year": year,
             "month": month,
-            "month_label": date(year, month, 1).strftime("%B %Y"),
+            # date_format (not strftime) - strftime uses the OS/C locale, so
+            # it silently ignored the active Arabic UI language and always
+            # showed English month names regardless of site language.
+            "month_label": date_format(date(year, month, 1), "F Y"),
+            "today_label": date_format(today, "l, j F Y"),
             "weeks": weeks,
             "today": today,
             "prev_year": prev_year,

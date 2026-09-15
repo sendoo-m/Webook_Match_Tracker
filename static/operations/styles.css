@@ -1796,6 +1796,12 @@ a.stat-strip-item:focus-visible {
     letter-spacing: 0.04em;
 }
 
+/* Reinforces the label's own text (Selective Attention) - never the only
+   way to tell stats apart, and never sized to read as decoration. */
+.stat-strip-icon {
+    font-size: 14px;
+}
+
 .stat-strip-dot {
     width: 7px;
     height: 7px;
@@ -1903,6 +1909,18 @@ a.stat-strip-item:focus-visible {
     gap: var(--space-4);
     flex-wrap: wrap;
     align-items: end;
+}
+
+/* Fitts's Law on a phone: a 200px-min filter field (the shared
+   .field-group default) can overflow/crowd a narrow screen when several
+   sit in one .filters row - let each field claim the full row instead of
+   fighting for space. Scoped to .filters specifically, not the shared
+   .field-group class itself, so other forms elsewhere are unaffected. */
+@media (max-width: 480px) {
+    .filters .field-group {
+        min-width: 0;
+        width: 100%;
+    }
 }
 
 /* The filter row directly above a table (no card boundary between them)
@@ -2055,6 +2073,58 @@ tr.row-action-needed td {
     display: inline-flex;
     align-items: center;
     gap: 4px;
+}
+
+/* Always-visible scan strip (Miller's Law: 3 badges, never more) - lets a
+   manager judge every card in the list without opening any of them. */
+.spl-approval-status-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+}
+
+.spl-approval-status-strip .mini-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* The full review - collapsed once every status strip badge above is
+   resolved, left open while anything still needs a decision or upload
+   (Goal-Gradient Effect). Native <details>/<summary>, same pattern as
+   .checklist-group elsewhere on this page. */
+.spl-approval-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    list-style: none;
+    cursor: pointer;
+    padding: var(--space-3) var(--space-7);
+    margin: 0 calc(var(--space-7) * -1);
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.spl-approval-summary::-webkit-details-marker {
+    display: none;
+}
+
+.spl-approval-caret {
+    color: var(--muted);
+    transition: transform 0.15s ease;
+}
+
+.spl-approval-details[open] .spl-approval-caret {
+    transform: rotate(180deg);
+}
+
+.spl-approval-details > .spl-approval-block,
+.spl-approval-details > .spl-approval-card-body {
+    margin-top: var(--space-4);
 }
 
 /* The pricing-plan review block spans the full card width (map + decision
@@ -2484,6 +2554,37 @@ th {
 .club-chip-role-icon {
     font-size: 12px;
     color: var(--muted);
+}
+
+/* Competition logo - shown once next to the competition's own name (page
+   header/meta tile), never repeated per row/card. Same sizing convention
+   as .club-chip-logo for visual consistency. */
+.competition-name-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.competition-logo {
+    height: 22px;
+    width: 22px;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    flex: 0 0 auto;
+}
+
+/* A category/gate's own color swatch - never the only signal (the code/
+   name text is always shown next to it), just a quick visual anchor when
+   scanning a long list. */
+.category-color-swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    margin-inline-end: 6px;
+    vertical-align: middle;
 }
 
 /* Club Dashboard hero (homepage identity card: logo, name, venue facts,
@@ -3905,6 +4006,30 @@ th {
     opacity: 0.75;
 }
 
+/* Home/Away for the viewing club's own matches - a text badge, never a
+   color-only cue, so it reads correctly for colorblind users and survives
+   being layered on top of the chip's own live/finished/today background. */
+.calendar-match-chip-side {
+    flex: 0 0 auto;
+    padding: 1px 5px;
+    border-radius: var(--radius-pill);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    border: 1px solid currentColor;
+}
+
+.calendar-match-chip-side--home {
+    color: var(--info);
+    background: var(--surface);
+}
+
+.calendar-match-chip-side--away {
+    color: var(--muted);
+    background: var(--surface);
+}
+
 /* Legend swatches pull their colors from the same variables as the chips
    above (--info/--live/--neutral-*), so if a chip's color ever changes the
    legend stays correct automatically instead of needing a manual update. */
@@ -4010,15 +4135,26 @@ th {
     }
 }
 
-/* Calendar fullscreen/focus mode - the Fullscreen API already hides the
-   sidebar and page chrome by only painting the target element, these
-   rules just make the card itself lay out nicely at full screen size. */
+/* Calendar fullscreen/focus mode - the Fullscreen API only paints this
+   target element, so the month title, today's date, Prev/Today/Next, and
+   the filters all live INSIDE it now (not just the grid) - otherwise
+   fullscreen lost month/date context entirely, a real usability gap
+   flagged in the 2026-09 system review. These rules just make that fuller
+   content lay out nicely at full screen size. */
 #calendar-fullscreen-target:fullscreen {
     display: flex;
     flex-direction: column;
-    background: var(--surface);
+    gap: var(--space-6);
+    background: var(--bg);
     padding: var(--space-6);
     overflow: auto;
+}
+
+#calendar-fullscreen-target:fullscreen .calendar-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 #calendar-fullscreen-target:fullscreen .calendar-grid {
@@ -4027,6 +4163,16 @@ th {
 
 #calendar-fullscreen-target:fullscreen .calendar-day {
     min-height: 15vh;
+}
+
+/* Fitts's Law on a phone in fullscreen: Prev/Today/Next and the fullscreen
+   toggle stay comfortably tappable rather than shrinking with the rest of
+   the header row. */
+@media (max-width: 480px) {
+    #calendar-fullscreen-target:fullscreen .filter-bar .btn-secondary,
+    #calendar-fullscreen-target:fullscreen .filter-bar .icon-btn {
+        min-height: 40px;
+    }
 }
 
 /* Simple/advanced view toggle on the SPL viewer dashboard - simple mode
@@ -4474,4 +4620,18 @@ html[data-density="simple"] .viewer-advanced-only {
     min-height: 38px;
     padding: 6px 10px;
     font-size: 13px;
+}
+
+/* Doherty Threshold: makes the auto-refresh's own state (when it will next
+   run, and that it did just run) visible instead of a silent background
+   timer - kept small (11px, --muted) so it never competes with the page
+   title/sidebar links around it. Both stay [hidden] entirely while
+   auto-refresh is Off (toggled from dashboard-refresh.js), never shown as
+   an empty/dashed placeholder. */
+.refresh-countdown,
+.refresh-last-updated {
+    margin: 0;
+    font-size: 11px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
 }

@@ -124,7 +124,7 @@
                     <td>
                         {% trans "TBC" as tbc_label %}
                         {{ row.match.event_date|default:tbc_label }}
-                        {% if row.match.match_start_time %} {{ row.match.match_start_time|time:"H:i" }}{% endif %}
+                        {% if row.match.match_start_time %} {{ row.match.match_start_time|time:"h:i A" }}{% endif %}
                     </td>
                     <td>
                         {% if row.match_finished %}
